@@ -1,6 +1,8 @@
 package com.sungan.ad.wx.msghandler;
 
 
+import javax.annotation.Resource;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -18,9 +20,9 @@ import com.sungan.ad.wx.MsgType;
 public class MsgHandlerFactory {
 	
 	
-	@Autowired
+	@Resource(name="subORunsubscribeHandler")
 	private MsgHandler subORunsubscribeHandler;
-	@Autowired
+	@Resource(name="usertowxHandler")
 	private MsgHandler usertowxHandler;
 	
 	public MsgHandler getUsertowxHandler() {

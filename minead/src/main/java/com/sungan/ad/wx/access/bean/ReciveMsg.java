@@ -21,7 +21,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "xml")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class ReciveMsg implements AdXMLInterface{
+public class ReciveMsg {
 	@XmlElement(required=true,name="ToUserName")
 	private String toUserName;
 	@XmlElement(required=true,name="FromUserName")

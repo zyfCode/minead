@@ -10,9 +10,13 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class AdConstants {
 	private AdConstants(){}
+	public static final String TXTRESPONSE = "TXTRESPONSE";
 	public static final String XMLRESPONSE = "XMLRESPONSE";
 	public static final String JSONRESPONSE = "JSONRESPONSE";
+	public static final String JSPDATA = "data";
 	public static final String JSONTYPE = "application/json;charset=UTF-8";
+	public static final String XMLTYPE = "application/xml;charset=UTF-8";
+	public static final String TXTTYPE = "text/plain;charset=UTF-8";
 	
 	/**
 	 * 获取用户IP

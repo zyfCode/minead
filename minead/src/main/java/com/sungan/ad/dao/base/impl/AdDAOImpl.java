@@ -1,5 +1,9 @@
 package com.sungan.ad.dao.base.impl;
 
+import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
+import org.hibernate.Criteria;
 import org.hibernate.classic.Session;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.stereotype.Repository;
@@ -19,6 +23,17 @@ public class AdDAOImpl extends AdDAOAbstract {
 		Session currentSession = super.template.getSessionFactory().getCurrentSession();
 		AdContent uniqueResult = (AdContent) currentSession.createCriteria(AdContent.class).add(Restrictions.eq("appid", appid)).add(Restrictions.eq("status", AdContent.PUBLIC_1)).uniqueResult();
 		return uniqueResult;
+	}
+
+	@Override
+	public List<AdContent> queryByAppid(String appid) {
+		Session currentSession = super.template.getSessionFactory().getCurrentSession();
+		Criteria createCriteria = currentSession.createCriteria(AdContent.class);//.add(Restrictions.eq("appid", appid)).list();
+		if(StringUtils.isNotBlank(appid)){
+			createCriteria = createCriteria.add(Restrictions.eq("appid", appid));
+		}
+		List<AdContent>  list = createCriteria.list();
+		return list;
 	}
 
 }

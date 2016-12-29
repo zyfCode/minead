@@ -10,6 +10,13 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.stream.FactoryConfigurationError;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamWriter;
+
+import org.apache.poi.ss.formula.functions.T;
+
+import com.sungan.ad.commons.jaxb.CDataXMLStreamWriter;
 
 public class JAXBUtil {
 	// 输出 的编码方�?
@@ -35,6 +42,35 @@ public class JAXBUtil {
 		marshaller.setProperty(Marshaller.JAXB_ENCODING, JAXBUtil.ECODING);
 		marshaller.marshal(jaxbEntity, file);
 	}
+	
+	   /**使用JAXB方式解决CDATA问题 
+     * 
+     * @throws Exception 
+     */  
+    public static<T> String ojbectToXmlWithCDATA(T t) throws Exception {  
+  
+        JAXBContext context = JAXBContext.newInstance(t.getClass());  
+        ByteArrayOutputStream op = null;
+		CDataXMLStreamWriter cdataStreamWriter;
+		try {
+			op = new ByteArrayOutputStream();  
+  
+			XMLOutputFactory xof = XMLOutputFactory.newInstance();  
+			XMLStreamWriter streamWriter = xof.createXMLStreamWriter(op);  
+			cdataStreamWriter = new CDataXMLStreamWriter(streamWriter);  
+  
+			Marshaller mar = context.createMarshaller();  
+			mar.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);  
+			mar.marshal(t, cdataStreamWriter);  
+			  cdataStreamWriter.flush();
+		} finally {
+			if(op!=null){
+				op.close();
+			}
+		}  
+	      cdataStreamWriter.close();  
+        return op.toString("UTF-8");  
+    }  
 
 	/**
 	 * 进行列化

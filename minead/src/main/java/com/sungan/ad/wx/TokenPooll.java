@@ -17,12 +17,20 @@ import com.sungan.ad.wx.bean.TokenBean;
 public class TokenPooll {
 	private static List<WxWorker> pool = new ArrayList<WxWorker>();
 	private static final Log log = LogFactory.getLog(TokenPooll.class);
+	private static String dorefleshOnInit = "true";
 	
+
+	public void setDorefleshOnInit(String dorefleshOnInit) {
+		TokenPooll.dorefleshOnInit = dorefleshOnInit;
+	}
+
 	public static void add(WxWorker wxorker){
-		try {
-			wxorker.refleshToken();
-		} catch (Exception e) {
-			log.error("", e);
+		if(TokenPooll.dorefleshOnInit.equalsIgnoreCase("true")){
+			try {
+				wxorker.refleshToken();
+			} catch (Exception e) {
+				log.error("", e);
+			}
 		}
 		pool.add(wxorker);
 	}

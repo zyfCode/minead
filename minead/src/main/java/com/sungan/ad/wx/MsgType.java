@@ -31,7 +31,7 @@ public enum MsgType {
 		}else if(msg.contains("<MsgType>")&&msg.contains("<Event>")){
 			return SUBSCRIBE_OR_UNSUBSCRIBE;
 		}else{
-			throw new RuntimeException("未支持类型");
+			throw new RuntimeException("【微信请求类型】未支持类型");
 		}
 		
 	}

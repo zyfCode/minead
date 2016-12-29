@@ -34,6 +34,7 @@ public class JsonInterceptor   implements HandlerInterceptor  {
 			throws Exception {
 			Object object = request.getAttribute(AdConstants.JSONRESPONSE);
 			Object xmlobject = request.getAttribute(AdConstants.XMLRESPONSE);
+			Object txtobject = request.getAttribute(AdConstants.TXTRESPONSE);
 			if(object!=null){
 				arg1.setContentType(AdConstants.JSONTYPE);
 				arg1.setCharacterEncoding("UTF-8");
@@ -47,9 +48,11 @@ public class JsonInterceptor   implements HandlerInterceptor  {
 				arg1.getWriter().write(jsonStr);
 				arg1.getWriter().flush();
 			}else if(xmlobject!=null){
+				arg1.setContentType(AdConstants.XMLTYPE);
+				arg1.setCharacterEncoding("UTF-8");
 				String xml=null;
 				if(xmlobject instanceof AdXMLInterface){
-					xml = JAXBUtil.marshaller(xmlobject);
+					xml = JAXBUtil.ojbectToXmlWithCDATA(xmlobject);
 				}else{
 					xml = xmlobject.toString();
 				}
@@ -59,6 +62,17 @@ public class JsonInterceptor   implements HandlerInterceptor  {
 					log.info("****************响应报文结束**************");
 				}
 				arg1.getWriter().write(xml);
+				arg1.getWriter().flush();
+			}else if(txtobject!=null){
+				arg1.setContentType(AdConstants.TXTTYPE);
+				arg1.setCharacterEncoding("UTF-8");
+				String result=  txtobject.toString();
+				if(log.isInfoEnabled()){
+					log.info("****************响应报文开始**************");
+					log.info(result);
+					log.info("****************响应报文结束**************");
+				}
+				arg1.getWriter().write(result);
 				arg1.getWriter().flush();
 			}
 	}

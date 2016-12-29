@@ -14,7 +14,9 @@
 	http://www.springframework.org/schema/tx 
 	http://www.springframework.org/schema/tx/spring-tx-3.2.xsd ">
 	
-	<bean id="tokenPool" class="com.sungan.ad.wx.TokenPooll"></bean>
+	<bean id="tokenPool" class="com.sungan.ad.wx.TokenPooll">
+		<property name="dorefleshOnInit" value="false"></property>
+	</bean>
 	
 	<bean id="sunganTokenBean" class="com.sungan.ad.wx.bean.TokenBean">
 		<property name="appId" value="wx1d173e30beb9889b"></property>
@@ -24,6 +26,7 @@
 	
 	<bean id="sungantoken" class="com.sungan.ad.wx.WxWorker">
 		<property name="tokenBean" ref="sunganTokenBean"></property>
+		<property name="wxDataConnector" ref="wxDataConnector"></property>
 	</bean>
 	
 	<bean id="tokenPoolJob"  
@@ -36,14 +39,14 @@
 	<bean id="tokenPoolJobTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">  
 		<property name="jobDetail" ref="tokenPoolJob" />  
 		<property name="startDelay" value="0" /><!-- 调度工厂实例化后，经过0秒开始执行调度 -->  
-		<property name="repeatInterval" value="2000" /><!-- 每2秒调度一次 -->  
+		<property name="repeatInterval" value="6000000" /><!-- 每2秒调度一次 -->  
 	</bean>
 	
 	
 		<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
 		<property name="triggers">
 			<list>
-				<ref bean="tokenPoolJobTrigger" />
+<!-- 				<ref bean="tokenPoolJobTrigger" /> -->
 			</list>
 		</property>
 	</bean>  

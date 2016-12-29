@@ -13,7 +13,7 @@ import com.sungan.ad.wx.access.bean.TokenResponse;
  * @date 2016年12月27日 下午10:39:18
  * @version V1.1
  */
-@Component
+@Component("wxDataConnector")
 public class WxDataConnectorImpl extends WxDataConnectorAbstract{
 
 	@Override

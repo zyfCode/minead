@@ -1,5 +1,7 @@
 package com.sungan.ad.service;
 
+import java.util.List;
+
 import com.sungan.ad.domain.AdContent;
 
 /**
@@ -11,4 +13,11 @@ import com.sungan.ad.domain.AdContent;
 public interface AdService {
 	Long insert(AdContent content);
 	AdContent query(String appid);
+	/**
+	 * 根据ippid查询
+	 * @param appid
+	 * @return
+	 */
+	List<AdContent> queryByAppid(String appid);
+	AdContent update(Long id, String status);
 }

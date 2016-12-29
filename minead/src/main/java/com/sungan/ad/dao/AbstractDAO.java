@@ -29,7 +29,7 @@ public abstract class AbstractDAO<T> implements DAO<T> {
 	}
 
 	{
-		Type type = this.getClass().getGenericSuperclass();
+		Type type = this.getClass().getSuperclass().getGenericSuperclass();
 		if (type != null && type instanceof ParameterizedType) {
 			ParameterizedType c = (ParameterizedType) type;
 			Type[] typeArr = c.getActualTypeArguments();

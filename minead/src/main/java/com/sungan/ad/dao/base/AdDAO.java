@@ -1,5 +1,7 @@
 package com.sungan.ad.dao.base;
 
+import java.util.List;
+
 import com.sungan.ad.dao.DAO;
 import com.sungan.ad.domain.AdContent;
 
@@ -11,4 +13,6 @@ import com.sungan.ad.domain.AdContent;
  */
 public interface AdDAO extends DAO<AdContent>{
 	AdContent query(String appid);
+
+	List<AdContent> queryByAppid(String appid);
 }
