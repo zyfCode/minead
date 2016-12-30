@@ -30,6 +30,8 @@
 		<property name="minIdle" value="20" />
 		<!-- 最大闲值active connections，默认是8 -->
 		<property name="maxIdle" value="25" />
+		<property name="validationQuery" value="SELECT 1" />
+   		<property name="testOnBorrow" value="true"/>
 		<!-- 泄露的连接可以被删除的超时值, 单位秒 -->
 		<property name="removeAbandonedTimeout" value="30" />
 		<property name="removeAbandoned" value="true" />
