@@ -10,8 +10,11 @@ import javax.xml.bind.JAXBException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -58,6 +61,49 @@ public class TestApi {
 	
 	private static SimpleDateFormat forMat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	
+	
+	@Test
+	public void testRealIp() throws ClientProtocolException, IOException{
+//		host:139.196.240.242
+//		x-real-ip:115.200.234.236
+//		x-scheme:http
+//		connection:close
+//		accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+//		upgrade-insecure-requests:1
+//		user-agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.87 Safari/537.36
+//		accept-encoding:gzip, deflate, sdch
+//		accept-language:zh-CN,zh;q=0.8
+//		cookie:td_cookie=18446744072442819459
+		DefaultHttpClient client = new DefaultHttpClient();
+		HttpGet get = new HttpGet("http://139.196.240.242/wx/list/usermsg?appid=wx1d173e30beb9889b");
+		get.addHeader("x-forwarded-for", "10.153.43.21,10.172.22.2");
+		get.addHeader("x-scheme", "connection:close");
+		get.addHeader("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+		get.addHeader("upgrade-insecure-requests", "1");
+		get.addHeader("user-agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.87 Safari/537.36");
+		get.addHeader("accept-encoding", "gzip, deflate, sdch");
+		get.addHeader("accept-language", "zh-CN,zh;q=0.8");
+		CloseableHttpResponse response = client.execute(get);
+		Header[] allHeaders = response.getAllHeaders();
+		for(Header header:allHeaders){ 
+			String name = header.getName();
+			String value = header.getValue();
+			System.out.println(name+":"+value);
+		}
+		if (null != response.getEntity()
+				&& HttpStatus.SC_OK == response.getStatusLine()
+						.getStatusCode()) {
+			String result = EntityUtils.toString(response.getEntity(), HTTP.UTF_8);
+			if(log.isDebugEnabled()){
+				log.debug("响应的报文件:"+result);
+			}
+//			JSONObject fromObject = net.sf.json.JSONObject.fromObject(result);
+//			T bean = (T) JSONObject.toBean(fromObject,clazz);
+		}else{
+		}
+	}
+	
+	
 	@Test
 	public void testStrToBean() throws JAXBException, IOException{
 		String data = "<xml>"
@@ -83,6 +129,7 @@ public class TestApi {
 				 +"</xml>";
 		WxResponseMsgTxtAndImg unmarshal = JAXBUtil.unmarshal(WxResponseMsgTxtAndImg.class,data);
 		System.out.println(unmarshal);
+		
 	}
 	
 	@Test
