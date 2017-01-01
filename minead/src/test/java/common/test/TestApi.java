@@ -75,7 +75,8 @@ public class TestApi {
 //		accept-language:zh-CN,zh;q=0.8
 //		cookie:td_cookie=18446744072442819459
 		DefaultHttpClient client = new DefaultHttpClient();
-		HttpGet get = new HttpGet("http://139.196.240.242/wx/list/usermsg?appid=wx1d173e30beb9889b");
+//		HttpGet get = new HttpGet("http://139.196.240.242/wx/list/usermsg?appid=wx1d173e30beb9889b");
+		HttpGet get = new HttpGet("http://127.0.0.1:8080/minead/wx/list/usermsg?appid=wx1d173e30beb9889b");
 		get.addHeader("x-forwarded-for", "10.153.43.21,10.172.22.2");
 		get.addHeader("x-scheme", "connection:close");
 		get.addHeader("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");

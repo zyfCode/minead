@@ -12,7 +12,10 @@ import com.sungan.ad.domain.AdContent;
  */
 public interface AdService {
 	Long insert(AdContent content);
+	void update(AdContent content);
 	AdContent query(String appid);
+	AdContent delelte(Long id);
+	AdContent query(Long id);
 	/**
 	 * 根据ippid查询
 	 * @param appid

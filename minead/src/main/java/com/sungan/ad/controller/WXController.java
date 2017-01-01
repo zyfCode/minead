@@ -83,6 +83,12 @@ public class WXController {
 		return "wx/listappid";
 	}
 	
+	@RequestMapping(value="/updatecontent/tousermsg")
+	public String toUpdateUserMsg(Long id,Model model){
+		AdContent query = adService.query(id);
+		model.addAttribute(AdConstants.JSPDATA, query);
+		return "wx/updateusermsg";
+	}
 	@RequestMapping(value="/tousermsg")
 	public String toputUserMsg(Model model){
 		List<WxAppidVo> queryAall = wxAppidService.queryAall();
@@ -104,6 +110,16 @@ public class WXController {
 	public String update(Long id,String status,RedirectAttributes redirectAttri) throws IllegalAccessException, InvocationTargetException{
 		AdContent update = adService.update(id, status);
 		redirectAttri.addAttribute("appid", update.getAppid());
+		return "redirect:"+basepath+"/list/usermsg";
+	}
+	@RequestMapping(value="/updatecontent/usermsg")
+	public String update(AdContentVo vo,RedirectAttributes redirectAttri) throws IllegalAccessException, InvocationTargetException{
+		AdContent content = new AdContent();
+		content.setId(vo.getId());
+		BeanUtils.copyProperties(content, vo);
+		content.setUpdateTime(new Date());
+		adService.update(content );
+		redirectAttri.addAttribute("appid", vo.getAppid());
 		return "redirect:"+basepath+"/list/usermsg";
 	}
 	@RequestMapping(value="/put/usermsg")

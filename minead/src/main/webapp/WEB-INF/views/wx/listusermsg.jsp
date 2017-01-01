@@ -53,19 +53,36 @@
 			</tr>
 		</table>
 		<div style="width: 100%;margin-bottom: 20px">
-			<div>
-			<form action="${pageContext.request.contextPath}/wx/update/usermsg" method="post"> 
+		<table>
+			<tr>
+				<td>
+					<form action="${pageContext.request.contextPath}/wx/update/usermsg" method="post"> 
 				<input type="hidden" value="${vo.id}" name="id">
 				<input type="hidden" value="1" name="status">
 				<input type="submit" value="发布">
 			</form>
-			</div>
-			<div>
-			<form action="${pageContext.request.contextPath}/wx/update/usermsg" method="post"> 
+				</td>	
+				<td>
+						<form action="${pageContext.request.contextPath}/wx/updatecontent/tousermsg" method="post"> 
+				<input type="hidden" value="${vo.id}" name="id">
+				<input type="submit" value="修改">
+			</form>
+				</td>
+				<td>
+					<form action="${pageContext.request.contextPath}/wx/update/usermsg" method="post"> 
 				<input type="hidden" value="${vo.id}" name="id">
 				<input type="hidden" value="0" name="status">
 				<input type="submit" value="下架">
 			</form>
+				</td>	
+					
+			</tr>
+		</table>
+			<div>
+			
+			</div>
+			<div>
+			
 			</div>
 			</div>
 		</c:forEach>
