@@ -1,6 +1,8 @@
 package common.test;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -75,9 +77,9 @@ public class TestApi {
 //		accept-language:zh-CN,zh;q=0.8
 //		cookie:td_cookie=18446744072442819459
 		DefaultHttpClient client = new DefaultHttpClient();
-//		HttpGet get = new HttpGet("http://139.196.240.242/wx/list/usermsg?appid=wx1d173e30beb9889b");
-		HttpGet get = new HttpGet("http://127.0.0.1:8080/minead/wx/list/usermsg?appid=wx1d173e30beb9889b");
-		get.addHeader("x-forwarded-for", "10.153.43.21,10.172.22.2");
+		HttpGet get = new HttpGet("http://139.196.240.242/wx/list/usermsg?appid=wx1d173e30beb9889b");
+//		HttpGet get = new HttpGet("http://127.0.0.1:8080/minead/wx/list/usermsg?appid=wx1d173e30beb9889b");
+		get.addHeader("x-forward-for", "10.153.43.21,10.172.22.2");
 		get.addHeader("x-scheme", "connection:close");
 		get.addHeader("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
 		get.addHeader("upgrade-insecure-requests", "1");
@@ -104,6 +106,14 @@ public class TestApi {
 		}
 	}
 	
+	
+	@Test
+	public void test() throws UnsupportedEncodingException{
+String url = "Nzc3MTgwfDIwNjY1fDIyODc2fDV8MTk4MTR8Mjg1MnwxMjIuMjMzLjE3OS4xNDY=;72a61208522ea1ada2833c169c47234f;http%3A%2F%2Fwww.wszszd.com%2Fyoudao%2Fall%2Fjx.php%3Fid%3D2073%26cnzz%3D1261030610&clicks=1&is_img=1&getImageTJ=0&t=";
+		//		String url = "Nzc3MTgwfDIwNjY1fDIyODc2fDV8MTk4MTR8Mjg1MnwxMjIuMjMzLjE3OS4xNDY=;72a61208522ea1ada2833c169c47234f;http%3A%2F%2Fwww.wszszd.com%2Fyoudao%2Fall%2Fjx.php%3Fid%3D2073%26cnzz%3D1261030610&clicks=1&is_img=1&t=";
+		String decode = URLDecoder.decode(url ,"UTF-8");
+		System.out.println(decode);
+	}
 	
 	@Test
 	public void testStrToBean() throws JAXBException, IOException{
