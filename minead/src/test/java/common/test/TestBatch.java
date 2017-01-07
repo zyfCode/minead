@@ -24,6 +24,7 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.CoreConnectionPNames;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 import org.junit.Test;
@@ -37,12 +38,29 @@ import org.junit.Test;
  */
 public class TestBatch {
 	private static final Log log = LogFactory.getLog(TestBatch.class);
-	private String userAgent= "Mozilla/5.0 (iPhone; CPU iPhone OS 9_3_2 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Mobile/13F69 MicroMessenger/6.3.21 NetType/WIFI Language/zh_CN";
-	private static  ScheduledThreadPoolExecutor excutor = new ScheduledThreadPoolExecutor(10);
+	private String defaultUserAgent= "Mozilla/5.0 (iPhone; CPU iPhone OS 9_3_2 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Mobile/13F69 MicroMessenger/6.3.21 NetType/WIFI Language/zh_CN";
+	private String userAgent= "Mozilla/5.0 (iPhone; CPU iPhone OS ${version} like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Mobile/13F69 MicroMessenger/6.3.21 NetType/WIFI Language/zh_CN";
+	private static  ScheduledThreadPoolExecutor excutor = new ScheduledThreadPoolExecutor(200);
 	private static int count = 0;
 	private static int actuallCount = 0;
-	private static int[] arr = new int[20];
-	private static int[] hit = new int[3];
+	private static int[] arr = new int[100];
+	private static int[] hit = new int[5];
+	
+	private int nexInt(int i){
+		return new Random().nextInt(i);
+	}
+	private String getUserAgent(){
+		int [] arr1 = {4,5,6,7,8,9,10};
+		int [] arr2 = {0,1,2,3};
+		int [] arr3 = {1,2,3,4};
+		String version = arr1[this.nexInt(arr1.length)]+"_"+arr2[this.nexInt(arr2.length)]+"_"+arr3[this.nexInt(arr3.length)]; 
+		String newAgent  = defaultUserAgent;
+		if(userAgent.contains("${version}")){
+			newAgent = userAgent.replace("${version}", version);
+		}
+		return newAgent;
+	} 
+	
 	
 	public synchronized static int actuallCount(int num){
 		actuallCount = actuallCount +num;
@@ -54,6 +72,7 @@ public class TestBatch {
 	}
 	
 	public static boolean canExcute(){
+//		return true;
 		Random random = new Random();
 		int randomVal = arr[random.nextInt(arr.length)];
 		for(int val:hit){
@@ -63,7 +82,7 @@ public class TestBatch {
 		}
 		return false;
 	}
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		for(int i=0;i<arr.length;i++){
 			arr[i]=i;
 		}
@@ -84,13 +103,16 @@ public class TestBatch {
 		excutor.scheduleAtFixedRate(new Runnable() {
 			@Override
 			public void run() {
+				if(count>50000){
+					excutor.shutdown();
+				}
 				excutor.execute(new Runnable() {
 					@Override
 					public void run() {
 						try {
-							log.info(TestBatch.add(1)+"任务开始....");
+							log.info(actuallCount+"/"+TestBatch.add(1)+"任务开始....");
 							new TestBatch().doExcute();
-							log.info("===任务完成...");
+							log.info(actuallCount+"/"+TestBatch.add(0)+"===任务完成...");
 						} catch (Exception e) {
 							log.error("任务异常", e);
 						}
@@ -112,25 +134,32 @@ public class TestBatch {
 		String randomIp = TestBatch.getRandomIp();
 		log.info("随机产生的randomip:"+randomIp);
 		boolean canExcute = canExcute();
-		if(canExcute){
-			log.info("实行点击数："+actuallCount(1));
-			Set<String> subUrl = this.getSubUrl(randomIp);
-			for(String url:subUrl){
-				if(url.endsWith(".jpeg")||url.endsWith(".png")){
-					log.info("图片不访问："+url);
+		Set<String> subUrl = this.getSubUrl(randomIp);
+		for(String url:subUrl){
+			if(url.endsWith(".jpeg")||url.endsWith(".png")||url.endsWith(".jpg")||url.endsWith(".gif")){
+				log.info("图片不访问："+url);
+				continue;
+			}
+			if(url.endsWith("t=")&&url.contains("uu.php")){
+				url = url+ new Random().nextFloat();
+				if(!canExcute){  //点击率不执行
 					continue;
 				}
-				this.justExcut(url,randomIp);
+				log.info("实行点击数："+actuallCount(1));
 			}
+			this.justExcut(url,randomIp);
 		}
 		
 	}
 	
 	private void justExcut(String url,String randomIp) throws Exception{
 		try {
-			HttpGet get = this.getUrl(url, "m.mansorychina.net", this.userAgent,randomIp);
+			String host = this.getHost(url);
+			HttpGet get = this.getUrl(url, "m.mansorychina.net", this.getUserAgent(),randomIp);
 			DefaultHttpClient client = new DefaultHttpClient();
 			try {
+				client.getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 1000); 
+				client.getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, 1000);
 				CloseableHttpResponse execute = client.execute(get);
 				int statusCode = execute.getStatusLine().getStatusCode();
 				log.info(url+"  CODE:"+statusCode);
@@ -139,14 +168,23 @@ public class TestBatch {
 				client.getConnectionManager().shutdown();
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage());
+			log.error(url+"   "+e.getMessage());
 		}
 	}
 	
 	
+	public String getHost(String url){
+		  Matcher matcher = Pattern.compile("http:\\/\\/([^\\/:]+)").matcher(url);
+		  if(matcher.find()){
+			  String group = matcher.group(1);
+			  return group;
+		  }
+		  return "m.mansorychina.net";
+	}
+	
 	public Set<String> getSubUrl(String randomIp) throws Exception{
 		Set<String> urls = new LinkedHashSet<String>();
-		HttpGet get = this.getUrl("http://m.mansorychina.net/vs-22876", "m.mansorychina.net", this.userAgent,randomIp);
+		HttpGet get = this.getUrl("http://m.mansorychina.net/vs-22876", "m.mansorychina.net", this.getUserAgent(),randomIp);
 		DefaultHttpClient client = new DefaultHttpClient();
 		try {
 			CloseableHttpResponse response = client.execute(get);
@@ -160,6 +198,11 @@ public class TestBatch {
 				StringBuffer bufStr = new StringBuffer();
 				String line = null;
 				while((line=reader.readLine())!=null){
+					//忽略var fMkwW9376_curl_extend
+//					if(line.contains("var fMkwW9376_curl_extend")){
+//						log.info("已经忽略:"+line);
+//						continue;
+//					}
 					bufStr.append(line).append("\r\n");
 				}
 				if(log.isDebugEnabled()){
@@ -177,6 +220,8 @@ public class TestBatch {
 			}else{
 				System.out.println("访问异常:"+get);
 			}
+		}catch (Exception e){
+			log.error(e.getMessage());
 		} finally {
 			client.getConnectionManager().shutdown();
 		}
@@ -187,10 +232,10 @@ public class TestBatch {
 	private HttpGet getUrl(String url,String host,String userAgent,String randomIp){
 		HttpGet get = new HttpGet(url);
 		get.addHeader("Host", host);
-		get.addHeader("x-forwarded-for", randomIp);
-		get.addHeader("x-real-ip", host);
+//		get.addHeader("Host", "www.qxyy66.com");
+		get.addHeader("x-forwarded-for", randomIp+","+getRandomIp());
 		get.addHeader("Accept", "*/*");
-		get.addHeader("user-agent", userAgent);
+		get.addHeader("User-Agent", userAgent);
 		get.addHeader("Referer", "http://www.qxyy66.com/static/game/navigator/default.htm");
 		get.addHeader("accept-language", "zh-cn");
 		get.addHeader("Accept-Encoding", "gzip, deflate");
@@ -239,4 +284,44 @@ public class TestBatch {
         return x; 
      }
 	
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+	@Test
+	public void TestHost() throws Exception{
+		String str = new Random().nextFloat()+"";
+		System.out.println(str);
+//		String randomIp = getRandomIp();
+//		Set<String> subUrl = this.getSubUrl(randomIp);
+//		for(String url:subUrl){
+//			String host = getHost(url);
+//			System.out.println(url);
+//			System.out.println(host);
+//		}
+	}
+	
+	@Test
+	public void testGetRandomIp(){
+		Set<String> set = new LinkedHashSet<String>();
+		for(int i=0;i<1000;i++){
+			System.out.println(getRandomIp());
+//			set.add(getRandomIp());
+//			if(i%100000==0){
+//				log.info(set.size());
+//			}
+		}
+	}
 }
