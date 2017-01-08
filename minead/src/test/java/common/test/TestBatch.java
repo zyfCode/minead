@@ -40,7 +40,7 @@ public class TestBatch {
 	private static final Log log = LogFactory.getLog(TestBatch.class);
 	private String defaultUserAgent= "Mozilla/5.0 (iPhone; CPU iPhone OS 9_3_2 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Mobile/13F69 MicroMessenger/6.3.21 NetType/WIFI Language/zh_CN";
 	private String userAgent= "Mozilla/5.0 (iPhone; CPU iPhone OS ${version} like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Mobile/13F69 MicroMessenger/6.3.21 NetType/WIFI Language/zh_CN";
-	private static  ScheduledThreadPoolExecutor excutor = new ScheduledThreadPoolExecutor(200);
+	private static  ScheduledThreadPoolExecutor excutor = new ScheduledThreadPoolExecutor(5);
 	private static int count = 0;
 	private static int actuallCount = 0;
 	private static int[] arr = new int[100];
@@ -50,15 +50,17 @@ public class TestBatch {
 		return new Random().nextInt(i);
 	}
 	private String getUserAgent(){
-		int [] arr1 = {4,5,6,7,8,9,10};
-		int [] arr2 = {0,1,2,3};
-		int [] arr3 = {1,2,3,4};
-		String version = arr1[this.nexInt(arr1.length)]+"_"+arr2[this.nexInt(arr2.length)]+"_"+arr3[this.nexInt(arr3.length)]; 
-		String newAgent  = defaultUserAgent;
-		if(userAgent.contains("${version}")){
-			newAgent = userAgent.replace("${version}", version);
-		}
-		return newAgent;
+//		int [] arr1 = {4,5,6,7,8,9,10};
+//		int [] arr2 = {0,1,2,3};
+//		int [] arr3 = {1,2,3,4};
+//		String version = arr1[this.nexInt(arr1.length)]+"_"+arr2[this.nexInt(arr2.length)]+"_"+arr3[this.nexInt(arr3.length)]; 
+//		String newAgent  = defaultUserAgent;
+//		if(userAgent.contains("${version}")){
+//			newAgent = userAgent.replace("${version}", version);
+//		}
+//		return newAgent;
+		
+		return defaultUserAgent;
 	} 
 	
 	
@@ -100,6 +102,8 @@ public class TestBatch {
 //			
 //			System.out.println(actuallCount+"/"+count);
 //		}
+//		new TestBatch().doExcute();
+		
 		excutor.scheduleAtFixedRate(new Runnable() {
 			@Override
 			public void run() {
@@ -233,7 +237,7 @@ public class TestBatch {
 		HttpGet get = new HttpGet(url);
 		get.addHeader("Host", host);
 //		get.addHeader("Host", "www.qxyy66.com");
-		get.addHeader("x-forwarded-for", randomIp+","+getRandomIp());
+//		get.addHeader("x-forwarded-for", randomIp+","+getRandomIp());
 		get.addHeader("Accept", "*/*");
 		get.addHeader("User-Agent", userAgent);
 		get.addHeader("Referer", "http://www.qxyy66.com/static/game/navigator/default.htm");
