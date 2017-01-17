@@ -25,6 +25,12 @@ public class AnnotationParser {
 	private static final Log log = LogFactory.getLog(AnnotationParser.class);
 	private AnnotationParser(){}
 	
+	/**
+	 * 将JAVABean转化成VO
+	 * @param t
+	 * @param sourece
+	 * @return
+	 */
 	public <T> T parseToVo(Class<T> t,Object sourece){
 		try {
 			T newInstance = t.newInstance(); 
@@ -34,8 +40,9 @@ public class AnnotationParser {
 				f.setAccessible(true);;
 				Annotation[] declaredAnnotations = f.getDeclaredAnnotations();
 				for(Annotation at:declaredAnnotations){
+					String name = f.getName();
+					Object object = f.get(sourece);
 					if(at instanceof DateToStr){
-						Object object = f.get(sourece);
 						if(!(object instanceof java.util.Date)){
 							throw new RuntimeException("注解"+at.getClass()+"必须用在java.util.Date上");
 						}
@@ -44,7 +51,6 @@ public class AnnotationParser {
 						String value = dateToStr.value();
 						SimpleDateFormat fortmat  = new SimpleDateFormat(value);
 						String sourceVal = fortmat.format(date);
-						String name = f.getName();
 						String fileName = name+"Str";
 						Field targetFile = newInstance.getClass().getDeclaredField(fileName);
 						if(targetFile==null){
@@ -64,15 +70,18 @@ public class AnnotationParser {
 							String[] split = str.split("=");
 							entryMap.put(split[0], split[1]);
 						}
-						
+						String statusFileCn = name+"Cn";
+						Field targetFile = newInstance.getClass().getDeclaredField(statusFileCn);
+						String valuCn = entryMap.get(object);
+						targetFile.set(newInstance, valuCn);
 					}
 				}
 				
 			}
+			return newInstance;
 		} catch (Exception e) {
 			throw new RuntimeException("",e);
 		}
-		return null;
 	} 
 
 }

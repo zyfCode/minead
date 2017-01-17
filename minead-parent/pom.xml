@@ -16,6 +16,7 @@
   	<module>minead-task-engine</module>
   	<module>minead-expand-impl</module>
   	<module>minead-common-test</module>
+  	<module>minead-web</module>
   </modules>
   	<dependencies>
   		<dependency>
