@@ -6,4 +6,13 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   <artifactId>minead-common</artifactId>
+  
+  <dependencies>
+  	<dependency>
+	  	 <groupId>com.sungan.ad</groupId>
+	    <artifactId>minead-common-test</artifactId>
+  		<version>${project.version}</version>
+  		<scope>test</scope>
+  	</dependency>
+  </dependencies>
 </project>

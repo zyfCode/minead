@@ -31,7 +31,7 @@ public class AnnotationParser {
 	 * @param sourece
 	 * @return
 	 */
-	public <T> T parseToVo(Class<T> t,Object sourece){
+	public static <T> T parseToVo(Class<T> t,Object sourece){
 		try {
 			T newInstance = t.newInstance(); 
 			BeanUtils.copyProperties(sourece, newInstance);
@@ -64,7 +64,7 @@ public class AnnotationParser {
 						String[] value = statuscn.value();
 						Map<String,String> entryMap = new LinkedHashMap<String,String>();
 						for(String str:value){
-							if(str.contains("=")){
+							if(!str.contains("=")){
 								throw new RuntimeException("非法属性"+str+",期望属性是key=value");
 							}
 							String[] split = str.split("=");
@@ -73,6 +73,7 @@ public class AnnotationParser {
 						String statusFileCn = name+"Cn";
 						Field targetFile = newInstance.getClass().getDeclaredField(statusFileCn);
 						String valuCn = entryMap.get(object);
+						targetFile.setAccessible(true);
 						targetFile.set(newInstance, valuCn);
 					}
 				}

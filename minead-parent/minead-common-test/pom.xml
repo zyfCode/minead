@@ -6,4 +6,11 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   <artifactId>minead-common-test</artifactId>
+  <dependencies>
+  		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${junitVersion}</version>
+		</dependency>
+  </dependencies>
 </project>
