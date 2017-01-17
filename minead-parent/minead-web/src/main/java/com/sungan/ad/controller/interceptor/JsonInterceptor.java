@@ -1,7 +1,5 @@
 package com.sungan.ad.controller.interceptor;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Enumeration;
 
 import javax.servlet.http.HttpServletRequest;
@@ -13,7 +11,6 @@ import org.json.JSONObject;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.alibaba.fastjson.JSON;
 import com.sungan.ad.commons.AdConstants;
 import com.sungan.ad.commons.JAXBUtil;
 import com.sungan.ad.wx.access.bean.AdXMLInterface;
