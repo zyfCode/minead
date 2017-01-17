@@ -40,35 +40,17 @@ public class AdCommonsUtil {
 	 * @return
 	 * @throws Exception
 	 */
-	public static Object beanCopy(Object sourceBean,Object targetBean) throws Exception{
+	public static void beanCopyWithoutNull(Object sourceBean,Object targetBean) throws Exception{
 		BeanInfo targetBeanInfo = Introspector.getBeanInfo(targetBean.getClass());
 		BeanInfo sourceBeanInfo = Introspector.getBeanInfo(sourceBean.getClass());
-		
-		PropertyDescriptor[] propertyDescriptors = sourceBeanInfo.getPropertyDescriptors(); 
-		Map<String,Object[]> pro_Method = new LinkedHashMap<String,Object[]>();
-		for (PropertyDescriptor pro : propertyDescriptors) {
-			String name = pro.getName();
-			Method readMethod = pro.getReadMethod();
-			Object invoke = readMethod.invoke(sourceBean,null);
-			Class<?> typeType = pro.getPropertyType();
-			Object [] objArr = new Object[]{invoke,typeType};
-			pro_Method.put(name, objArr);
-		}
+		Map<String, Object> valueMap = getBeanFile(sourceBeanInfo);
 		//获取所有的参数
 		PropertyDescriptor[] proArr = targetBeanInfo.getPropertyDescriptors();
 		for (PropertyDescriptor pro : proArr) {
-			String name = pro.getName();
-			//如果属性不存在，或是属性的类型不同，不进行任务处理。
-			if(!pro_Method.containsKey(name)){
-				continue;
-			}
-		    Object[] objects = pro_Method.get(name);
-		    Object value = objects[0];
-		    Object tyepe = objects[1];
-		    if(pro.getPropertyType()!=tyepe){
+		    Object value = valueMap.get(pro.getName());
+		    if(value==null){
 		    	continue;
 		    }
-		    
 			Method method = pro.getWriteMethod();
 			if (method != null) {
 				Class<?>[] parType = method.getParameterTypes();
@@ -90,7 +72,6 @@ public class AdCommonsUtil {
 				}
 			}
 		}
-		return targetBean;
 	}
 	
 }

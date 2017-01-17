@@ -3,8 +3,10 @@ package com.sungan.ad.expand.common.annotation.parser;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -24,6 +26,21 @@ import com.sungan.ad.expand.common.annotation.StatusCn;
 public class AnnotationParser {
 	private static final Log log = LogFactory.getLog(AnnotationParser.class);
 	private AnnotationParser(){}
+	
+	/**
+	 * 将JAVABean转化成VO
+	 * @param t
+	 * @param sourece
+	 * @return
+	 */
+	public static <T> List<T> parseToVoList(Class<T> t,List<?> sourece){
+		List<T> result = new ArrayList<T>();
+		for(Object obj:sourece){
+			T parseToVo = AnnotationParser.parseToVo(t, obj);
+			result.add(parseToVo);
+		}
+		return result;
+	}
 	
 	/**
 	 * 将JAVABean转化成VO
