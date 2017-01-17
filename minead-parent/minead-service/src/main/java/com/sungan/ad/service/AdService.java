@@ -3,6 +3,7 @@ package com.sungan.ad.service;
 import java.util.List;
 
 import com.sungan.ad.domain.AdContent;
+import com.sungan.ad.service.common.MadService;
 
 /**
  * 说明:
@@ -10,7 +11,7 @@ import com.sungan.ad.domain.AdContent;
  * @date 2016年12月27日 下午6:09:19
  * @version V1.1
  */
-public interface AdService {
+public interface AdService extends MadService{
 	Long insert(AdContent content);
 	void update(AdContent content);
 	AdContent query(String appid);

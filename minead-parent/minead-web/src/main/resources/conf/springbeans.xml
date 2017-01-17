@@ -86,7 +86,7 @@
 	<!-- 定义切面 -->
 	<aop:config>
 		<aop:pointcut id="servicePointCuts"
-			expression="execution(* com.sungan.ad.service.**.*(..))" />
+			expression="execution(* com.minead.ad.MadService+.*(..)" />
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="servicePointCuts" />
 	</aop:config>
 	
