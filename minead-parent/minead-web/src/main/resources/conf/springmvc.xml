@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans-3.2.xsd 
+	http://www.springframework.org/schema/mvc 
+	http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd 
+	http://www.springframework.org/schema/context 
+	http://www.springframework.org/schema/context/spring-context-3.2.xsd 
+	http://www.springframework.org/schema/aop 
+	http://www.springframework.org/schema/aop/spring-aop-3.2.xsd 
+	http://www.springframework.org/schema/tx 
+	http://www.springframework.org/schema/tx/spring-tx-3.2.xsd ">
+	<!-- 解决@ResponseBody响应乱码问题 -->
+	<bean
+		class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
+		<property name="messageConverters">
+			<list>
+				<bean class="com.sungan.ad.controller.interceptor.UTF8StringHttpMessageConverter"></bean>
+				<bean
+					class="org.springframework.http.converter.ByteArrayHttpMessageConverter"></bean>
+				<bean
+					class="org.springframework.http.converter.support.AllEncompassingFormHttpMessageConverter"></bean>
+				<bean
+					class="org.springframework.http.converter.xml.SourceHttpMessageConverter"></bean>
+			</list>
+		</property>
+	</bean>
+	<!--注解驱动写在最后面，否则对用<bean>标签定的属性有影响 -->
+	<mvc:annotation-driven/>
+	<!-- 注解的扫描器 -->
+	<context:component-scan base-package="com.sungan.ad.controller" />
+
+	<mvc:interceptors>
+		<mvc:interceptor>
+			<mvc:mapping path="/**" />
+<!-- 			放通portal页面 -->
+			<mvc:exclude-mapping path="/auth/**" />
+			<mvc:exclude-mapping path="/portal/**" />
+<!-- 			放通所有的静态资源 -->
+			<mvc:exclude-mapping path="/static/**" />
+			<bean class="com.sungan.ad.controller.interceptor.JsonInterceptor"></bean>
+		</mvc:interceptor>
+	</mvc:interceptors>
+
+	<!-- 配置静态资源 -->
+	<mvc:resources mapping="/static/**" location="/static/" />
+
+	
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="maxUploadSize" value="1000001024" />
+	</bean>
+	<bean id="adHandlerExceptionResolver" class="com.sungan.ad.controller.interceptor.AdHandlerExceptionResolver"> </bean>
+	<!-- 视图解析器 -->
+	<bean
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<!-- 前缀，前后必须要有,Spring会到相应的目录下找对应的后缀文件进行响应/ -->
+		<property name="prefix" value="/WEB-INF/views/"></property>
+		<!-- 后缀，必须 -->
+		<property name="suffix" value=".jsp"></property>
+	</bean>
+</beans>
+
+
+
+
+

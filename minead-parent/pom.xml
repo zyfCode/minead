@@ -18,6 +18,7 @@
   	<module>minead-common-test</module>
   	<module>minead-web</module>
   	<module>minead-dao</module>
+  	<module>minead-service</module>
   </modules>
   	<dependencies>
   		<dependency>
