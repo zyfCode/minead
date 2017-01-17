@@ -1,10 +1,14 @@
 package com.sungan.ad.dao;
 
+import java.beans.BeanInfo;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -12,8 +16,12 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate3.HibernateTemplate;
+
+import com.sungan.ad.commons.AdCommonsUtil;
 
 public abstract class AbstractDAO<T> implements DAO<T> {
 	private static final Log log = LogFactory.getLog(AbstractDAO.class);
@@ -81,6 +89,51 @@ public abstract class AbstractDAO<T> implements DAO<T> {
 			currentSession = template.getSessionFactory().getCurrentSession();
 		List<T> find  = currentSession.createQuery(buf.toString()).list();
 		return find;
+	}
+	
+	
+	
+	@SuppressWarnings("unchecked")
+	public Collection<T> query(T t) {
+		Session currentSession = this.template.getSessionFactory().getCurrentSession();
+		Criteria createCriteria = currentSession.createCriteria(currentClass);//.add(Restrictions.eq("appid", appid)).list();
+		try {
+			Map<String, Object> beanFile = AdCommonsUtil.getBeanFile(t);
+			BeanInfo beanInfo = Introspector.getBeanInfo(currentClass);
+			PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
+			for(PropertyDescriptor pt:propertyDescriptors){
+				String name = pt.getName();
+				Object object = beanFile.get(name);
+				if(object!=null){
+					createCriteria = createCriteria.add(Restrictions.eq(name, object));
+				}
+			}
+		} catch (Exception e) {
+			throw new RuntimeException("",e);
+		}
+		List<T> list = createCriteria.list();
+		return list;
+	}
+	@SuppressWarnings("unchecked")
+	public Long count(T t) {
+		Session currentSession = this.template.getSessionFactory().getCurrentSession();
+		Criteria createCriteria = currentSession.createCriteria(currentClass);//.add(Restrictions.eq("appid", appid)).list();
+		try {
+			Map<String, Object> beanFile = AdCommonsUtil.getBeanFile(t);
+			BeanInfo beanInfo = Introspector.getBeanInfo(currentClass);
+			PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
+			for(PropertyDescriptor pt:propertyDescriptors){
+				String name = pt.getName();
+				Object object = beanFile.get(name);
+				if(object!=null){
+					createCriteria = createCriteria.add(Restrictions.eq(name, object));
+				}
+			}
+		} catch (Exception e) {
+			throw new RuntimeException("",e);
+		}
+		  Long uniqueResult = (Long) createCriteria.setProjection(Projections.rowCount()).uniqueResult();
+		return uniqueResult; 
 	}
 
 	@SuppressWarnings("unchecked")

@@ -6,8 +6,19 @@ import java.util.Collection;
 public interface DAO<T>{
 	public static final String ORDERTYPE_DESC="desc";
 	public static final String ORDERTYPE_ASC="asc";
-	
+	/**
+	 * 根据条件查询记录数 
+	 * @param t
+	 * @return
+	 */
+	Long count(T t);
 	void commit();
+	/**
+	 *  根据条件查询
+	 * @param t
+	 * @return
+	 */
+	 Collection<T> query(T t);
 	/**
 	 * 统计记录总数
 	 * @return

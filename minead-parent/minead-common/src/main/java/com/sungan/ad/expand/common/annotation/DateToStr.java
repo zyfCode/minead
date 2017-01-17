@@ -13,5 +13,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface DateToStr {
-	public String value() default "";
+	public String value() default "yyyy-MM-dd HH:mm:ss";
 }
