@@ -90,7 +90,7 @@
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="servicePointCuts" />
 	</aop:config>
 	
-		<import resource="classpath:/conf/ad-beans.xml" />
+		<import resource="classpath:/conf/*-beans.xml" />
 </beans>
 
 
