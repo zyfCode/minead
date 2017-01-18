@@ -6,7 +6,8 @@ package com.sungan.ad.domain;
  */
 public enum DictEnum {
 	ADTASKTYPE("0001",new DictItem[]{new DictItem(AdTask.ADTASK_TYPE_HOUR,"小时任务"),new DictItem(AdTask.ADTASK_TYPE_CIRCLE,"循环任务")},"任务字典"),
-	ADCONTENTTYPE("0002",new DictItem[]{new DictItem(AdContent.TYPE_TEXT,"文本"),new DictItem(AdContent.TYPE_TEXT_IMG,"图文")},"微信报文类型字典");
+	ADCONTENTTYPE("0002",new DictItem[]{new DictItem(AdContent.TYPE_TEXT,"文本"),new DictItem(AdContent.TYPE_TEXT_IMG,"图文")},"微信报文类型字典"),
+	APPTASKTYPE("0003",new DictItem[]{new DictItem(AppTask.APPTASK_TYPE_HOUR,"小时任务"),new DictItem(AppTask.APPTASK_TYPE_CIRCLE,"循环任务")},"APP任务字典");
 	String key;
 	DictItem [] itams;
 	String descript;

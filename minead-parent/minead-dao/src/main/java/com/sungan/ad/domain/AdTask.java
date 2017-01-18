@@ -33,6 +33,7 @@ public class AdTask implements Serializable{
 	/**
 	 * 任务名称
 	 */
+	@Column(length=64)
 	private String name;
 	/**
 	 * 任务次数
@@ -60,6 +61,23 @@ public class AdTask implements Serializable{
 	 */
 	@DateToStr
 	private Date preIssuedTime;
+	@DateToStr
+	private Date createTime;
+	@DateToStr
+	private Date updateTime;
+	
+	public Date getCreateTime() {
+		return createTime;
+	}
+	public void setCreateTime(Date createTime) {
+		this.createTime = createTime;
+	}
+	public Date getUpdateTime() {
+		return updateTime;
+	}
+	public void setUpdateTime(Date updateTime) {
+		this.updateTime = updateTime;
+	}
 	public Long getId() {
 		return id;
 	}

@@ -3,6 +3,8 @@ package com.sungan.ad.vo;
 import java.io.Serializable;
 import java.util.Date;
 
+import com.sungan.ad.expand.common.annotation.DateToStr;
+
 /**
  * 说明:
  * 
@@ -35,6 +37,43 @@ public class AdTaskVo implements Serializable {
 	 */
 	private Date preIssuedTime;
 	private String preIssuedTimeStr;
+	
+	private Date createTime;
+	private String createTimeStr;
+	private Date updateTime;
+	private String updateTimeStr;
+	
+	public Date getCreateTime() {
+		return createTime;
+	}
+
+	public void setCreateTime(Date createTime) {
+		this.createTime = createTime;
+	}
+
+	public String getCreateTimeStr() {
+		return createTimeStr;
+	}
+
+	public void setCreateTimeStr(String createTimeStr) {
+		this.createTimeStr = createTimeStr;
+	}
+
+	public Date getUpdateTime() {
+		return updateTime;
+	}
+
+	public void setUpdateTime(Date updateTime) {
+		this.updateTime = updateTime;
+	}
+
+	public String getUpdateTimeStr() {
+		return updateTimeStr;
+	}
+
+	public void setUpdateTimeStr(String updateTimeStr) {
+		this.updateTimeStr = updateTimeStr;
+	}
 
 	public Long getId() {
 		return id;

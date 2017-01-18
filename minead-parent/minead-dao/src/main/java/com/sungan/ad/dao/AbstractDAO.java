@@ -94,6 +94,33 @@ public abstract class AbstractDAO<T> implements DAO<T> {
 	
 	
 	@SuppressWarnings("unchecked")
+	public AdPager<T> queryPage(T t,int pageIndex,int rows) {
+		Session currentSession = this.template.getSessionFactory().getCurrentSession();
+		Criteria createCriteria = currentSession.createCriteria(currentClass);//.add(Restrictions.eq("appid", appid)).list();
+		try {
+			Map<String, Object> beanFile = AdCommonsUtil.getBeanFile(t);
+			BeanInfo beanInfo = Introspector.getBeanInfo(currentClass);
+			PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
+			for(PropertyDescriptor pt:propertyDescriptors){
+				String name = pt.getName();
+				Object object = beanFile.get(name);
+				if(object!=null){
+					createCriteria = createCriteria.add(Restrictions.eq(name, object));
+				}
+			}
+		} catch (Exception e) {
+			throw new RuntimeException("",e);
+		}
+		
+		int firstResult = (pageIndex-1)*rows+1;
+		createCriteria.setFirstResult(firstResult).setMaxResults(rows);
+		List<T> list = createCriteria.list();
+		int count = Integer.valueOf(this.count(t).toString());
+		AdPager<T> pager = new AdPager<T>(pageIndex, rows, count);
+		pager.setResult(list);
+		return pager;
+	}
+	@SuppressWarnings("unchecked")
 	public Collection<T> query(T t) {
 		Session currentSession = this.template.getSessionFactory().getCurrentSession();
 		Criteria createCriteria = currentSession.createCriteria(currentClass);//.add(Restrictions.eq("appid", appid)).list();
