@@ -1,5 +1,6 @@
 package com.sungan.ad.service.impl;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,10 @@ public class AppTaskServivceImpl implements AppTaskServivce{
 
 	public void setAppTaskDAO(AppTaskDAO appTaskDAO) {
 		this.appTaskDAO = appTaskDAO;
+	}
+	
+	public void insert(List<AppTask> collection){
+		 appTaskDAO.insert(collection);
 	}
 
 	@Override

@@ -37,12 +37,20 @@ public class AdTaskVo implements Serializable {
 	 */
 	private Date preIssuedTime;
 	private String preIssuedTimeStr;
-	
+	private String clazzName;
 	private Date createTime;
 	private String createTimeStr;
 	private Date updateTime;
 	private String updateTimeStr;
 	
+	public String getClazzName() {
+		return clazzName;
+	}
+
+	public void setClazzName(String clazzName) {
+		this.clazzName = clazzName;
+	}
+
 	public Date getCreateTime() {
 		return createTime;
 	}

@@ -9,7 +9,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
 
 import com.sungan.ad.expand.common.annotation.DateToStr;
 import com.sungan.ad.expand.common.annotation.StatusCn;
@@ -45,6 +44,7 @@ public class AdTask implements Serializable{
 	 * 任务次数
 	 */
 	private Long count;
+	private String clazzName;
 	/**
 	 * 任务类型，0 小时任务 1是循环任务
 	 */
@@ -74,6 +74,12 @@ public class AdTask implements Serializable{
 	
 	private  String descript;
 	
+	public String getClazzName() {
+		return clazzName;
+	}
+	public void setClazzName(String clazzName) {
+		this.clazzName = clazzName;
+	}
 	public String getDescript() {
 		return descript;
 	}

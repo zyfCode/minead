@@ -5,8 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 
 import com.sungan.ad.cmmon.test.BaseTest;
-import com.sungan.ad.domain.AdContent;
-import com.sungan.ad.service.AdService;
 
 /**
  * 说明:

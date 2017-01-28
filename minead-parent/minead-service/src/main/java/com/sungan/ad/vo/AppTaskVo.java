@@ -16,6 +16,11 @@ public class AppTaskVo implements Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 	private Long id;
+	private Long clientId;
+	private Long clientIpid;
+	private Long adTaskid;
+	/** 0-24通过率 */
+	private Integer throwRate;
 	private String name;
 	private String type;
 	private String status;
@@ -29,6 +34,35 @@ public class AppTaskVo implements Serializable {
 	private String crateTimeStr;
 	private Date updateTime;
 	private String updateTimeStr;
+
+	public Integer getThrowRate() {
+		return throwRate;
+	}
+	public void setThrowRate(Integer throwRate) {
+		this.throwRate = throwRate;
+	}
+	public Long getClientId() {
+		return clientId;
+	}
+	public Long getAdTaskid() {
+		return adTaskid;
+	}
+
+	public void setAdTaskid(Long adTaskid) {
+		this.adTaskid = adTaskid;
+	}
+
+	public void setClientId(Long clientId) {
+		this.clientId = clientId;
+	}
+
+	public Long getClientIpid() {
+		return clientIpid;
+	}
+
+	public void setClientIpid(Long clientIpid) {
+		this.clientIpid = clientIpid;
+	}
 
 	public Long getId() {
 		return id;

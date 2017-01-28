@@ -1,7 +1,10 @@
 package com.sungan.ad.test;
 
+import java.text.SimpleDateFormat;
 import java.util.Collection;
+import java.util.Date;
 
+import org.apache.commons.lang.time.DateUtils;
 import org.hibernate.SessionFactory;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,14 +47,21 @@ public class TestAdContent extends BaseTest{
 	}
 	@Test
 	public void testQuest(){
-		try {
-			Collection<AdContent> query = adDAO.query();
-			System.out.println(query);
-//		System.out.println(adDAO);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		Date date = new Date();
+		Date setHours = DateUtils.setHours(date, 1);
+		setHours = DateUtils.setMinutes(setHours, 0);
+		 setHours =  DateUtils.setSeconds(setHours, 0);
+		String format2 = format.format(setHours);
+		System.out.println(format2);
+//		try {
+//			Collection<AdContent> query = adDAO.query();
+//			System.out.println(query);
+////		System.out.println(adDAO);
+//		} catch (Exception e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 	}
 
 	public HibernateTemplate getTemplate() {

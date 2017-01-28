@@ -11,6 +11,7 @@ import com.sungan.ad.vo.AppTaskVo;
  * 说明:
  */
 public interface AppTaskServivce extends  MadService{
+	void insert(List<AppTask> collection);
 	Long insert(AppTask task);
 	void delete(Long id);
 	void update(AppTask task);

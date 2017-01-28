@@ -16,8 +16,6 @@ import com.sungan.ad.expand.common.annotation.StatusCn;
 /**
  * 说明:
  * 
- * @author zhangyf18255 <zhangyf18255@hundsun.com>
- * @date 2017年1月19日 上午12:26:43
  * @version V1.1
  */
 @Entity
@@ -41,6 +39,8 @@ public class AdClient implements Serializable{
 	private Integer countIps;
 	@Column(length=256)
 	private String ipstDesc;
+	@Column(length=46)
+	private String sysOs;
 	/**上次心跳时间*/
 	@DateToStr
 	private Date preAccessTime;
@@ -68,6 +68,13 @@ public class AdClient implements Serializable{
 	}
 	public String getMac() {
 		return mac;
+	}
+	
+	public String getSysOs() {
+		return sysOs;
+	}
+	public void setSysOs(String sysOs) {
+		this.sysOs = sysOs;
 	}
 	public void setMac(String mac) {
 		this.mac = mac;

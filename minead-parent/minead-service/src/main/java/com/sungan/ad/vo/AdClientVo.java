@@ -28,8 +28,15 @@ public class AdClientVo implements Serializable{
 	/**系统类型*/
 	private String systemType;
 	private String status;
+	private String sysOs;
 	private String statusCn;
 	
+	public String getSysOs() {
+		return sysOs;
+	}
+	public void setSysOs(String sysOs) {
+		this.sysOs = sysOs;
+	}
 	public String getPreAccessTimeStr() {
 		return preAccessTimeStr;
 	}

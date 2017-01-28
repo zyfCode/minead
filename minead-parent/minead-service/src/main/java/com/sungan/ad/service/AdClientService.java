@@ -4,7 +4,9 @@ import java.util.List;
 
 import com.sungan.ad.dao.AdPager;
 import com.sungan.ad.domain.AdClient;
+import com.sungan.ad.domain.AdClientIp;
 import com.sungan.ad.service.common.MadService;
+import com.sungan.ad.vo.AdClientIpVo;
 import com.sungan.ad.vo.AdClientVo;
 
 /**
@@ -13,6 +15,7 @@ import com.sungan.ad.vo.AdClientVo;
  * @version V1.1
  */
 public interface AdClientService extends MadService {
+	 List<AdClientIpVo> queryIps(Long clientId);
 	 Long insert(AdClient client);
 	 void update(AdClient client);
 	 void delete(Long id);
