@@ -24,7 +24,7 @@ public class TestAdContent extends BaseTest{
 	@Before
 	public void init(){
 		/**
-		 * DAO层测试时，session没绑到当前线程，因此需要自己去绑定
+		 * DAO层测试时，session没绑到当前线程，因此需要自己fcu
 		 */
 		HibernateTemplate bean = (HibernateTemplate) super.applicationContext.getBean("hibernateTemprate");
 		SessionFactory sessionFactory = bean.getSessionFactory();
