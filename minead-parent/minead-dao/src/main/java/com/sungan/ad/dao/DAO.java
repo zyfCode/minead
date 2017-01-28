@@ -7,6 +7,14 @@ public interface DAO<T>{
 	public static final String ORDERTYPE_DESC="desc";
 	public static final String ORDERTYPE_ASC="asc";
 	/**
+	 * 分布查询
+	 * @param t
+	 * @param pageIndex
+	 * @param rows
+	 * @return
+	 */
+	AdPager<T> queryPage(T t,int pageIndex,int rows);
+	/**
 	 * 根据条件查询记录数 
 	 * @param t
 	 * @return

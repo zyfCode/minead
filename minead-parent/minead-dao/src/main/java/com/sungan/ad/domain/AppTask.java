@@ -27,6 +27,16 @@ public class AppTask implements Serializable {
 	@Column(length=64)
 	private String name;
 	/**
+	 * appNo编号
+	 */
+	@Column(length=64)
+	private String appNo;
+	/**
+	 * appName名称
+	 */
+	@Column(length=64)
+	private String appName;
+	/**
 	 * 任务类型，0 小时任务 1是循环任务
 	 */
 	public static final String APPTASK_TYPE_HOUR="0";
@@ -51,6 +61,27 @@ public class AppTask implements Serializable {
 	private Date crateTime;
 	@DateToStr
 	private Date updateTime;
+	
+	private String descript;
+	
+	public String getDescript() {
+		return descript;
+	}
+	public void setDescript(String descript) {
+		this.descript = descript;
+	}
+	public String getAppNo() {
+		return appNo;
+	}
+	public void setAppNo(String appNo) {
+		this.appNo = appNo;
+	}
+	public String getAppName() {
+		return appName;
+	}
+	public void setAppName(String appName) {
+		this.appName = appName;
+	}
 	public Long getId() {
 		return id;
 	}

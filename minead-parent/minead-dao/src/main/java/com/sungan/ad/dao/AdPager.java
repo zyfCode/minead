@@ -14,7 +14,6 @@ public class AdPager<T> {
 	private int nextIndex;
 	private int preIndex;
 	private int countPagers;
-	private T condition;
 	
 	
 	public AdPager(int pageIndex, int rows, int count) {
@@ -33,14 +32,6 @@ public class AdPager<T> {
 		if(nextIndex>countPagers){
 			this.nextIndex=countPagers;
 		}
-	}
-	
-	public List<T> getResult() {
-		return result;
-	}
-
-	public void setResult(List<T> result) {
-		this.result = result;
 	}
 
 	public int getPageIndex() {
@@ -73,10 +64,20 @@ public class AdPager<T> {
 	public int getCountPagers() {
 		return countPagers;
 	}
-	public T getCondition() {
-		return condition;
+
+	public List<T> getResult() {
+		return result;
 	}
-	public void setCondition(T condition) {
-		this.condition = condition;
+
+	public void setResult(List<T> result) {
+		this.result = result;
+	}
+
+	public void setPreIndex(int preIndex) {
+		this.preIndex = preIndex;
+	}
+
+	public void setCountPagers(int countPagers) {
+		this.countPagers = countPagers;
 	}
 }

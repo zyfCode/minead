@@ -11,6 +11,7 @@ import com.sungan.ad.domain.AdTask;
 import com.sungan.ad.exception.AdRuntimeException;
 import com.sungan.ad.expand.common.annotation.parser.AnnotationParser;
 import com.sungan.ad.service.AdTaskService;
+import com.sungan.ad.service.biz.AdTaskBiz;
 import com.sungan.ad.vo.AdTaskVo;
 
 /**
@@ -63,10 +64,13 @@ public class AdTaskServiceImpl implements AdTaskService{
 		}
 		try {
 			AdCommonsUtil.beanCopyWithoutNull(adTask, find);
-			adTaskDAO.update(find);
 		} catch (Exception e) {
 			throw new AdRuntimeException("参数异常");
 		}
+		AdTaskBiz bix = new AdTaskBiz(find);
+		bix.update(adTaskDAO);
+//			adTaskDAO.update(find);
+		
 	}
 }
 

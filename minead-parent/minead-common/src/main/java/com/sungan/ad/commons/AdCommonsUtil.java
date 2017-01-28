@@ -1,8 +1,10 @@
 package com.sungan.ad.commons;
 
 import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -40,37 +42,41 @@ public class AdCommonsUtil {
 	 * @return
 	 * @throws Exception
 	 */
-	public static void beanCopyWithoutNull(Object sourceBean,Object targetBean) throws Exception{
-		BeanInfo targetBeanInfo = Introspector.getBeanInfo(targetBean.getClass());
-		BeanInfo sourceBeanInfo = Introspector.getBeanInfo(sourceBean.getClass());
-		Map<String, Object> valueMap = getBeanFile(sourceBeanInfo);
-		//获取所有的参数
-		PropertyDescriptor[] proArr = targetBeanInfo.getPropertyDescriptors();
-		for (PropertyDescriptor pro : proArr) {
-		    Object value = valueMap.get(pro.getName());
-		    if(value==null){
-		    	continue;
-		    }
-			Method method = pro.getWriteMethod();
-			if (method != null) {
-				Class<?>[] parType = method.getParameterTypes();
-				if (parType != null) {
-					if (parType.length > 1) {
-						throw new Exception(
-								"Parameter of WriteMethod expected 1 Parameter,but actually is "
-										+ parType.length);
-					}
-					for (Class cc : parType) {
-						//如果属性是数组，直接将参数值[数组类型]赋值给此参数.
-						boolean array = cc.isArray();
-						if (array) {
-							method.invoke(targetBean, new Object[] { value });
-						} else {
-							method.invoke(targetBean, value);
+	public static void beanCopyWithoutNull(Object sourceBean,Object targetBean) {
+		try {
+			BeanInfo targetBeanInfo = Introspector.getBeanInfo(targetBean.getClass());
+			BeanInfo sourceBeanInfo = Introspector.getBeanInfo(sourceBean.getClass());
+			Map<String, Object> valueMap = getBeanFile(sourceBeanInfo);
+			//获取所有的参数
+			PropertyDescriptor[] proArr = targetBeanInfo.getPropertyDescriptors();
+			for (PropertyDescriptor pro : proArr) {
+			    Object value = valueMap.get(pro.getName());
+			    if(value==null){
+			    	continue;
+			    }
+				Method method = pro.getWriteMethod();
+				if (method != null) {
+					Class<?>[] parType = method.getParameterTypes();
+					if (parType != null) {
+						if (parType.length > 1) {
+							throw new Exception(
+									"Parameter of WriteMethod expected 1 Parameter,but actually is "
+											+ parType.length);
+						}
+						for (Class cc : parType) {
+							//如果属性是数组，直接将参数值[数组类型]赋值给此参数.
+							boolean array = cc.isArray();
+							if (array) {
+								method.invoke(targetBean, new Object[] { value });
+							} else {
+								method.invoke(targetBean, value);
+							}
 						}
 					}
 				}
 			}
+		} catch (Exception e) {
+			throw new RuntimeException("",e);
 		}
 	}
 	

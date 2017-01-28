@@ -9,6 +9,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 import com.sungan.ad.expand.common.annotation.DateToStr;
 import com.sungan.ad.expand.common.annotation.StatusCn;
@@ -35,6 +36,11 @@ public class AdTask implements Serializable{
 	 */
 	@Column(length=64)
 	private String name;
+	/**
+	 * 组，同一组的任务同一时间只能有一个任务处理发布状态
+	 */
+	@Column(length=64,unique=true)
+	private String group;
 	/**
 	 * 任务次数
 	 */
@@ -66,6 +72,20 @@ public class AdTask implements Serializable{
 	@DateToStr
 	private Date updateTime;
 	
+	private  String descript;
+	
+	public String getDescript() {
+		return descript;
+	}
+	public void setDescript(String descript) {
+		this.descript = descript;
+	}
+	public String getGroup() {
+		return group;
+	}
+	public void setGroup(String group) {
+		this.group = group;
+	}
 	public Date getCreateTime() {
 		return createTime;
 	}

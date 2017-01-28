@@ -9,6 +9,7 @@
 	<artifactId>minead-service</artifactId>
 
 	<dependencies>
+	
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-aspects</artifactId>
