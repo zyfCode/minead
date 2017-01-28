@@ -6,6 +6,7 @@ import org.hibernate.SessionFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
@@ -34,6 +35,13 @@ public class TestAdContent extends BaseTest{
 	@Autowired
 	private AdDAO adDAO;
 	
+	@Autowired
+	protected HibernateTemplate template;
+	
+	@Test
+	public void testTemplate(){
+		System.out.println(template);
+	}
 	@Test
 	public void testQuest(){
 		try {
@@ -44,6 +52,14 @@ public class TestAdContent extends BaseTest{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	public HibernateTemplate getTemplate() {
+		return template;
+	}
+
+	public void setTemplate(HibernateTemplate template) {
+		this.template = template;
 	}
 
 	public AdDAO getAdDAO() {

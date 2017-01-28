@@ -26,7 +26,7 @@ public class AdHourWeight implements Serializable {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
 	/** 权重值 */
-	@Column(unique = true, nullable = false)
+	@Column(unique = false, nullable = false)
 	private Integer wght;
 	/** 0-24小时 */
 	@Column(unique = true, nullable = false)

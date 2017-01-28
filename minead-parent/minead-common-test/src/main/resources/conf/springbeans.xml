@@ -13,9 +13,10 @@
 	http://www.springframework.org/schema/aop/spring-aop-3.2.xsd 
 	http://www.springframework.org/schema/tx 
 	http://www.springframework.org/schema/tx/spring-tx-3.2.xsd ">
-<!-- 	<mvc:annotation-driven/> -->
-<!-- 	<context:component-scan base-package="com.sungan.ad" /> -->
-	<import resource="classpath:/conf/*-beans.xml" />
+	<context:component-scan base-package="com.sungan.ad" />
+	<tx:annotation-driven />
+	<!-- 必须是classpath* -->
+	<import resource="classpath*:/conf/*-beans.xml" />
 </beans>
 
 
