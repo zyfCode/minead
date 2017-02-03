@@ -80,4 +80,14 @@ public class AppTaskServivceImpl implements AppTaskServivce{
 		return resultVo;
 	}
 
+	@Override
+	public AppTaskVo find(Long id) {
+		if(id==null){
+			return null;
+		} 
+		AppTask find = appTaskDAO.find(id);
+		AppTaskVo parseToVo = AnnotationParser.parseToVo(AppTaskVo.class, find);
+		return parseToVo;
+	}
+
 }

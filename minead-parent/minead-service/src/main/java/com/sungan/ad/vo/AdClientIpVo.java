@@ -12,6 +12,7 @@ public class AdClientIpVo implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private Long id;
 	private Long clientId;
+	private String ip;
 	private String status;
 	private String statusCn;
 	private Date updateTime;
@@ -19,6 +20,14 @@ public class AdClientIpVo implements Serializable {
 	private Date createTime;
 	private String createTimeStr;
 	private String descript;
+
+	public String getIp() {
+		return ip;
+	}
+
+	public void setIp(String ip) {
+		this.ip = ip;
+	}
 
 	public Long getId() {
 		return id;

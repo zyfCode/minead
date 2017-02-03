@@ -56,8 +56,8 @@ public class AppTask implements Serializable {
 	public static final String APPTASK_STATUS_PUBLIC = "1";
 	public static final String APPTASK_STATUS_RUNNING = "2";
 	public static final String APPTASK_STATUS_SUCCESS = "3";
-	private static final String APPTASK_STATUS_FAIL = "4";
-	private static final String APPTASK_STATUS_INVALID = "5";
+	public static final String APPTASK_STATUS_FAIL = "4";
+	public static final String APPTASK_STATUS_INVALID = "5";
 	/**
 	 * 0是下架 1是已发布
 	 */
@@ -75,6 +75,7 @@ public class AppTask implements Serializable {
 	private Long count;
 	private Long doneCount;
 	private Long failCount;
+	private Long throwCount;
 	@DateToStr
 	private Date taskRunTime;
 	@DateToStr
@@ -83,6 +84,14 @@ public class AppTask implements Serializable {
 	private Date updateTime;
 
 	private String descript;
+
+	public Long getThrowCount() {
+		return throwCount;
+	}
+
+	public void setThrowCount(Long throwCount) {
+		this.throwCount = throwCount;
+	}
 
 	public Long getAdTaskid() {
 		return adTaskid;

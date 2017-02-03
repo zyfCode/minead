@@ -11,13 +11,16 @@ import com.sungan.ad.expand.common.TaskApp;
 /**
  * 说明:
  * 
- * @author zhangyf18255 <zhangyf18255@hundsun.com>
- * @date 2017年1月12日 下午11:13:56
  * @version V1.1
  */
 public class BaseAppLoader {
 	private URLClassLoader classLoder=null;
 	private List<URL> list;
+
+	public BaseAppLoader(URL url){
+		this.list = new ArrayList<URL>();
+		this.list.add(url);
+	}
 	
 	public BaseAppLoader(List<URL> list){
 		this.list = list;

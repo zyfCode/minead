@@ -8,6 +8,8 @@ import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.sungan.ad.domain.AdClient;
+import com.sungan.ad.domain.AdClientIp;
 import com.sungan.ad.domain.AppTask;
 import com.sungan.ad.service.AdClientService;
 import com.sungan.ad.service.AdHourWeightService;
@@ -36,8 +38,11 @@ public class AppHourTaskHandler  extends TaskHandler {
 	@Override
 	public List<AppTask> genAppTask(AdTaskVo vo, AdClientVo clientVo, AdClientIpVo ipvo) {
 		List<AppTask> result = new ArrayList<AppTask>();
+		AdClientIp adClientIp = new AdClientIp();
+		adClientIp.setClientId(clientVo.getId());
+		List<AdClientIpVo> queryIps = adClientService.queryIps(adClientIp);
 		// 第12小时算一轮任务,一天是两轮
-		Long count = vo.getCount()*2;
+		Long count = vo.getCount()*2*queryIps.size();
 		//获取24小时权重
 		List<AdHourWeightVo> query = adHourWeightService.query();
 		if(query.size()!=24){

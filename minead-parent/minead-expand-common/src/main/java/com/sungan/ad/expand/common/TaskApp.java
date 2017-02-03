@@ -1,14 +1,17 @@
 package com.sungan.ad.expand.common;
+
+import com.sungan.ad.expand.common.bean.TaskInfo;
+import com.sungan.ad.expand.common.bean.TaskResonseInfo;
+
 /**
  * 说明:
  * 
- * @author zhangyf18255 <zhangyf18255@hundsun.com>
- * @date 2017年1月12日 下午10:55:59
  * @version V1.1
  */
 public interface TaskApp {
-	void init();
+	void init(TaskResonseInfo info);
 	void work();
 	void destory();
 	
+	TaskInfo getTaskInfo();
 }

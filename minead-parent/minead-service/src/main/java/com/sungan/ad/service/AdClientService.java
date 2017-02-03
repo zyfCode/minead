@@ -15,12 +15,15 @@ import com.sungan.ad.vo.AdClientVo;
  * @version V1.1
  */
 public interface AdClientService extends MadService {
+	List<AdClientIpVo> queryIps(AdClientIp adClientIp);
 	 List<AdClientIpVo> queryIps(Long clientId);
+	 Long insertIp(AdClientIp adClientIp);
 	 Long insert(AdClient client);
 	 void update(AdClient client);
 	 void delete(Long id);
 	 List<AdClientVo> query();
 	 List<AdClientVo> query(AdClient condition);
 	 AdPager<AdClientVo> queryPager(AdClient condition,int pageIndex,int rows);
+	void updateIp(AdClientIp adClientIp);
 	 
 }

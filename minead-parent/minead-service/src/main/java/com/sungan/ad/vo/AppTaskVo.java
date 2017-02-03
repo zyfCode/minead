@@ -21,6 +21,7 @@ public class AppTaskVo implements Serializable {
 	private Long adTaskid;
 	/** 0-24通过率 */
 	private Integer throwRate;
+	private Long throwCount;
 	private String name;
 	private String type;
 	private String status;
@@ -38,6 +39,15 @@ public class AppTaskVo implements Serializable {
 	public Integer getThrowRate() {
 		return throwRate;
 	}
+	
+	public Long getThrowCount() {
+		return throwCount;
+	}
+
+	public void setThrowCount(Long throwCount) {
+		this.throwCount = throwCount;
+	}
+
 	public void setThrowRate(Integer throwRate) {
 		this.throwRate = throwRate;
 	}

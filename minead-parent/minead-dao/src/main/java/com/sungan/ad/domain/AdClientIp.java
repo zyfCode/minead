@@ -26,10 +26,16 @@ public class AdClientIp implements Serializable{
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-
-	private static final String ADCLIENTIP_STATUS_INVALID = "0";
-
-	private static final String ADCLIENTIP_STATUS_RUNNING = "1";
+	
+	/**
+	 * 停用
+	 */
+	public static final String ADCLIENTIP_STATUS_INVALID = "0";
+	
+	/**
+	 * 运行中
+	 */
+	public static final String ADCLIENTIP_STATUS_RUNNING = "1";
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
@@ -37,6 +43,8 @@ public class AdClientIp implements Serializable{
 	
 	@Column(nullable=false)
 	private Long clientId;
+	@Column(nullable=false)
+	private String ip;
 	
 	/**状态  0停用 1运行中*/
 	@StatusCn({ADCLIENTIP_STATUS_INVALID+"=停用",ADCLIENTIP_STATUS_RUNNING+"=运行中"})
@@ -48,6 +56,14 @@ public class AdClientIp implements Serializable{
 	
 	private String descript;
 	
+	public String getIp() {
+		return ip;
+	}
+
+	public void setIp(String ip) {
+		this.ip = ip;
+	}
+
 	public String getDescript() {
 		return descript;
 	}

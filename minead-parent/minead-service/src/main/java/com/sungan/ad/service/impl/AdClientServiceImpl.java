@@ -1,5 +1,7 @@
 package com.sungan.ad.service.impl;
 
+import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +13,7 @@ import com.sungan.ad.dao.base.AdClientDAO;
 import com.sungan.ad.dao.base.AdClientIpDAO;
 import com.sungan.ad.domain.AdClient;
 import com.sungan.ad.domain.AdClientIp;
+import com.sungan.ad.domain.AdContent;
 import com.sungan.ad.exception.AdRuntimeException;
 import com.sungan.ad.expand.common.annotation.parser.AnnotationParser;
 import com.sungan.ad.service.AdClientService;
@@ -103,6 +106,32 @@ public class AdClientServiceImpl implements AdClientService{
 		AdPager<AdClientVo> resultVo = new AdPager<AdClientVo>(pageIndex, rows, queryPage.getCount());
 		resultVo.setResult(parseToVoList);
 		return resultVo;
+	}
+
+	@Override
+	public List<AdClientIpVo> queryIps(AdClientIp adClientIp) {
+		List<AdClientIp> query = (List<AdClientIp>) adClientIpDAO.query(adClientIp);
+		List<AdClientIpVo> parseToVoList = AnnotationParser.parseToVoList(AdClientIpVo.class, query);
+		return parseToVoList;
+	}
+
+	@Override
+	public Long insertIp(AdClientIp adClientIp) {
+		Long insert = (Long) adClientIpDAO.insert(adClientIp);
+		return insert;
+	}
+
+	@Override
+	public void updateIp(AdClientIp adClientIp) {
+		if (adClientIp.getId() == null) {
+			throw new AdRuntimeException("不存在此记录");
+		}
+		AdClientIp find = adClientIpDAO.find(adClientIp.getId());
+		if (find == null) {
+			throw new AdRuntimeException("不存在此记录");
+		}
+		AdCommonsUtil.beanCopyWithoutNull(adClientIp, find);
+		
 	}
 
 }

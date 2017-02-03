@@ -1,17 +1,12 @@
-package com.sungan.ad.expand.common.bean;
-
-import java.io.Serializable;
+package com.sungan.ad.service.ext.bean;
 
 /**
  * 说明:
  * 
  * @version V1.1
  */
-public class TaskInfo implements Serializable {
-	private static final long serialVersionUID = 1L;
-
-	private Long appTaskId;
-	private Long adTaskId;
+public class TaskInfo {
+	private Long taskId;
 	private Long count;
 	private Long doneCount;
 	private Long throwCount;
@@ -19,22 +14,21 @@ public class TaskInfo implements Serializable {
 	private Long clientId;
 	private String clientMac;
 	private String clientIp;
-
-
-	public Long getAppTaskId() {
-		return appTaskId;
+	
+	public Long getFailCount() {
+		return failCount;
 	}
 
-	public void setAppTaskId(Long appTaskId) {
-		this.appTaskId = appTaskId;
+	public void setFailCount(Long failCount) {
+		this.failCount = failCount;
 	}
 
-	public Long getAdTaskId() {
-		return adTaskId;
+	public Long getTaskId() {
+		return taskId;
 	}
 
-	public void setAdTaskId(Long adTaskId) {
-		this.adTaskId = adTaskId;
+	public void setTaskId(Long taskId) {
+		this.taskId = taskId;
 	}
 
 	public Long getCount() {
@@ -61,14 +55,6 @@ public class TaskInfo implements Serializable {
 		this.throwCount = throwCount;
 	}
 
-	public Long getFailCount() {
-		return failCount;
-	}
-
-	public void setFailCount(Long failCount) {
-		this.failCount = failCount;
-	}
-
 	public Long getClientId() {
 		return clientId;
 	}
@@ -92,5 +78,4 @@ public class TaskInfo implements Serializable {
 	public void setClientIp(String clientIp) {
 		this.clientIp = clientIp;
 	}
-
 }
