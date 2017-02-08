@@ -5,6 +5,10 @@ import java.util.List;
 import com.sungan.ad.dao.AdPager;
 import com.sungan.ad.domain.AdClient;
 import com.sungan.ad.domain.AdClientIp;
+import com.sungan.ad.expand.common.bean.InitTaskConnectRequest;
+import com.sungan.ad.expand.common.bean.InitTaskConnectResponse;
+import com.sungan.ad.expand.common.bean.TaskRequest;
+import com.sungan.ad.expand.common.bean.TaskResonse;
 import com.sungan.ad.service.common.MadService;
 import com.sungan.ad.vo.AdClientIpVo;
 import com.sungan.ad.vo.AdClientVo;
@@ -25,5 +29,7 @@ public interface AdClientService extends MadService {
 	 List<AdClientVo> query(AdClient condition);
 	 AdPager<AdClientVo> queryPager(AdClient condition,int pageIndex,int rows);
 	void updateIp(AdClientIp adClientIp);
+	InitTaskConnectResponse initConnect(InitTaskConnectRequest connectRequest,String currentIp);
+	TaskResonse hearInfo(TaskRequest bean,String currentIp);
 	 
 }

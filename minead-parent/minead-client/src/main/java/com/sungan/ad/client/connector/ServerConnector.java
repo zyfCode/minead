@@ -117,10 +117,7 @@ public class ServerConnector {
 		
 	}
 	
-	public InitTaskConnectResponse connectorInit(){
-		InitTaskConnectRequest request = new InitTaskConnectRequest();
-		String mac = this.getMac();
-		request.setMac(mac);
+	public InitTaskConnectResponse connectorInit(InitTaskConnectRequest request){
 		String doPost = HttpClientUtil.doPost(conntorInitUrl, request);
 		if(doPost!=null){
 			JSONObject fromObject = JSONObject.fromObject(doPost);

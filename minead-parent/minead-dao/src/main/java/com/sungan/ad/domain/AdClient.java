@@ -28,9 +28,9 @@ public class AdClient implements Serializable{
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	private Long id;
-	@Column(length=64)
+	@Column(length=128)
 	private String name;
-	@Column(length=64)
+	@Column(length=512)
 	private String mac;
 	@Column(length=64)
 	private String currentIp;

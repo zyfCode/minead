@@ -3,7 +3,6 @@ package com.sungan.ad.service.ext;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,11 +12,11 @@ import com.sungan.ad.commons.AdCommonsUtil;
 import com.sungan.ad.domain.AdClientIp;
 import com.sungan.ad.domain.AdTask;
 import com.sungan.ad.domain.AppTask;
+import com.sungan.ad.expand.common.bean.TaskInfo;
 import com.sungan.ad.service.AdClientService;
 import com.sungan.ad.service.AdHourWeightService;
 import com.sungan.ad.service.AdTaskService;
 import com.sungan.ad.service.AppTaskServivce;
-import com.sungan.ad.service.ext.bean.TaskInfo;
 import com.sungan.ad.service.ext.handler.AppCycleTskHandler;
 import com.sungan.ad.service.ext.handler.AppHourTaskHandler;
 import com.sungan.ad.vo.AdClientIpVo;
@@ -78,7 +77,7 @@ public class AdTaskManagerImpl implements AdTaskManager {
 	 */
 	public void clientTaskInfo(TaskInfo taskInfo){
 
-		AppTaskVo find = appTaskServivce.find(taskInfo.getTaskId());
+		AppTaskVo find = appTaskServivce.find(taskInfo.getAdTaskId());
 		find.setDoneCount(taskInfo.getDoneCount());
 		find.setFailCount(taskInfo.getFailCount());
 		find.setThrowCount(taskInfo.getThrowCount());
@@ -106,7 +105,7 @@ public class AdTaskManagerImpl implements AdTaskManager {
 			List<AppTaskVo> query = appTaskServivce.query(condition);
 			if(query!=null){
 				for(AppTaskVo vo:query){
-					if(taskInfo.getTaskId().equals(vo.getId())){
+					if(taskInfo.getAdTaskId().equals(vo.getId())){
 						continue;
 					}
 					vo.setStatus(AppTask.APPTASK_STATUS_INVALID);
@@ -127,7 +126,7 @@ public class AdTaskManagerImpl implements AdTaskManager {
 			List<AppTaskVo> query = appTaskServivce.query(condition);
 			if(query!=null){
 				for(AppTaskVo vo:query){
-					if(taskInfo.getTaskId().equals(vo.getId())){
+					if(taskInfo.getAdTaskId().equals(vo.getId())){
 						continue;
 					}
 					vo.setCount(find.getCount()-find.getDoneCount());

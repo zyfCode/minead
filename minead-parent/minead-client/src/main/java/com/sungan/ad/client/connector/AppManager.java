@@ -15,6 +15,7 @@ import org.apache.commons.logging.LogFactory;
 
 import com.sungan.ad.client.apploader.BaseAppLoader;
 import com.sungan.ad.expand.common.TaskApp;
+import com.sungan.ad.expand.common.bean.InitTaskConnectRequest;
 import com.sungan.ad.expand.common.bean.InitTaskConnectResponse;
 import com.sungan.ad.expand.common.bean.TaskInfo;
 import com.sungan.ad.expand.common.bean.TaskRequest;
@@ -34,10 +35,33 @@ public class AppManager {
 	private Long adClientId;
 	private String adClientMac;
 	private String adClientIp;
+	private String userName;
+	private String pwd;
 	
+	public String getUserName() {
+		return userName;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+
+	public String getPwd() {
+		return pwd;
+	}
+
+	public void setPwd(String pwd) {
+		this.pwd = pwd;
+	}
+
 	public void init(){
 		ServerConnector connector = new ServerConnector();
-		InitTaskConnectResponse connectorInit = connector.connectorInit();
+		InitTaskConnectRequest request = new InitTaskConnectRequest();
+		String mac = connector.getMac();
+		request.setMac(mac);
+		request.setUserName(this.userName);
+		request.setPwd(this.getPwd());
+		InitTaskConnectResponse connectorInit = connector.connectorInit(request);
 		if(connectorInit!=null){
 			this.isInit = true;
 		}
@@ -49,38 +73,48 @@ public class AppManager {
 	}
 	private static final Log log = LogFactory.getLog(AppManager.class);
 	public void head(){
-		ServerConnector connector = new ServerConnector();
-		TaskRequest request = new TaskRequest();
-		request.setAdClientId(this.getAdClientId());
-		request.setAdClientIp(this.getAdClientIp());
-		request.setMac(this.getAdClientMac());
-		request.setSerialNo(this.getSerialNo());
-		
-		Set<Entry<Long, TaskApp>> entrySet = TASKINFO.entrySet();
-		List<TaskInfo> infoList = new ArrayList<TaskInfo>();
-		for(Map.Entry<Long, TaskApp> entry:entrySet){
-			TaskApp task = entry.getValue();
-			TaskInfo info = task.getTaskInfo();
-			infoList.add(info);
-		}
-		request.setInfo(infoList);
-		TaskResonse taskResponse = connector.taskHeart(request );
-		List<TaskResonseInfo> resInfos = taskResponse.getResInfos();
-		if(resInfos!=null){
-			for(TaskResonseInfo info:resInfos){
-				TaskApp taskApp = TASKINFO.get(info.getAdTaskId());
-				if(taskApp==null){
-					BaseAppLoader loader  = connector.getLoader();
-					TaskApp app = loader.getApp(info.getAdClazzName());
-					app.init(info);
-					app.work();
-				}else{
-					if(TaskResonse.TR_DESDORY.equals(info.getAction())){
-						taskApp.destory();
-						TASKINFO.remove(info.getAdTaskId());
+		try {
+			if(!this.isInit){
+				this.init();
+			}
+			ServerConnector connector = new ServerConnector();
+			TaskRequest request = new TaskRequest();
+			request.setAdClientId(this.getAdClientId());
+			request.setAdClientIp(this.getAdClientIp());
+			request.setMac(this.getAdClientMac());
+			request.setSerialNo(this.getSerialNo());
+			
+			Set<Entry<Long, TaskApp>> entrySet = TASKINFO.entrySet();
+			List<TaskInfo> infoList = new ArrayList<TaskInfo>();
+			for(Map.Entry<Long, TaskApp> entry:entrySet){
+				TaskApp task = entry.getValue();
+				TaskInfo info = task.getTaskInfo();
+				infoList.add(info);
+			}
+			request.setInfo(infoList);
+			TaskResonse taskResponse = connector.taskHeart(request );
+			if(TaskResonse.TR_INIT.equals(taskResponse.getAction())){
+				this.init();
+			}
+			List<TaskResonseInfo> resInfos = taskResponse.getResInfos();
+			if(resInfos!=null){
+				for(TaskResonseInfo info:resInfos){
+					TaskApp taskApp = TASKINFO.get(info.getAdTaskId());
+					if(taskApp==null){
+						BaseAppLoader loader  = connector.getLoader();
+						TaskApp app = loader.getApp(info.getAdClazzName());
+						app.init(info);
+						app.work();
+					}else{
+						if(TaskResonse.TR_DESDORY.equals(info.getAction())){
+							taskApp.destory();
+							TASKINFO.remove(info.getAdTaskId());
+						}
 					}
 				}
 			}
+		} catch (Exception e) {
+			log.info("",e);
 		}
 	}	
 

@@ -28,7 +28,7 @@ public class TestApp {
 		list.add(url);
 		BaseAppLoader loder = new BaseAppLoader(list );
 		TaskApp app = loder.getApp("com.sungan.ad.expand.impl.EveryTimeTaskWorker");
-		app.init();
+		app.init(null);
 		app.work();
 		app.destory();
 	}

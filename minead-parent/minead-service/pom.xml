@@ -9,7 +9,7 @@
 	<artifactId>minead-service</artifactId>
 
 	<dependencies>
-	
+
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-aspects</artifactId>
@@ -56,6 +56,11 @@
 		<dependency>
 			<groupId>com.sungan.ad</groupId>
 			<artifactId>minead-common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.sungan.ad</groupId>
+			<artifactId>minead-expand-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>

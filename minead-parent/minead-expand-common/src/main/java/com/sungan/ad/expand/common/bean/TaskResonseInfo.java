@@ -10,7 +10,7 @@ public class TaskResonseInfo {
 	private Long appTaskId;
 	private Long count;
 	private Long doneCount;
-	private Long throwRate;
+	private Integer throwRate;
 	private String ip;
 	private String mac;
 	private String adClazzName;
@@ -58,10 +58,11 @@ public class TaskResonseInfo {
 	public void setDoneCount(Long doneCount) {
 		this.doneCount = doneCount;
 	}
-	public Long getThrowRate() {
+	
+	public Integer getThrowRate() {
 		return throwRate;
 	}
-	public void setThrowRate(Long throwRate) {
+	public void setThrowRate(Integer throwRate) {
 		this.throwRate = throwRate;
 	}
 	public String getIp() {

@@ -262,6 +262,11 @@
 		    <artifactId>minead-service</artifactId>
 	  		<version>${project.version}</version>
 	  	</dependency>
+		 <dependency>
+		  	 <groupId>com.sungan.ad</groupId>
+		    <artifactId>minead-expand-common</artifactId>
+	  		<version>${project.version}</version>
+	  	</dependency>
 	</dependencies>
 
 	<build>

@@ -9,6 +9,7 @@ import java.util.List;
  */
 public class TaskResonse {
 	public static final String TR_DESDORY="TASK_STOP";
+	public static final String TR_INIT="TASK_INIT";
 	private String action;
 	private List<TaskResonseInfo> resInfos;
 
