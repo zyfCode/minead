@@ -61,6 +61,7 @@ public class AppManager {
 		request.setMac(mac);
 		request.setUserName(this.userName);
 		request.setPwd(this.getPwd());
+		request.setSysOs(System.getProperty("os.name"));
 		InitTaskConnectResponse connectorInit = connector.connectorInit(request);
 		if(connectorInit!=null){
 			this.isInit = true;
@@ -72,7 +73,7 @@ public class AppManager {
 		this.setAdClientIp(adClientIp);
 	}
 	private static final Log log = LogFactory.getLog(AppManager.class);
-	public void head(){
+	public void heart(){
 		try {
 			if(!this.isInit){
 				this.init();

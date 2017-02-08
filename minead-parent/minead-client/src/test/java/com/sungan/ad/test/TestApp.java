@@ -7,8 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.sungan.ad.client.apploader.BaseAppLoader;
+import com.sungan.ad.client.connector.AppManager;
+import com.sungan.ad.cmmon.test.BaseTest;
 import com.sungan.ad.expand.common.TaskApp;
 
 /**
@@ -18,8 +21,24 @@ import com.sungan.ad.expand.common.TaskApp;
  * @date 2017年1月12日 下午11:33:27
  * @version V1.1
  */
-public class TestApp {
+public class TestApp extends BaseTest{
 	
+	@Autowired
+	private AppManager appManager;
+	
+	public AppManager getAppManager() {
+		return appManager;
+	}
+
+	public void setAppManager(AppManager appManager) {
+		this.appManager = appManager;
+	}
+	
+	@Test
+	public void test(){
+		appManager.heart();
+	}
+
 	@Test
 	public void testAA() throws MalformedURLException{
 		List<URL> list = new ArrayList<URL>();

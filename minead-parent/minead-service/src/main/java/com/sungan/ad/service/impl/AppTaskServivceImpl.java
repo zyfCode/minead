@@ -21,8 +21,9 @@ import com.sungan.ad.vo.AppTaskVo;
  */
 @Service
 public class AppTaskServivceImpl implements AppTaskServivce{
-	private  AppTaskDAO appTaskDAO;
 	@Autowired
+	private  AppTaskDAO appTaskDAO;
+
 	
 	public AppTaskDAO getAppTaskDAO() {
 		return appTaskDAO;

@@ -130,6 +130,9 @@ public abstract class AbstractDAO<T> implements DAO<T> {
 			PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
 			for(PropertyDescriptor pt:propertyDescriptors){
 				String name = pt.getName();
+				if(name.equals("class")){
+					continue;
+				}
 				Object object = beanFile.get(name);
 				if(object!=null){
 					createCriteria = createCriteria.add(Restrictions.eq(name, object));
@@ -151,6 +154,9 @@ public abstract class AbstractDAO<T> implements DAO<T> {
 			PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
 			for(PropertyDescriptor pt:propertyDescriptors){
 				String name = pt.getName();
+				if(name.equals("class")){
+					continue;
+				}
 				Object object = beanFile.get(name);
 				if(object!=null){
 					createCriteria = createCriteria.add(Restrictions.eq(name, object));

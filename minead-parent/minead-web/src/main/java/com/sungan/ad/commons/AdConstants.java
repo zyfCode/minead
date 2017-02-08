@@ -1,5 +1,11 @@
 package com.sungan.ad.commons;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+
+import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -17,6 +23,22 @@ public class AdConstants {
 	public static final String JSONTYPE = "application/json;charset=UTF-8";
 	public static final String XMLTYPE = "application/xml;charset=UTF-8";
 	public static final String TXTTYPE = "text/plain;charset=UTF-8";
+	
+	
+	public static String getStrFromRequest(HttpServletRequest request){
+		try {
+			ServletInputStream inputStream = request.getInputStream();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream,"UTF-8"));
+			StringBuffer buf = new StringBuffer();
+			String line = null;
+			while((line=reader.readLine())!=null){
+				buf.append(line);
+			}
+			return buf.toString();
+		} catch (Exception e) {
+			throw new RuntimeException("",e);
+		}
+	}
 	
 	/**
 	 * 获取用户IP

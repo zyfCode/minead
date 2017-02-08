@@ -25,7 +25,7 @@ import net.sf.json.JSONObject;
  * @version V1.1
  */
 public class ServerConnector {
-	private static final String baseIp = "139.196.240.242";
+	private static String baseIp = "139.196.240.242";
 	private static final String initUrl = "/client/init";
 	private static final String conntorInitUrl = "/client/initconnector";
 	private static final String  infoUrl = "/client/info";
@@ -35,6 +35,14 @@ public class ServerConnector {
 		return "http://"+baseIp+url;
 	}
 	
+	
+	
+	public  void setBaseIp(String baseIp) {
+		ServerConnector.baseIp = baseIp;
+	}
+
+
+
 	public BaseAppLoader getLoader(){
 		try {
 			String url = this.getUrl(appClazzLoader);
@@ -47,7 +55,7 @@ public class ServerConnector {
 	}
 	
 	public TaskResonse taskHeart(TaskRequest request){
-		String doPost = HttpClientUtil.doPost(infoUrl, request);
+		String doPost = HttpClientUtil.doPost(this.getUrl(infoUrl), request);
 		JSONObject fromObject = JSONObject.fromObject(doPost);
 		TaskResonse bean = (TaskResonse) JSONObject.toBean(fromObject, TaskResonse.class);
 		return bean;
@@ -118,7 +126,7 @@ public class ServerConnector {
 	}
 	
 	public InitTaskConnectResponse connectorInit(InitTaskConnectRequest request){
-		String doPost = HttpClientUtil.doPost(conntorInitUrl, request);
+		String doPost = HttpClientUtil.doPost(this.getUrl(conntorInitUrl), request);
 		if(doPost!=null){
 			JSONObject fromObject = JSONObject.fromObject(doPost);
 			InitTaskConnectResponse bean = (InitTaskConnectResponse) JSONObject.toBean(fromObject, InitTaskConnectResponse.class);

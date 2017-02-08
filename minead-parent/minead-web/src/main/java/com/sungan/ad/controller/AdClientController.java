@@ -18,11 +18,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.sungan.ad.commons.AdConstants;
 import com.sungan.ad.expand.common.bean.InitTaskConnectRequest;
 import com.sungan.ad.expand.common.bean.InitTaskConnectResponse;
 import com.sungan.ad.expand.common.bean.TaskRequest;
+import com.sungan.ad.expand.common.bean.TaskResonse;
 import com.sungan.ad.service.AdClientService;
 
 import net.sf.json.JSONObject;
@@ -39,16 +41,20 @@ public class AdClientController {
 	@Autowired
 	private AdClientService adClientService;
 	
-	@RequestMapping("/client/info")
-	public void heartInfo(@RequestBody String taskRequestStr,HttpServletRequest reqruest){
+	@RequestMapping("/info")
+	@ResponseBody
+	public void heartInfo(Model model,@RequestBody String taskRequestStr,HttpServletRequest request){
 //		TaskRequest taskRequest
 		JSONObject fromObject = JSONObject.fromObject(taskRequestStr);
 		TaskRequest bean = (TaskRequest) JSONObject.toBean(fromObject, TaskRequest.class);
-		adClientService.hearInfo(bean);
+		String remoteIpAddress = AdConstants.getRemoteIpAddress(request);
+		TaskResonse hearInfo = adClientService.hearInfo(bean,remoteIpAddress);
+		request.setAttribute(AdConstants.JSONRESPONSE,hearInfo);
 	}
 	
 	
-	@RequestMapping("/client/apploader")
+	@RequestMapping("/apploader")
+	@ResponseBody
 	public void clazzLoader(HttpServletRequest request,HttpServletResponse response){
 		String realPath = request.getRealPath("/WEB-INF/lib");
 		File file = new File(realPath);
@@ -79,12 +85,14 @@ public class AdClientController {
 	}
 	
 	@RequestMapping("/initconnector")
-	public void connetorInit(Model model,@RequestBody String jsonData, HttpServletRequest request){
+	@ResponseBody
+	public void connetorInit(Model model,String jsonData, HttpServletRequest request){
+		jsonData = AdConstants.getStrFromRequest(request);
 		JSONObject fromObject = JSONObject.fromObject(jsonData);
 		InitTaskConnectRequest connectRequest = (InitTaskConnectRequest) JSONObject.toBean(fromObject, InitTaskConnectRequest.class);
 		InitTaskConnectResponse response = null;
 		response = adClientService.initConnect(connectRequest,AdConstants.getRemoteIpAddress(request));
-		model.addAttribute(AdConstants.JSPDATA,response);
+		request.setAttribute(AdConstants.JSONRESPONSE,response);
 	}
 
 	public AdClientService getAdClientService() {

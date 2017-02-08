@@ -15,6 +15,7 @@
 		<module>minead-dao</module>
 		<module>minead-service</module>
 		<!-- <module>minead-web</module> -->
+<!-- 		<module>minead-client-web</module> -->
 	</modules>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

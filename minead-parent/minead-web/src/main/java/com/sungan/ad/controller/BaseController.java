@@ -51,6 +51,17 @@ public class BaseController {
 		content.setDescript("中国好");
 		request.setAttribute(AdConstants.JSONRESPONSE, content);
 	}
+	@RequestMapping(value="/jt",produces="application/json;charset=UTF-8")
+	@ResponseBody
+	public  AdContent testJsonBean(HttpServletRequest request){
+		AdContent content = new AdContent();
+		content.setContent("HELLO");
+		content.setCreateTime(new Date());
+		content.setUpdateTime(new Date());
+		content.setName("forTest");
+		content.setDescript("中国好");
+		return content;
+	}
 
 	public AdService getAdService() {
 		return adService;

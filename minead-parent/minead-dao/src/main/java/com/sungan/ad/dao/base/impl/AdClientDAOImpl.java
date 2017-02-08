@@ -12,4 +12,5 @@ import com.sungan.ad.dao.base.AdClientDAOAbstract;
 @Repository
 public class AdClientDAOImpl extends AdClientDAOAbstract {
 
+
 }

@@ -3,6 +3,7 @@ package com.sungan.ad.test;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.commons.lang.time.DateUtils;
 import org.hibernate.SessionFactory;
@@ -14,7 +15,9 @@ import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.sungan.ad.cmmon.test.BaseTest;
+import com.sungan.ad.dao.base.AdClientDAO;
 import com.sungan.ad.dao.base.AdDAO;
+import com.sungan.ad.domain.AdClient;
 import com.sungan.ad.domain.AdContent;
 
 /**
@@ -37,10 +40,32 @@ public class TestAdContent extends BaseTest{
 
 	@Autowired
 	private AdDAO adDAO;
+	@Autowired
+	private AdClientDAO adClientDAO;
 	
 	@Autowired
 	protected HibernateTemplate template;
 	
+	@Test
+	public void testAdClientIp() {
+		AdClient adClient = new AdClient();
+		adClient.setId(2L);
+		List<AdClient> query = (List<AdClient>) adClientDAO. query(adClient);
+		System.out.println(query);
+	}
+	
+	public AdClientDAO getAdClientDAO() {
+		return adClientDAO;
+	}
+
+
+
+	public void setAdClientDAO(AdClientDAO adClientDAO) {
+		this.adClientDAO = adClientDAO;
+	}
+
+
+
 	@Test
 	public void testTemplate(){
 		System.out.println(template);

@@ -168,17 +168,10 @@ public class AdClientServiceImpl implements AdClientService{
 				client.setSysOs(connectRequest.getSysOs());
 				client.setName(connectRequest.getSysOs());
 				client.setStatus(AdClient.ADCLIENT_STATUS_RUNNING);
-				client.setSysOs(connectRequest.getMac());
+				client.setMac(connectRequest.getMac());
 				Long clientId = (Long) this.adClientDAO.insert(client);
 				client.setId(clientId);
 				List<AdClientIp> ipsBeanList = new ArrayList<AdClientIp>();
-				AdClientIp currentIpBean = new AdClientIp();
-				currentIpBean.setCreateTime(new Date());
-				currentIpBean.setClientId(clientId);
-				currentIpBean.setIp(currentIp);
-				currentIpBean.setStatus(AdClientIp.ADCLIENTIP_STATUS_RUNNING);
-				currentIpBean.setUpdateTime(new Date());
-				ipsBeanList.add(currentIpBean);
 				 
 				List<String> ips = null;
 				if(InitTaskConnectRequest.CLIENT_163.equals(connectRequest.getSource())){
@@ -266,40 +259,41 @@ public class AdClientServiceImpl implements AdClientService{
 			
 			AdClientVo clientVo = AnnotationParser.parseToVo(AdClientVo.class, find);
 			AppTaskVo task = adTaskManager.getTask(clientVo);
-			AdTask adTask = this.adTaskDAO.find(task.getAdTaskid());
 			TaskResonse resonse = new TaskResonse();
-
-			List<TaskResonseInfo> resInfos = new ArrayList<TaskResonseInfo>();
-			TaskResonseInfo tinfo = new TaskResonseInfo();
-			tinfo.setAdClazzName(adTask.getClazzName());
-			tinfo.setAdClientId(find.getId());
-			tinfo.setAdTaskId(task.getId());
-			tinfo.setCount(task.getCount());
-			tinfo.setDoneCount(task.getDoneCount());
-			tinfo.setIp(currentIp);
-			if(tinfo.getDoneCount()!=null&&tinfo.getDoneCount().compareTo(tinfo.getCount())>=0){
-				tinfo.setAction(TaskResonse.TR_DESDORY);
-			}
-			if(!find.getCurrentIp().equals(currentIp)){
-				find.setCurrentIp(currentIp);
-				this.adClientDAO.update(find);
-				AdClientIp condition = new AdClientIp();
-				condition.setClientId(find.getId());
-				List<AdClientIp> query = (List<AdClientIp>) this.adClientIpDAO.query(condition );
-				for(AdClientIp ipBean:query){
-					if(ipBean.getStatus().equals(AdClientIp.ADCLIENTIP_STATUS_RUNNING)&&!ipBean.getIp().equals(currentIp)){
-						ipBean.setStatus(AdClientIp.ADCLIENTIP_STATUS_INVALID);
-						 this.adClientIpDAO.update(ipBean);
-					}else if(ipBean.getIp().equals(currentIp)){
-						ipBean.setStatus(AdClientIp.ADCLIENTIP_STATUS_RUNNING);
-						 this.adClientIpDAO.update(ipBean);
+			if(task!=null){
+				AdTask adTask = this.adTaskDAO.find(task.getAdTaskid());
+				List<TaskResonseInfo> resInfos = new ArrayList<TaskResonseInfo>();
+				TaskResonseInfo tinfo = new TaskResonseInfo();
+				tinfo.setAdClazzName(adTask.getClazzName());
+				tinfo.setAdClientId(find.getId());
+				tinfo.setAdTaskId(task.getId());
+				tinfo.setCount(task.getCount());
+				tinfo.setDoneCount(task.getDoneCount());
+				tinfo.setIp(currentIp);
+				if(tinfo.getDoneCount()!=null&&tinfo.getDoneCount().compareTo(tinfo.getCount())>=0){
+					tinfo.setAction(TaskResonse.TR_DESDORY);
+				}
+				if(!find.getCurrentIp().equals(currentIp)){
+					find.setCurrentIp(currentIp);
+					this.adClientDAO.update(find);
+					AdClientIp condition = new AdClientIp();
+					condition.setClientId(find.getId());
+					List<AdClientIp> query = (List<AdClientIp>) this.adClientIpDAO.query(condition );
+					for(AdClientIp ipBean:query){
+						if(ipBean.getStatus().equals(AdClientIp.ADCLIENTIP_STATUS_RUNNING)&&!ipBean.getIp().equals(currentIp)){
+							ipBean.setStatus(AdClientIp.ADCLIENTIP_STATUS_INVALID);
+							 this.adClientIpDAO.update(ipBean);
+						}else if(ipBean.getIp().equals(currentIp)){
+							ipBean.setStatus(AdClientIp.ADCLIENTIP_STATUS_RUNNING);
+							 this.adClientIpDAO.update(ipBean);
+						}
 					}
 				}
+				tinfo.setSerialNo(bean.getSerialNo());
+				tinfo.setThrowRate(task.getThrowRate());
+				resInfos.add(tinfo);
+				resonse.setResInfos(resInfos );
 			}
-			tinfo.setSerialNo(bean.getSerialNo());
-			tinfo.setThrowRate(task.getThrowRate());
-			resInfos.add(tinfo);
-			resonse.setResInfos(resInfos );
 			return resonse;
 		}
 	}
