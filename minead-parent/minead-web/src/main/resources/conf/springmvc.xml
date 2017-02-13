@@ -42,7 +42,9 @@
 			<mvc:exclude-mapping path="/portal/**" />
 			<!-- 放通所有的静态资源 -->
 			<mvc:exclude-mapping path="/static/**" />
-			<bean class="com.sungan.ad.controller.interceptor.JsonInterceptor"></bean>
+			<bean class="com.sungan.ad.controller.interceptor.JsonInterceptor">
+				<property name="showHead" value="${ad.web.showhead}"></property>
+			</bean>
 		</mvc:interceptor>
 	</mvc:interceptors>
 

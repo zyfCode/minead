@@ -121,6 +121,31 @@ public abstract class AbstractDAO<T> implements DAO<T> {
 		return pager;
 	}
 	@SuppressWarnings("unchecked")
+	public Collection<T> query(T t,QueryHandler handler) {
+		Session currentSession = this.template.getSessionFactory().getCurrentSession();
+		Criteria createCriteria = currentSession.createCriteria(currentClass);//.add(Restrictions.eq("appid", appid)).list();
+		try {
+			Map<String, Object> beanFile = AdCommonsUtil.getBeanFile(t);
+			BeanInfo beanInfo = Introspector.getBeanInfo(currentClass);
+			PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
+			for(PropertyDescriptor pt:propertyDescriptors){
+				String name = pt.getName();
+				if(name.equals("class")){
+					continue;
+				}
+				Object object = beanFile.get(name);
+				if(object!=null){
+					createCriteria = createCriteria.add(Restrictions.eq(name, object));
+				}
+			}
+			createCriteria = handler.addCondition(createCriteria);
+		} catch (Exception e) {
+			throw new RuntimeException("",e);
+		}
+		List<T> list = createCriteria.list();
+		return list;
+	}
+	@SuppressWarnings("unchecked")
 	public Collection<T> query(T t) {
 		Session currentSession = this.template.getSessionFactory().getCurrentSession();
 		Criteria createCriteria = currentSession.createCriteria(currentClass);//.add(Restrictions.eq("appid", appid)).list();

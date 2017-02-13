@@ -42,11 +42,35 @@
 		<property name="repeatInterval" value="6000000" /><!-- 每2秒调度一次 -->  
 	</bean>
 	
+<!-- 	adTaskManager -->
+	<bean id="addTaskJob"  
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">  
+		<property name="targetObject" ref="adTaskManager"></property>  
+		<property name="targetMethod" value="genTask" />  
+		<property name="concurrent" value="false" /><!-- 作业不并发调度 -->  
+	</bean>
+	<bean id="addTaskJobTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">  
+		<property name="jobDetail" ref="addTaskJob" />  
+		<property name="startDelay" value="0" /><!-- 调度工厂实例化后，经过0秒开始执行调度 -->  
+		<property name="repeatInterval" value="50000" /><!-- 每2秒调度一次 -->  
+	</bean>
+	<bean id="cleanTaskJob"  
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">  
+		<property name="targetObject" ref="adTaskManager"></property>  
+		<property name="targetMethod" value="cleanTask" />  
+		<property name="concurrent" value="false" /><!-- 作业不并发调度 -->  
+	</bean>
+	<bean id="cleanTaskJobTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">  
+		<property name="jobDetail" ref="cleanTaskJob" />  
+		<property name="startDelay" value="0" /><!-- 调度工厂实例化后，经过0秒开始执行调度 -->  
+		<property name="repeatInterval" value="3600000" /><!-- 每2秒调度一次 -->  
+	</bean>
 	
 		<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
 		<property name="triggers">
 			<list>
-<!-- 				<ref bean="tokenPoolJobTrigger" /> -->
+				<ref bean="addTaskJobTrigger" />
+				<ref bean="cleanTaskJobTrigger" />
 			</list>
 		</property>
 	</bean>  

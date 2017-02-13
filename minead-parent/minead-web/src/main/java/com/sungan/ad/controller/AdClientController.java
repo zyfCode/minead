@@ -56,7 +56,7 @@ public class AdClientController {
 	@RequestMapping("/apploader")
 	@ResponseBody
 	public void clazzLoader(HttpServletRequest request,HttpServletResponse response){
-		String realPath = request.getRealPath("/WEB-INF/lib");
+		String realPath = request.getRealPath("/WEB-INF/appjars");
 		File file = new File(realPath);
 		File[] listFiles = file.listFiles();
 		for(File f:listFiles){
@@ -71,6 +71,7 @@ public class AdClientController {
 						while((len=instr.read(data))!=-1){
 							outputStream.write(data, 0, len);
 						}
+						outputStream.flush();
 					} finally{
 						if(instr!=null){
 							instr.close();

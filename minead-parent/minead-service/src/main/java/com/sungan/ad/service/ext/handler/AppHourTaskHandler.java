@@ -59,7 +59,7 @@ public class AppHourTaskHandler  extends TaskHandler {
 			task.setAppName(clientVo.getCurrentIp()+"_"+clientVo.getSysOs());
 			task.setAppNo(clientVo.getCurrentIp());
 			task.setClientId(clientVo.getId());
-			task.setClientId(ipvo.getId());
+			task.setClientIpid(ipvo.getId());
 			task.setAdTaskid(vo.getId());
 			task.setCount(taskamount);
 			task.setCrateTime(new Date());

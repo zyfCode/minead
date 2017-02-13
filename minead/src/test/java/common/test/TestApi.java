@@ -7,6 +7,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.bind.JAXBException;
 
@@ -109,10 +111,21 @@ public class TestApi {
 	
 	@Test
 	public void test() throws UnsupportedEncodingException{
-String url = "Nzc3MTgwfDIwNjY1fDIyODc2fDV8MTk4MTR8Mjg1MnwxMjIuMjMzLjE3OS4xNDY=;72a61208522ea1ada2833c169c47234f;http%3A%2F%2Fwww.wszszd.com%2Fyoudao%2Fall%2Fjx.php%3Fid%3D2073%26cnzz%3D1261030610&clicks=1&is_img=1&getImageTJ=0&t=";
-		//		String url = "Nzc3MTgwfDIwNjY1fDIyODc2fDV8MTk4MTR8Mjg1MnwxMjIuMjMzLjE3OS4xNDY=;72a61208522ea1ada2833c169c47234f;http%3A%2F%2Fwww.wszszd.com%2Fyoudao%2Fall%2Fjx.php%3Fid%3D2073%26cnzz%3D1261030610&clicks=1&is_img=1&t=";
-		String decode = URLDecoder.decode(url ,"UTF-8");
-		System.out.println(decode);
+//String url = "Nzc3MTgwfDIwNjY1fDIyODc2fDV8MTk4MTR8Mjg1MnwxMjIuMjMzLjE3OS4xNDY=;72a61208522ea1ada2833c169c47234f;http%3A%2F%2Fwww.wszszd.com%2Fyoudao%2Fall%2Fjx.php%3Fid%3D2073%26cnzz%3D1261030610&clicks=1&is_img=1&getImageTJ=0&t=";
+//		//		String url = "Nzc3MTgwfDIwNjY1fDIyODc2fDV8MTk4MTR8Mjg1MnwxMjIuMjMzLjE3OS4xNDY=;72a61208522ea1ada2833c169c47234f;http%3A%2F%2Fwww.wszszd.com%2Fyoudao%2Fall%2Fjx.php%3Fid%3D2073%26cnzz%3D1261030610&clicks=1&is_img=1&t=";
+//		String decode = URLDecoder.decode(url ,"UTF-8");
+//		System.out.println(decode);
+		
+		String regex = "[\"|\']{1}(htt[^\"\'>]+)[\"|\'>]{1}";
+		String bufStr = "\"http://mm.bbrpg.cn/mm.php?uid=20665&planid=2509&wid=19814&vc=1&in=1>&swidth=\"";
+		Matcher matcher = Pattern.compile(regex).matcher(bufStr );
+		StringBuffer urls = new StringBuffer();
+		while(matcher.find()){
+			String group = matcher.group(1);
+			urls.append(group);
+			System.out.println(group);
+		}
+		System.out.println(urls);
 	}
 	
 	@Test

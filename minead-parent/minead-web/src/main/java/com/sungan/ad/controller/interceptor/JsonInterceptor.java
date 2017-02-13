@@ -23,7 +23,16 @@ import com.sungan.ad.wx.access.bean.AdXMLInterface;
  */
 public class JsonInterceptor   implements HandlerInterceptor  {
 	private static Log log = LogFactory.getLog(JsonInterceptor.class);
+	private String showHead;
 	
+	public String getShowHead() {
+		return showHead;
+	}
+
+	public void setShowHead(String showHead) {
+		this.showHead = showHead;
+	}
+
 	@Override
 	public void afterCompletion(HttpServletRequest request, HttpServletResponse resonse, Object arg2, Exception arg3)
 			throws Exception {
@@ -81,43 +90,45 @@ public class JsonInterceptor   implements HandlerInterceptor  {
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object arg2) throws Exception {
 		try {
-			Enumeration<String> headerNames = request.getHeaderNames();
-			StringBuffer buf = new StringBuffer();
-			while(headerNames.hasMoreElements()){
-				  String nextElement = headerNames.nextElement();
-				  String header = request.getHeader(nextElement);
-				  buf.append(nextElement).append(":").append(header).append("\r\n");
-			}
-			if(log.isInfoEnabled()){
-				log.info("####################请求头开始##########################");
-				log.info(buf.toString());
-				log.info("-----------------------------------------------------");
-				log.info("getAuthType:"+request.getAuthType());
-				log.info("getCharacterEncoding:"+request.getCharacterEncoding());
-				log.info("getContentLength:"+request.getContentLength());
-				log.info("getLocalAddr:"+request.getLocalAddr());
-				log.info("getLocale:"+request.getLocale());
-				log.info("getLocalName:"+request.getLocalName());
-				log.info("getLocalPort:"+request.getLocalPort());
-				log.info("getMethod:"+request.getMethod());
-				log.info("getPathInfo:"+request.getPathInfo());
-				log.info("getPathTranslated:"+request.getPathTranslated());
-				log.info("getProtocol:"+request.getProtocol());
-				log.info("getQueryString:"+request.getQueryString());
-				log.info("getRemoteAddr:"+request.getRemoteAddr());
-				log.info("getRemoteHost:"+request.getRemoteHost());
-				log.info("getRemotePort:"+request.getRemotePort());
-				log.info("getRemoteUser:"+request.getRemoteUser());
-				log.info("getRequestedSessionId:"+request.getRequestedSessionId());
-				log.info("getRequestURI:"+request.getRequestURI());
-				log.info("getRequestURL:"+request.getRequestURL());
-				log.info("getScheme:"+request.getScheme());
-				log.info("getServerName:"+request.getServerName());
-				log.info("getServerPort:"+request.getServerPort());
-				log.info("getServletPath:"+request.getServletPath());
-				log.info("getUserPrincipal:"+request.getUserPrincipal());
-				log.info("AdConstants.getRemoteIpAddress(request):"+AdConstants.getRemoteIpAddress(request));
-				log.info("####################请求头结束##########################");
+			if(showHead!=null&&showHead.equalsIgnoreCase("true")){
+				Enumeration<String> headerNames = request.getHeaderNames();
+				StringBuffer buf = new StringBuffer();
+				while(headerNames.hasMoreElements()){
+					  String nextElement = headerNames.nextElement();
+					  String header = request.getHeader(nextElement);
+					  buf.append(nextElement).append(":").append(header).append("\r\n");
+				}
+				if(log.isInfoEnabled()){
+					log.info("####################请求头开始##########################");
+					log.info(buf.toString());
+					log.info("-----------------------------------------------------");
+					log.info("getAuthType:"+request.getAuthType());
+					log.info("getCharacterEncoding:"+request.getCharacterEncoding());
+					log.info("getContentLength:"+request.getContentLength());
+					log.info("getLocalAddr:"+request.getLocalAddr());
+					log.info("getLocale:"+request.getLocale());
+					log.info("getLocalName:"+request.getLocalName());
+					log.info("getLocalPort:"+request.getLocalPort());
+					log.info("getMethod:"+request.getMethod());
+					log.info("getPathInfo:"+request.getPathInfo());
+					log.info("getPathTranslated:"+request.getPathTranslated());
+					log.info("getProtocol:"+request.getProtocol());
+					log.info("getQueryString:"+request.getQueryString());
+					log.info("getRemoteAddr:"+request.getRemoteAddr());
+					log.info("getRemoteHost:"+request.getRemoteHost());
+					log.info("getRemotePort:"+request.getRemotePort());
+					log.info("getRemoteUser:"+request.getRemoteUser());
+					log.info("getRequestedSessionId:"+request.getRequestedSessionId());
+					log.info("getRequestURI:"+request.getRequestURI());
+					log.info("getRequestURL:"+request.getRequestURL());
+					log.info("getScheme:"+request.getScheme());
+					log.info("getServerName:"+request.getServerName());
+					log.info("getServerPort:"+request.getServerPort());
+					log.info("getServletPath:"+request.getServletPath());
+					log.info("getUserPrincipal:"+request.getUserPrincipal());
+					log.info("AdConstants.getRemoteIpAddress(request):"+AdConstants.getRemoteIpAddress(request));
+					log.info("####################请求头结束##########################");
+				}
 			}
 		} catch (Exception e) {
 			log.error("",e);

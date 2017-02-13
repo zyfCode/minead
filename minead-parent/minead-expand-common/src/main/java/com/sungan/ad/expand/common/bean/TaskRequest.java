@@ -12,7 +12,11 @@ public class TaskRequest {
 	private String mac;
 	private String adClientIp;
 	private Long adClientId;
-	private List<TaskInfo> info;
+	private  TaskInfo[] info;
+
+	public TaskInfo[] getInfo() {
+		return info;
+	}
 
 	public String getSerialNo() {
 		return serialNo;
@@ -30,13 +34,10 @@ public class TaskRequest {
 		this.adClientIp = adClientIp;
 	}
 
-	public List<TaskInfo> getInfo() {
-		return info;
-	}
-
-	public void setInfo(List<TaskInfo> info) {
+	public void setInfo(TaskInfo[] info) {
 		this.info = info;
 	}
+
 
 	public String getMac() {
 		return mac;

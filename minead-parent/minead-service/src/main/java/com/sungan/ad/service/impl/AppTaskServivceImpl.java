@@ -70,6 +70,18 @@ public class AppTaskServivceImpl implements AppTaskServivce{
 		List<AppTaskVo> parseToVoList = AnnotationParser.parseToVoList(AppTaskVo.class, query);
 		return parseToVoList;
 	}
+	@Override
+	public List<AppTaskVo> queryBigNow(AppTask condition) {
+		List<AppTask> query = (List<AppTask>) appTaskDAO.queryBigNow(condition);
+		List<AppTaskVo> parseToVoList = AnnotationParser.parseToVoList(AppTaskVo.class, query);
+		return parseToVoList;
+	}
+	@Override
+	public List<AppTaskVo> queryLeNow(AppTask condition) {
+		List<AppTask> query = (List<AppTask>) appTaskDAO.queryLeNow(condition);
+		List<AppTaskVo> parseToVoList = AnnotationParser.parseToVoList(AppTaskVo.class, query);
+		return parseToVoList;
+	}
 
 	@Override
 	public AdPager<AppTaskVo> queryPage(AppTask condition, int pageIndex, int rows) {

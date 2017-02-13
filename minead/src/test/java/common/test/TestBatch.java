@@ -213,7 +213,8 @@ public class TestBatch {
 					log.debug(bufStr);
 				}
 				reader.close();
-				String regex = "[\"|\']{1}(htt[^\"\']+)[\"|\']{1}";
+//				String regex = "[\"|\']{1}(htt[^\"\']+)[\"|\']{1}";
+				String regex = "[\"|\']{1}(htt[^\"\'>]+)[\"|\'>]{1}";
 				Matcher matcher = Pattern.compile(regex).matcher(bufStr);
 				while(matcher.find()){
 					String group = matcher.group(1);

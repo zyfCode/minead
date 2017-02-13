@@ -13,6 +13,9 @@ import com.sungan.ad.client.apploader.BaseAppLoader;
 import com.sungan.ad.client.connector.AppManager;
 import com.sungan.ad.cmmon.test.BaseTest;
 import com.sungan.ad.expand.common.TaskApp;
+import com.sungan.ad.expand.common.bean.TaskResonse;
+
+import net.sf.json.JSONObject;
 
 /**
  * 说明:
@@ -35,8 +38,24 @@ public class TestApp extends BaseTest{
 	}
 	
 	@Test
-	public void test(){
+	public void test() {
 		appManager.heart();
+		appManager.heart();
+		try {
+			Thread.sleep(10000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testJson(){
+		String json = "{\"resInfos\":[{\"serialNo\":\"2017021023002124717\",\"count\":3826,\"adClazzName\":\"com.sungan.ad.expand.impl.DaillyTaskApp\",\"adTaskId\":145,\"doneCount\":0,\"throwRate\":8,\"adClientId\":1,\"ip\":\"127.0.0.1\"}]}";
+		JSONObject fromObject = JSONObject.fromObject(json);
+		TaskResonse bean = (TaskResonse) JSONObject.toBean(fromObject, TaskResonse.class);
+		System.out.println(bean.getResInfos()[0].getIp());
+	
 	}
 
 	@Test

@@ -11,12 +11,8 @@ public class TaskResonse {
 	public static final String TR_DESDORY="TASK_STOP";
 	public static final String TR_INIT="TASK_INIT";
 	private String action;
-	private List<TaskResonseInfo> resInfos;
+	private TaskResonseInfo[] resInfos;
 
-	public List<TaskResonseInfo> getResInfos() {
-		return resInfos;
-	}
-	
 	
 
 	public String getAction() {
@@ -31,8 +27,16 @@ public class TaskResonse {
 
 
 
-	public void setResInfos(List<TaskResonseInfo> resInfos) {
+	public TaskResonseInfo[] getResInfos() {
+		return resInfos;
+	}
+
+
+
+	public void setResInfos(TaskResonseInfo[] resInfos) {
 		this.resInfos = resInfos;
 	}
+
+
 	
 }

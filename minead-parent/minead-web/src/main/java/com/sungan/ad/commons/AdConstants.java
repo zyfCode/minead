@@ -61,6 +61,6 @@ public class AdConstants {
 				|| "null".equalsIgnoreCase(ip)) {
 			ip = request.getRemoteAddr();
 		}
-		return request.getRemoteAddr();
+		return ip;
 	}
 }

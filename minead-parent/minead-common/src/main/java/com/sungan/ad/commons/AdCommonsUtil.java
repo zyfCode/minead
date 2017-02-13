@@ -45,13 +45,12 @@ public class AdCommonsUtil {
 	public static void beanCopyWithoutNull(Object sourceBean,Object targetBean) {
 		try {
 			BeanInfo targetBeanInfo = Introspector.getBeanInfo(targetBean.getClass());
-			BeanInfo sourceBeanInfo = Introspector.getBeanInfo(sourceBean.getClass());
-			Map<String, Object> valueMap = getBeanFile(sourceBeanInfo);
+			Map<String, Object> valueMap = getBeanFile(sourceBean);
 			//获取所有的参数
 			PropertyDescriptor[] proArr = targetBeanInfo.getPropertyDescriptors();
 			for (PropertyDescriptor pro : proArr) {
 			    Object value = valueMap.get(pro.getName());
-			    if(value==null){
+			    if(value==null||pro.getName().equalsIgnoreCase("class")){
 			    	continue;
 			    }
 				Method method = pro.getWriteMethod();

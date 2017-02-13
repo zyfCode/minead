@@ -33,12 +33,12 @@ public class AdTaskBiz extends AdTask {
 	public void update(AdTaskDAO adTaskDAO){
 		if(this.getStatus().equals(AdTask.ADTASK_STATUS_PUBLIC)){
 			AdTask t = new AdTask();
-			t.setGroup(this.getGroup()); 
+			t.setTaskGroup(this.getTaskGroup()); 
 			Collection<AdTask> query = adTaskDAO.query(t);
 			if(query!=null){
 				for(AdTask tk:query){
 					if(!tk.getId().equals(this.getId())&&tk.getStatus().equals(AdTask.ADTASK_STATUS_PUBLIC)){
-						throw new AdRuntimeException("组"+tk.getGroup()+"已存在发布的任务");
+						throw new AdRuntimeException("组"+tk.getTaskGroup()+"已存在发布的任务");
 					}
 				}
 			}

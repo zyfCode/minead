@@ -16,6 +16,8 @@ public interface AppTaskServivce extends  MadService{
 	Long insert(AppTask task);
 	void delete(Long id);
 	void update(AppTask task);
+	List<AppTaskVo> queryBigNow(AppTask condition);
 	List<AppTaskVo> query(AppTask condition);
 	AdPager<AppTaskVo> queryPage(AppTask condition,int pageIndex,int rows);
+	List<AppTaskVo> queryLeNow(AppTask appTaskCondition);
 }

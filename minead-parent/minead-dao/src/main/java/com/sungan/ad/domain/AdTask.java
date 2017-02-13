@@ -16,11 +16,10 @@ import com.sungan.ad.expand.common.annotation.StatusCn;
 /**
  * 说明:
  * 
- * @date 2017年1月18日 上午1:20:43
  * @version V1.1
  */
 @Entity
-@Table(name="t_adtask")
+@Table(name = "t_ad_task")
 public class AdTask implements Serializable{
 
 	/**
@@ -38,8 +37,7 @@ public class AdTask implements Serializable{
 	/**
 	 * 组，同一组的任务同一时间只能有一个任务处理发布状态
 	 */
-	@Column(length=64,unique=true)
-	private String group;
+	private String taskGroup;
 	/**
 	 * 任务次数
 	 */
@@ -74,6 +72,12 @@ public class AdTask implements Serializable{
 	
 	private  String descript;
 	
+	public String getTaskGroup() {
+		return taskGroup;
+	}
+	public void setTaskGroup(String taskGroup) {
+		this.taskGroup = taskGroup;
+	}
 	public String getClazzName() {
 		return clazzName;
 	}
@@ -85,12 +89,6 @@ public class AdTask implements Serializable{
 	}
 	public void setDescript(String descript) {
 		this.descript = descript;
-	}
-	public String getGroup() {
-		return group;
-	}
-	public void setGroup(String group) {
-		this.group = group;
 	}
 	public Date getCreateTime() {
 		return createTime;

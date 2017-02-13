@@ -1,12 +1,8 @@
 package com.sungan.ad.client.connector;
 
-import java.io.IOException;
-import java.nio.charset.UnsupportedCharsetException;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;

@@ -21,7 +21,6 @@ import com.sungan.ad.exception.AdRuntimeException;
  */
 public class AdHandlerExceptionResolver implements HandlerExceptionResolver{
 	private static final Log log = LogFactory.getLog(AdHandlerExceptionResolver.class);
-
 	@Override
 	public ModelAndView resolveException(HttpServletRequest request, HttpServletResponse response, Object handler,
 			Exception ex) {

@@ -1,5 +1,7 @@
 package com.sungan.ad.dao.base;
 
+import java.util.Collection;
+
 import com.sungan.ad.dao.DAO;
 import com.sungan.ad.domain.AppTask;
 
@@ -11,5 +13,6 @@ import com.sungan.ad.domain.AppTask;
  * @version V1.1
  */
 public interface AppTaskDAO extends DAO<AppTask> {
-
+	Collection<AppTask> queryBigNow( AppTask t);
+	Collection<AppTask> queryLeNow( AppTask t);
 }

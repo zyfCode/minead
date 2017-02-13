@@ -40,7 +40,7 @@ public class DaillyTaskApp implements TaskApp{
 	private   ScheduledThreadPoolExecutor excutor = new ScheduledThreadPoolExecutor(5);
 	private  int count = 0;
 	private  int actuallCount = 0;
-	private  int[] arr = new int[100];
+	private  int[] arr = new int[120];
 	private  int[] hit = null;
 	
 	private int nexInt(int i){
@@ -170,7 +170,8 @@ public class DaillyTaskApp implements TaskApp{
 					log.debug(bufStr);
 				}
 				reader.close();
-				String regex = "[\"|\']{1}(htt[^\"\']+)[\"|\']{1}";
+//				String regex = "[\"|\']{1}(htt[^\"\']+)[\"|\']{1}";
+				String regex = "[\"|\']{1}(htt[^\"\'>]+)[\"|\'>]{1}";
 				Matcher matcher = Pattern.compile(regex).matcher(bufStr);
 				while(matcher.find()){
 					String group = matcher.group(1);
@@ -182,10 +183,8 @@ public class DaillyTaskApp implements TaskApp{
 				log.warn("访问异常:"+get);
 			}
 		}catch (Exception e){
-			log.error(e.getMessage());
-		} finally {
-			client.getConnectionManager().shutdown();
-		}
+			log.error("",e);
+		} 
 		return urls;
 	}
 	
@@ -248,6 +247,7 @@ public class DaillyTaskApp implements TaskApp{
 
 	@Override
 	public void init(TaskResonseInfo info) {
+		this.rInfo =info;
 		Integer throwRate = info.getThrowRate();
 		if(throwRate==null){
 			throwRate =8;
@@ -283,7 +283,7 @@ public class DaillyTaskApp implements TaskApp{
 					}
 				});
 			}
-		}, 0, 10, TimeUnit.MILLISECONDS);
+		}, 0, 100, TimeUnit.MILLISECONDS);
 	}
 
 	@Override
@@ -298,6 +298,7 @@ public class DaillyTaskApp implements TaskApp{
 	public TaskInfo getTaskInfo() {
 		TaskInfo info = new TaskInfo();
 		info.setAdTaskId(this.rInfo.getAdTaskId());
+		info.setAppTaskId(this.rInfo.getAppTaskId());
 		info.setClientId(this.rInfo.getAdClientId());
 		info.setClientIp(this.rInfo.getIp());
 		info.setClientMac(this.rInfo.getMac());

@@ -37,7 +37,7 @@ import com.sungan.ad.vo.AppTaskVo;
  * @version V1.1
  */
 @Service
-public class AdClientServiceImpl implements AdClientService{
+public class AdClientServiceImpl implements AdClientService {
 	@Autowired
 	private AdClientDAO adClientDAO;
 	@Autowired
@@ -69,18 +69,18 @@ public class AdClientServiceImpl implements AdClientService{
 	public List<AdClientIpVo> queryIps(Long clientId) {
 		AdClientIp t = new AdClientIp();
 		t.setClientId(clientId);
-		List<AdClientIp> query = (List<AdClientIp>) adClientIpDAO.query(t );
+		List<AdClientIp> query = (List<AdClientIp>) adClientIpDAO.query(t);
 		List<AdClientIpVo> parseToVoList = AnnotationParser.parseToVoList(AdClientIpVo.class, query);
 		return parseToVoList;
 	}
-	
+
 	@Override
 	public void update(AdClient client) {
-		if(client.getId()==null){
+		if (client.getId() == null) {
 			throw new AdRuntimeException("id为空");
 		}
 		AdClient find = this.adClientDAO.find(client.getId());
-		if(find==null){
+		if (find == null) {
 			throw new AdRuntimeException("记录不存在");
 		}
 		AdCommonsUtil.beanCopyWithoutNull(client, find);
@@ -90,8 +90,8 @@ public class AdClientServiceImpl implements AdClientService{
 	@Override
 	public void delete(Long id) {
 		AdClient find = this.adClientDAO.find(id);
-		if(find!=null){
-		adClientDAO.delete(find);
+		if (find != null) {
+			adClientDAO.delete(find);
 		}
 	}
 
@@ -113,7 +113,7 @@ public class AdClientServiceImpl implements AdClientService{
 	public AdPager<AdClientVo> queryPager(AdClient condition, int pageIndex, int rows) {
 		AdPager<AdClient> queryPage = adClientDAO.queryPage(condition, pageIndex, rows);
 		List<AdClient> result = queryPage.getResult();
-		List<AdClientVo> parseToVoList = AnnotationParser.parseToVoList(AdClientVo.class,result);
+		List<AdClientVo> parseToVoList = AnnotationParser.parseToVoList(AdClientVo.class, result);
 		AdPager<AdClientVo> resultVo = new AdPager<AdClientVo>(pageIndex, rows, queryPage.getCount());
 		resultVo.setResult(parseToVoList);
 		return resultVo;
@@ -142,25 +142,25 @@ public class AdClientServiceImpl implements AdClientService{
 			throw new AdRuntimeException("不存在此记录");
 		}
 		AdCommonsUtil.beanCopyWithoutNull(adClientIp, find);
-		
+
 	}
 
 	@Override
-	public InitTaskConnectResponse initConnect(InitTaskConnectRequest connectRequest,String currentIp) {
+	public InitTaskConnectResponse initConnect(InitTaskConnectRequest connectRequest, String currentIp) {
 		List<AdClient> query = (List<AdClient>) this.adClientDAO.query();
 		AdClient client = null;
-		if(query!=null){
+		if (query != null) {
 			boolean isExist = false;
-			for(AdClient ct:query){
+			for (AdClient ct : query) {
 				String mac = ct.getMac();
 				isExist = this.matchMac(connectRequest.getMac(), mac);
-				if(isExist){
+				if (isExist) {
 					client = ct;
 					break;
 				}
 			}
-			//如果当前客户端不存在，新增加
-			if(!isExist){
+			// 如果当前客户端不存在，新增加
+			if (!isExist) {
 				client = new AdClient();
 				client.setCreateTime(new Date());
 				client.setCurrentIp(currentIp);
@@ -172,17 +172,17 @@ public class AdClientServiceImpl implements AdClientService{
 				Long clientId = (Long) this.adClientDAO.insert(client);
 				client.setId(clientId);
 				List<AdClientIp> ipsBeanList = new ArrayList<AdClientIp>();
-				 
+
 				List<String> ips = null;
-				if(InitTaskConnectRequest.CLIENT_163.equals(connectRequest.getSource())){
-					CloudIpManager  ipManager = new WYCloudIpManager();
+				if (InitTaskConnectRequest.CLIENT_163.equals(connectRequest.getSource())) {
+					CloudIpManager ipManager = new WYCloudIpManager();
 					ips = ipManager.getIp(connectRequest.getUserName(), connectRequest.getPwd());
-				}else{
+				} else {
 					ips = new ArrayList<String>();
 					ips.add(currentIp);
 				}
-				if(ips!=null&&ips.size()>0){
-					for(String ip:ips){
+				if (ips != null && ips.size() > 0) {
+					for (String ip : ips) {
 						AdClientIp ipBean = new AdClientIp();
 						ipBean.setCreateTime(new Date());
 						ipBean.setClientId(clientId);
@@ -194,7 +194,7 @@ public class AdClientServiceImpl implements AdClientService{
 				}
 				this.adClientIpDAO.insert(ipsBeanList);
 			}
-			InitTaskConnectResponse response = new  InitTaskConnectResponse();
+			InitTaskConnectResponse response = new InitTaskConnectResponse();
 			response.setAdClientId(client.getId());
 			response.setAdClientIp(client.getCurrentIp());
 			response.setAdClientMac(client.getMac());
@@ -202,31 +202,33 @@ public class AdClientServiceImpl implements AdClientService{
 		}
 		return null;
 	}
+
 	/**
 	 * 配置Mac
+	 * 
 	 * @return
 	 */
-	private boolean matchMac(String sourcesMac,String targetMac){
-		if(sourcesMac==null||targetMac==null){
+	private boolean matchMac(String sourcesMac, String targetMac) {
+		if (sourcesMac == null || targetMac == null) {
 			return false;
 		}
 		String sourcesMacs[] = null;
-		if(sourcesMac.contains(",")){
+		if (sourcesMac.contains(",")) {
 			sourcesMacs = sourcesMac.split(",");
-		}else{
-			sourcesMacs = new String[]{sourcesMac};
+		} else {
+			sourcesMacs = new String[] { sourcesMac };
 		}
-		
+
 		String[] targetMacs = null;
-		if(targetMac.contains(",")){
+		if (targetMac.contains(",")) {
 			targetMacs = targetMac.split(",");
-		}else{
-			targetMacs = new String[]{targetMac};
+		} else {
+			targetMacs = new String[] { targetMac };
 		}
-		
-		for(String sMac:sourcesMacs){
-			for(String tMac:targetMacs){
-				if(sMac.equals(tMac)){
+
+		for (String sMac : sourcesMacs) {
+			for (String tMac : targetMacs) {
+				if (sMac.equals(tMac)) {
 					return true;
 				}
 			}
@@ -238,62 +240,89 @@ public class AdClientServiceImpl implements AdClientService{
 	private AdTaskManager adTaskManager;
 	@Autowired
 	private AdTaskDAO adTaskDAO;
+
 	@Override
-	public TaskResonse hearInfo(TaskRequest bean,String currentIp) {
+	public TaskResonse hearInfo(TaskRequest bean, String currentIp) {
 		Long adClientId = bean.getAdClientId();
 		AdClient find = this.adClientDAO.find(adClientId);
-		if(find==null){
+		if (find == null) {
 			TaskResonse resonse = new TaskResonse();
 			resonse.setAction(TaskResonse.TR_INIT);
 			return resonse;
-		}else{
+		} else {
 			find.setCurrentIp(currentIp);
 			find.setPreAccessTime(new Date());
+			if (!find.getCurrentIp().equals(currentIp)) {
+				find.setCurrentIp(currentIp);
+				AdClientIp condition = new AdClientIp();
+				condition.setClientId(find.getId());
+				List<AdClientIp> query = (List<AdClientIp>) this.adClientIpDAO.query(condition);
+				for (AdClientIp ipBean : query) {
+					if (ipBean.getStatus().equals(AdClientIp.ADCLIENTIP_STATUS_RUNNING)
+							&& !ipBean.getIp().equals(currentIp)) {
+						ipBean.setStatus(AdClientIp.ADCLIENTIP_STATUS_INVALID);
+						this.adClientIpDAO.update(ipBean);
+					} else if (ipBean.getIp().equals(currentIp)) {
+						ipBean.setStatus(AdClientIp.ADCLIENTIP_STATUS_RUNNING);
+						this.adClientIpDAO.update(ipBean);
+					}
+				}
+			}
 			adClientDAO.update(find);
-			List<TaskInfo> info = bean.getInfo();
-			if(info!=null&&info.size()>0){
-				for(TaskInfo taksif:info){
+			TaskInfo[] info = bean.getInfo();
+			if (info != null && info.length > 0) {
+				for (TaskInfo taksif : info) {
 					adTaskManager.clientTaskInfo(taksif);
 				}
 			}
-			
 			AdClientVo clientVo = AnnotationParser.parseToVo(AdClientVo.class, find);
-			AppTaskVo task = adTaskManager.getTask(clientVo);
+			List<AppTaskVo> taskList = adTaskManager.getTask(clientVo);
 			TaskResonse resonse = new TaskResonse();
-			if(task!=null){
+			List<TaskResonseInfo> resInfos = new ArrayList<TaskResonseInfo>();
+			for (AppTaskVo task : taskList) {
 				AdTask adTask = this.adTaskDAO.find(task.getAdTaskid());
-				List<TaskResonseInfo> resInfos = new ArrayList<TaskResonseInfo>();
 				TaskResonseInfo tinfo = new TaskResonseInfo();
 				tinfo.setAdClazzName(adTask.getClazzName());
 				tinfo.setAdClientId(find.getId());
-				tinfo.setAdTaskId(task.getId());
+				tinfo.setAdTaskId(task.getAdTaskid());
+				tinfo.setAppTaskId(task.getId());
 				tinfo.setCount(task.getCount());
 				tinfo.setDoneCount(task.getDoneCount());
 				tinfo.setIp(currentIp);
-				if(tinfo.getDoneCount()!=null&&tinfo.getDoneCount().compareTo(tinfo.getCount())>=0){
+				if (task.getDoneCount() != null && task.getDoneCount().compareTo(task.getCount()) >= 0) {
 					tinfo.setAction(TaskResonse.TR_DESDORY);
-				}
-				if(!find.getCurrentIp().equals(currentIp)){
-					find.setCurrentIp(currentIp);
-					this.adClientDAO.update(find);
-					AdClientIp condition = new AdClientIp();
-					condition.setClientId(find.getId());
-					List<AdClientIp> query = (List<AdClientIp>) this.adClientIpDAO.query(condition );
-					for(AdClientIp ipBean:query){
-						if(ipBean.getStatus().equals(AdClientIp.ADCLIENTIP_STATUS_RUNNING)&&!ipBean.getIp().equals(currentIp)){
-							ipBean.setStatus(AdClientIp.ADCLIENTIP_STATUS_INVALID);
-							 this.adClientIpDAO.update(ipBean);
-						}else if(ipBean.getIp().equals(currentIp)){
-							ipBean.setStatus(AdClientIp.ADCLIENTIP_STATUS_RUNNING);
-							 this.adClientIpDAO.update(ipBean);
-						}
-					}
 				}
 				tinfo.setSerialNo(bean.getSerialNo());
 				tinfo.setThrowRate(task.getThrowRate());
 				resInfos.add(tinfo);
-				resonse.setResInfos(resInfos );
 			}
+			if (info != null && info.length > 0) {
+				for (TaskInfo taksif : info) {
+					boolean isContain = false;
+					for (TaskResonseInfo tif : resInfos) {
+						if(tif.getAppTaskId().equals(taksif.getAppTaskId())){
+							isContain = true;
+						}
+					}
+					if(!isContain){
+						TaskResonseInfo tinfo = new TaskResonseInfo();
+						tinfo.setAdClazzName(null);
+						tinfo.setAdClientId(find.getId());
+						tinfo.setAdTaskId(taksif.getAdTaskId());
+						tinfo.setAppTaskId(taksif.getAppTaskId());
+						tinfo.setCount(taksif.getCount());
+						tinfo.setDoneCount(taksif.getDoneCount());
+						tinfo.setIp(currentIp);
+						if (taksif.getDoneCount() != null && taksif.getDoneCount().compareTo(taksif.getCount()) >= 0) {
+							tinfo.setAction(TaskResonse.TR_DESDORY);
+							tinfo.setSerialNo(bean.getSerialNo());
+							tinfo.setThrowRate(null);
+							resInfos.add(tinfo);
+						}
+					}
+				}
+			}
+			resonse.setResInfos(resInfos.toArray(new TaskResonseInfo[resInfos.size()]));
 			return resonse;
 		}
 	}

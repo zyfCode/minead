@@ -1,5 +1,7 @@
 package com.sungan.ad.service.ext;
 
+import java.util.List;
+
 import com.sungan.ad.expand.common.bean.TaskInfo;
 import com.sungan.ad.vo.AdClientVo;
 import com.sungan.ad.vo.AppTaskVo;
@@ -11,5 +13,7 @@ import com.sungan.ad.vo.AppTaskVo;
  */
 public interface AdTaskManager {
 	void clientTaskInfo(TaskInfo taskInfo);
-	AppTaskVo getTask(AdClientVo client);
+	List<AppTaskVo> getTask(AdClientVo client);
+	 void cleanTask();
+	 void genTask();
 }

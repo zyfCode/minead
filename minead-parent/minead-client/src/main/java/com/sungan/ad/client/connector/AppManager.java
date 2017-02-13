@@ -55,6 +55,11 @@ public class AppManager {
 	}
 
 	public void init(){
+		for(Map.Entry<Long,TaskApp> entry:TASKINFO.entrySet()){
+			entry.getValue().destory();
+		}
+		TASKINFO.clear();
+		
 		ServerConnector connector = new ServerConnector();
 		InitTaskConnectRequest request = new InitTaskConnectRequest();
 		String mac = connector.getMac();
@@ -92,24 +97,25 @@ public class AppManager {
 				TaskInfo info = task.getTaskInfo();
 				infoList.add(info);
 			}
-			request.setInfo(infoList);
+			request.setInfo(infoList.toArray(new TaskInfo[infoList.size()]));
 			TaskResonse taskResponse = connector.taskHeart(request );
 			if(TaskResonse.TR_INIT.equals(taskResponse.getAction())){
 				this.init();
 			}
-			List<TaskResonseInfo> resInfos = taskResponse.getResInfos();
+			 TaskResonseInfo[] resInfos = taskResponse.getResInfos();
 			if(resInfos!=null){
 				for(TaskResonseInfo info:resInfos){
-					TaskApp taskApp = TASKINFO.get(info.getAdTaskId());
+					TaskApp taskApp = TASKINFO.get(info.getAppTaskId());
 					if(taskApp==null){
 						BaseAppLoader loader  = connector.getLoader();
 						TaskApp app = loader.getApp(info.getAdClazzName());
 						app.init(info);
 						app.work();
+						TASKINFO.put(info.getAppTaskId(), app);
 					}else{
 						if(TaskResonse.TR_DESDORY.equals(info.getAction())){
 							taskApp.destory();
-							TASKINFO.remove(info.getAdTaskId());
+							TASKINFO.remove(info.getAppTaskId());
 						}
 					}
 				}

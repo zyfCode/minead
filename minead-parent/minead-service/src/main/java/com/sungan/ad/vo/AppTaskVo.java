@@ -24,6 +24,7 @@ public class AppTaskVo implements Serializable {
 	private Long throwCount;
 	private String name;
 	private String type;
+	private String typeCn;
 	private String status;
 	private String statusCn;
 	private Long count;
@@ -35,6 +36,14 @@ public class AppTaskVo implements Serializable {
 	private String crateTimeStr;
 	private Date updateTime;
 	private String updateTimeStr;
+
+	public String getTypeCn() {
+		return typeCn;
+	}
+
+	public void setTypeCn(String typeCn) {
+		this.typeCn = typeCn;
+	}
 
 	public Integer getThrowRate() {
 		return throwRate;

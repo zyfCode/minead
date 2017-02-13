@@ -1,5 +1,6 @@
 package com.sungan.ad.client.apploader;
 
+import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -29,7 +30,7 @@ public class BaseAppLoader {
 		try {
 			if(classLoder==null){
 				URL[] array = list.toArray(new URL[list.size()]);
-				classLoder = new URLClassLoader(array);
+				classLoder = new URLClassLoader(array,this.getClass().getClassLoader());
 			}
 			Class<TaskApp> loadClass = (Class<TaskApp>) classLoder.loadClass(name);
 			TaskApp newInstance = loadClass.newInstance();
