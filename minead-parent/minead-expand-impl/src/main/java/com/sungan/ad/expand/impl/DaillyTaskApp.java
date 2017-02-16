@@ -283,7 +283,7 @@ public class DaillyTaskApp implements TaskApp{
 					}
 				});
 			}
-		}, 0, 100, TimeUnit.MILLISECONDS);
+		}, 0, 1500, TimeUnit.MILLISECONDS);
 	}
 
 	@Override
