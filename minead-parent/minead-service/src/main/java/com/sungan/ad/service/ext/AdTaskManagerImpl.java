@@ -91,10 +91,6 @@ public class AdTaskManagerImpl implements AdTaskManager {
 			log.warn("未打到"+find.getClientIpid()+"的ip记录");
 			return ;
 		}
-		if(!queryIps.get(0).getIp().equals(taskInfo.getClientIp())){
-			log.warn("当前ip"+taskInfo.getClientIp()+",期望ip"+queryIps.get(0).getIp()+"不匹配");
-			return;
-		}
 		if(find.getCount()<=find.getDoneCount()){
 			find.setStatus(AppTask.APPTASK_STATUS_SUCCESS);
 			AppTask task = new AppTask();

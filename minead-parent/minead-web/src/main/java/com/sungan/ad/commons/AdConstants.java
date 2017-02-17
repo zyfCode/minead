@@ -48,7 +48,10 @@ public class AdConstants {
 	 */
 	public static String getRemoteIpAddress(HttpServletRequest request) {
 		// 获取登录IP
-		String ip = request.getHeader("x-forwarded-for");
+		String ip = request.getHeader("X-Real-IP");
+		if(ip!=null){
+			return ip;
+		}
 		if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)
 				|| "null".equalsIgnoreCase(ip)) {
 			ip = request.getHeader("Proxy-Client-IP");

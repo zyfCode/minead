@@ -250,23 +250,16 @@ public class AdClientServiceImpl implements AdClientService {
 			resonse.setAction(TaskResonse.TR_INIT);
 			return resonse;
 		} else {
-			find.setCurrentIp(currentIp);
 			find.setPreAccessTime(new Date());
 			if (!find.getCurrentIp().equals(currentIp)) {
-				find.setCurrentIp(currentIp);
 				AdClientIp condition = new AdClientIp();
 				condition.setClientId(find.getId());
 				List<AdClientIp> query = (List<AdClientIp>) this.adClientIpDAO.query(condition);
-				for (AdClientIp ipBean : query) {
-					if (ipBean.getStatus().equals(AdClientIp.ADCLIENTIP_STATUS_RUNNING)
-							&& !ipBean.getIp().equals(currentIp)) {
-						ipBean.setStatus(AdClientIp.ADCLIENTIP_STATUS_INVALID);
-						this.adClientIpDAO.update(ipBean);
-					} else if (ipBean.getIp().equals(currentIp)) {
-						ipBean.setStatus(AdClientIp.ADCLIENTIP_STATUS_RUNNING);
-						this.adClientIpDAO.update(ipBean);
-					}
+				for (AdClientIp ipBean : query) {  //目前一台服务器只有一个ip
+					ipBean.setIp(currentIp);
+					this.adClientIpDAO.update(ipBean);
 				}
+				find.setCurrentIp(currentIp);
 			}
 			adClientDAO.update(find);
 			TaskInfo[] info = bean.getInfo();
