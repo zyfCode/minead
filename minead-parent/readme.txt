@@ -1,7 +1,7 @@
 #####################SQL#########################################
 
-INSERT INTO `t_ad_task` (`id`, `clazzName`, `count`, `createTime`, `descript`, `name`, `preIssuedTime`, `status`, `taskGroup`, `type`, `updateTime`) VALUES ('1', 'com.sungan.ad.expand.impl.DaillyTaskApp', '22000', '2017-02-10 22:09:19', NULL, '测试任务', '2017-02-10 22:09:32', '1', '1', '0', '2017-02-10 22:09:41');
-INSERT INTO `t_ad_task` (`id`, `clazzName`, `count`, `createTime`, `descript`, `name`, `preIssuedTime`, `status`, `taskGroup`, `type`, `updateTime`) VALUES ('2', 'com.sungan.ad.expand.impl.DaillyTaskAppDR2', '22000', '2017-02-10 22:09:19', NULL, '刷量2', '2017-02-10 22:09:32', '1', '1', '0', '2017-02-10 22:09:41');
+INSERT INTO `t_ad_task` (`id`, `clazzName`, `count`, `createTime`, `descript`, `name`, `preIssuedTime`, `status`, `taskGroup`, `type`, `updateTime`) VALUES ('1', 'com.sungan.ad.expand.impl.DaillyTaskApp', '8000', '2017-02-10 22:09:19', NULL, '测试任务', '2017-02-10 22:09:32', '1', '1', '0', '2017-02-10 22:09:41');
+INSERT INTO `t_ad_task` (`id`, `clazzName`, `count`, `createTime`, `descript`, `name`, `preIssuedTime`, `status`, `taskGroup`, `type`, `updateTime`) VALUES ('2', 'com.sungan.ad.expand.impl.DaillyTaskAppDR2', '8000', '2017-02-10 22:09:19', NULL, '刷量2', '2017-02-10 22:09:32', '1', '1', '0', '2017-02-10 22:09:41');
 
 
 
