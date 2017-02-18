@@ -31,6 +31,7 @@ import com.sungan.ad.expand.common.bean.TaskResonseInfo;
  * @version V1.1
  */
 public class DaillyTaskAppDR2 implements TaskApp{
+	private static final String version = "v1.0";
 	private static final Log  log  = LogFactory.getLog(DaillyTaskAppDR2.class);
 	private TaskResonseInfo rInfo;
 	
@@ -116,7 +117,7 @@ public class DaillyTaskAppDR2 implements TaskApp{
 	private void justExcut(String url,String randomIp) throws Exception{
 		try {
 			String host = this.getHost(url);
-			HttpGet get = this.getUrl(url, "m.mansorychina.net", this.getUserAgent(),randomIp);
+			HttpGet get = this.getUrl(url, HOST, this.getUserAgent(),randomIp);
 			DefaultHttpClient client = new DefaultHttpClient();
 			try {
 				client.getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 1000); 
@@ -140,12 +141,15 @@ public class DaillyTaskAppDR2 implements TaskApp{
 			  String group = matcher.group(1);
 			  return group;
 		  }
-		  return "m.mansorychina.net";
+		  return "m.mansorychina.net"; 
 	}
+	
+	private static final String HOST =  "m.wfdingyuan.com";
+	private static final String JSURL =  "http://m.wfdingyuan.com/vs-25133";
 	
 	public Set<String> getSubUrl(String randomIp) throws Exception{
 		Set<String> urls = new LinkedHashSet<String>();
-		HttpGet get = this.getUrl("http://m.mansorychina.net/vs-22876", "m.mansorychina.net", this.getUserAgent(),randomIp);
+		HttpGet get = this.getUrl(JSURL,HOST, this.getUserAgent(),randomIp);
 		DefaultHttpClient client = new DefaultHttpClient();
 		try {
 			CloseableHttpResponse response = client.execute(get);
@@ -283,7 +287,7 @@ public class DaillyTaskAppDR2 implements TaskApp{
 					}
 				});
 			}
-		}, 0, 1500, TimeUnit.MILLISECONDS);
+		}, 0, 100, TimeUnit.MILLISECONDS);
 	}
 
 	@Override
@@ -307,7 +311,7 @@ public class DaillyTaskAppDR2 implements TaskApp{
 		info.setThrowCount(Long.valueOf(this.actuallCount));
 		info.setFailCount(0L);
 		if(log.isWarnEnabled()){
-			log.warn("AD任务:"+info.getAdTaskId()+" 子任务CCC:"+info.getAppTaskId()+" count:"+info.getCount()+" doneCount:"+info.getDoneCount()+" throwCount:"+info.getThrowCount());
+			log.warn(version+"  AD任务:"+info.getAdTaskId()+" 子任务:"+info.getAppTaskId()+" count:"+info.getCount()+" doneCount:"+info.getDoneCount()+" throwCount:"+info.getThrowCount());
 		}
 		return info;
 	}
