@@ -262,12 +262,14 @@ public class AdClientServiceImpl implements AdClientService {
 				find.setCurrentIp(currentIp);
 			}
 			adClientDAO.update(find);
+			
 			TaskInfo[] info = bean.getInfo();
 			if (info != null && info.length > 0) {
 				for (TaskInfo taksif : info) {
 					adTaskManager.clientTaskInfo(taksif);
 				}
 			}
+			
 			AdClientVo clientVo = AnnotationParser.parseToVo(AdClientVo.class, find);
 			List<AppTaskVo> taskList = adTaskManager.getTask(clientVo);
 			TaskResonse resonse = new TaskResonse();
@@ -289,6 +291,7 @@ public class AdClientServiceImpl implements AdClientService {
 				tinfo.setThrowRate(task.getThrowRate());
 				resInfos.add(tinfo);
 			}
+			//客户端未运行完的代码也让继续运行
 			if (info != null && info.length > 0) {
 				for (TaskInfo taksif : info) {
 					boolean isContain = false;
@@ -297,21 +300,22 @@ public class AdClientServiceImpl implements AdClientService {
 							isContain = true;
 						}
 					}
-					if(!isContain){
-						TaskResonseInfo tinfo = new TaskResonseInfo();
-						tinfo.setAdClazzName(null);
-						tinfo.setAdClientId(find.getId());
-						tinfo.setAdTaskId(taksif.getAdTaskId());
-						tinfo.setAppTaskId(taksif.getAppTaskId());
-						tinfo.setCount(taksif.getCount());
-						tinfo.setDoneCount(taksif.getDoneCount());
-						tinfo.setIp(currentIp);
-						if (taksif.getDoneCount() != null && taksif.getDoneCount().compareTo(taksif.getCount()) >= 0) {
-							tinfo.setAction(TaskResonse.TR_DESDORY);
-							tinfo.setSerialNo(bean.getSerialNo());
-							tinfo.setThrowRate(null);
-							resInfos.add(tinfo);
-						}
+					if(isContain){   //如果任务已经存在忽略
+						continue;
+					}
+					TaskResonseInfo tinfo = new TaskResonseInfo();
+					tinfo.setAdClazzName(null);
+					tinfo.setAdClientId(find.getId());
+					tinfo.setAdTaskId(taksif.getAdTaskId());
+					tinfo.setAppTaskId(taksif.getAppTaskId());
+					tinfo.setCount(taksif.getCount());
+					tinfo.setDoneCount(taksif.getDoneCount());
+					tinfo.setIp(currentIp);
+					if (taksif.getDoneCount() != null && taksif.getDoneCount().compareTo(taksif.getCount()) >= 0) {
+						tinfo.setAction(TaskResonse.TR_DESDORY);
+						tinfo.setSerialNo(bean.getSerialNo());
+						tinfo.setThrowRate(null);
+						resInfos.add(tinfo);
 					}
 				}
 			}

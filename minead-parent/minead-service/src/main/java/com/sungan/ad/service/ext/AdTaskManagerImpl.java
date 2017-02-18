@@ -1,6 +1,7 @@
 package com.sungan.ad.service.ext;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -88,58 +89,24 @@ public class AdTaskManagerImpl implements AdTaskManager {
 		adClientIp.setId(find.getClientIpid());
 		List<AdClientIpVo> queryIps = this.adClientService.queryIps(adClientIp);
 		if(queryIps==null||queryIps.size()<1){
-			log.warn("未打到"+find.getClientIpid()+"的ip记录");
+			log.warn("未找到"+find.getClientIpid()+"的ip记录");
 			return ;
 		}
-		if(find.getCount()<=find.getDoneCount()){
-			find.setStatus(AppTask.APPTASK_STATUS_SUCCESS);
-			AppTask task = new AppTask();
-			AdCommonsUtil.beanCopyWithoutNull(find, task);
-			appTaskServivce.update(task);
-			//当前client下其他同一时段的任务置为无效
-			AppTask condition = new AppTask();
-			condition.setClientId(taskInfo.getClientId());
-			condition.setTaskRunTime(find.getTaskRunTime());
-			List<AppTaskVo> query = appTaskServivce.query(condition);
-			if(query!=null){
-				for(AppTaskVo vo:query){
-					if(taskInfo.getAdTaskId().equals(vo.getId())){
-						continue;
-					}
-					vo.setStatus(AppTask.APPTASK_STATUS_INVALID);
-					AppTask taskOth = new AppTask();
-					AdCommonsUtil.beanCopyWithoutNull(vo, taskOth);
-					appTaskServivce.update(taskOth );
-				}
+		try {
+			if(find.getCount()<=find.getDoneCount()){
+				find.setStatus(AppTask.APPTASK_STATUS_SUCCESS);
+				AppTask task = new AppTask();
+				AdCommonsUtil.beanCopyWithoutNull(find, task);
+				appTaskServivce.update(task);
+			}else if(AppTask.APPTASK_STATUS_PUBLIC.equals(find.getStatus())){
+				AppTask updateTask = new AppTask(); 
+				updateTask.setStatus(AppTask.APPTASK_STATUS_RUNNING);
+				AdCommonsUtil.beanCopyWithoutNull(find, updateTask);
+				appTaskServivce.update(updateTask);
 			}
+		} catch (Exception e) {
+			log.info("", e);
 		}
-		AppTask updateTask = new AppTask(); 
-		AdCommonsUtil.beanCopyWithoutNull(find, updateTask);
-		appTaskServivce.update(updateTask );
-//		else if((this.getClientCount(taskInfo.getClientId(), taskInfo.getClientIp())+taskInfo.getDoneCount())>=queryById.getCount()){
-//			AdTaskVo queryById = adTaskService.queryById(find.getAdTaskid());
-//			find.setStatus(AppTask.APPTASK_STATUS_SUCCESS);
-//			AppTask task = new AppTask();
-//			AdCommonsUtil.beanCopyWithoutNull(find, task);
-//			appTaskServivce.update(task);
-//			//当前client下其他同一时段的任务置为无效
-//			AppTask condition = new AppTask();
-//			condition.setClientId(taskInfo.getClientId());
-//			condition.setTaskRunTime(find.getTaskRunTime());
-//			List<AppTaskVo> query = appTaskServivce.query(condition);
-//			if(query!=null){
-//				for(AppTaskVo vo:query){
-//					if(taskInfo.getAdTaskId().equals(vo.getId())){
-//						continue;
-//					}
-//					vo.setCount(find.getCount()-find.getDoneCount());
-//					vo.setUpdateTime(new Date());
-//					AppTask taskOth = new AppTask();
-//					AdCommonsUtil.beanCopyWithoutNull(vo, taskOth);
-//					appTaskServivce.update(taskOth );
-//				}
-//			}
-//		}
 	}
 	
 	
@@ -154,43 +121,38 @@ public class AdTaskManagerImpl implements AdTaskManager {
 		clientId.setIp(client.getCurrentIp());
 		List<AdClientIpVo> queryIps = adClientService.queryIps(clientId);
 		if(queryIps!=null&&queryIps.size()==1){
-			clientId = new AdClientIp();
-			clientId.setClientId(client.getId());
-			clientId.setStatus(AdClientIp.ADCLIENTIP_STATUS_RUNNING);
-			queryIps = adClientService.queryIps(clientId);
-			if( !queryIps.get(0).getIp().equals(client.getCurrentIp())){
-					AdClientIp updateStatus = new AdClientIp();
-					 AdClientIpVo ipvo = queryIps.get(0);
-					updateStatus.setId(ipvo .getId());
-					updateStatus.setIp(client.getCurrentIp());
-					adClientService.updateIp(updateStatus);
+			 AdClientIpVo adClientIpVo = queryIps.get(0);
+			if( !adClientIpVo.getIp().equals(client.getCurrentIp())){
+				AdClientIp updateStatus = new AdClientIp();
+				updateStatus.setId(adClientIpVo .getId());
+				updateStatus.setIp(client.getCurrentIp());
+				adClientService.updateIp(updateStatus);
 			}
 		
-			AdClientIpVo adClientIpVo = queryIps.get(0);
 			AppTask condition = new AppTask();
 			condition.setClientId(client.getId());
 			condition.setClientIpid(adClientIpVo.getId());
 			condition.setStatus(AppTask.APPTASK_STATUS_RUNNING);
-			List<AppTaskVo> query = appTaskServivce.query(condition );
+			List<AppTaskVo> queryRunning = appTaskServivce.query(condition );
 			 condition.setStatus(AppTask.APPTASK_STATUS_PUBLIC);
-			List<AppTaskVo> query1 = appTaskServivce.query(condition );
-			if(query!=null){
-				if(query1!=null){
-					query.addAll(query1);
+			List<AppTaskVo> querypublic = appTaskServivce.query(condition );
+			if(queryRunning!=null){
+				if(querypublic!=null){
+					queryRunning.addAll(querypublic);
 				}
 			}else{
-				query =query1;
+				queryRunning =querypublic;
 			}
 			Date date = this.getCurrentDate();
 			Set<Long> adTskIds = new LinkedHashSet<Long>();
-			for(AppTaskVo vo:query){ //根据AdTaskId对任务进行分类 
+			for(AppTaskVo vo:queryRunning){          //根据AdTaskId对任务进行分类 
 				adTskIds.add(vo.getAdTaskid());
 			}
 			List<AppTaskVo>resultList = new ArrayList<AppTaskVo>();
 			for(Long adTaskId:adTskIds){
 				AppTaskVo result = null;
 				AppTaskVo runningTask = null;
-				for(AppTaskVo vo:query){
+				for(AppTaskVo vo:queryRunning){
 					if(!vo.getAdTaskid().equals(adTaskId)){
 						continue;
 					}
@@ -198,11 +160,16 @@ public class AdTaskManagerImpl implements AdTaskManager {
 						runningTask = vo;
 					}
 					if(vo.getStatus().equals(AppTask.APPTASK_STATUS_PUBLIC)&&vo.getTaskRunTime().getTime()<=date.getTime()){
-						if(result==null){
-							result = vo;
-						}else if(vo.getTaskRunTime().getTime()>result.getTaskRunTime().getTime()){
-							result = vo;
+						Calendar calendar = Calendar.getInstance();  
+						calendar.setTime(date);
+						int currentHour = calendar.get(Calendar.HOUR);
+						calendar.setTime(vo.getTaskRunTime());
+						int taskRunHour = calendar.get(Calendar.HOUR);
+						//如果相差大于2小时任务忽略
+						if(currentHour-taskRunHour>2){
+							continue;
 						}
+						result = vo;
 					}
 				}
 				if(runningTask!=null&&runningTask.getDoneCount()<runningTask.getCount()){

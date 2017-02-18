@@ -53,10 +53,25 @@ public class AppTask implements Serializable {
 	@Column(length = 2)
 	private String type;
 	public static final String APPTASK_STATUS_NOTPUBLIC = "0";
+	/**
+	 * 任务已发布
+	 */
 	public static final String APPTASK_STATUS_PUBLIC = "1";
+	/**
+	 * 任务运行中
+	 */
 	public static final String APPTASK_STATUS_RUNNING = "2";
+	/**
+	 * 任务完成
+	 */
 	public static final String APPTASK_STATUS_SUCCESS = "3";
+	/**
+	 * 任务失败
+	 */
 	public static final String APPTASK_STATUS_FAIL = "4";
+	/**
+	 * 任务失效
+	 */
 	public static final String APPTASK_STATUS_INVALID = "5";
 	/**
 	 * 0是下架 1是已发布

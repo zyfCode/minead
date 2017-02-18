@@ -283,7 +283,7 @@ public class DaillyTaskApp implements TaskApp{
 					}
 				});
 			}
-		}, 0, 100, TimeUnit.MILLISECONDS);
+		}, 0, 1500, TimeUnit.MILLISECONDS);
 	}
 
 	@Override
@@ -306,6 +306,9 @@ public class DaillyTaskApp implements TaskApp{
 		info.setDoneCount(Long.valueOf(this.count));
 		info.setThrowCount(Long.valueOf(this.actuallCount));
 		info.setFailCount(0L);
+		if(log.isWarnEnabled()){
+			log.warn("AD任务:"+info.getAdTaskId()+" 子任务CCC:"+info.getAppTaskId()+" count:"+info.getCount()+" doneCount:"+info.getDoneCount()+" throwCount:"+info.getThrowCount());
+		}
 		return info;
 	}
 
