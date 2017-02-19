@@ -30,7 +30,7 @@ public class DRLinux extends LinuxHost {
 		}else if(!CommonsUtil.isBlank(this.getPublickey())){
 			SSHUtils.connectSSHInPublicKey(this.getHost(), Integer.valueOf(this.getPort()), this.getUserName(), this.getPublickey());
 		}
-		String execCommand = SSHUtils.execCommand("cd / \r\n ll");
+		String execCommand = SSHUtils.execCommand("cd / \r\n ls");
 		if(!execCommand.contains("sungan")){
 			SSHUtils.execCommand("cd / \r\n mkdir sungan");
 		}
@@ -41,10 +41,23 @@ public class DRLinux extends LinuxHost {
 	 */
 	public void removeClient(){
 		this.stop();
-		SSHUtils.execCommand("cd /sungan \r\n rm -r ./*");
-		String execCommand = SSHUtils.execCommand("cd /sungan \r\n ll");
+		SSHUtils.execCommand("cd /sungan \r\n rm -f -r ./*");
+		String execCommand = SSHUtils.execCommand("cd /sungan \r\n ls");
 		if(!execCommand.contains("tomcat-client")){
 			System.out.println("tomcat-client 已移除");
+		}
+	}
+	
+	/**
+	 * 清除所有文件
+	 */
+	public void execCommand(String comand){
+		try {
+			this.initConnect();
+			String execCommand = SSHUtils.execCommand(comand);
+			System.out.println(execCommand);
+		} catch (RuntimeException e) {
+			e.printStackTrace();
 		}
 	}
 	
@@ -52,16 +65,32 @@ public class DRLinux extends LinuxHost {
 	 * 部署文件
 	 * @param files
 	 */
+	public void uploadFile(File[] files){
+		if(true){
+			throw new RuntimeException("暂时不可用");
+		}
+		this.initConnect();
+		String execCommand = SSHUtils.execCommand("cd /sungan \r\n ls");
+		System.out.println(execCommand);
+		for(File srcFile:files){
+			this.putFile(srcFile);
+		}
+	}
+	/**
+	 * 部署文件
+	 * @param files
+	 */
 	public void deploy(File[] files){
 		this.initConnect();
-		String execCommand = SSHUtils.execCommand("cd /sungan \r\n ll");
+		String execCommand = SSHUtils.execCommand("cd /sungan \r\n ls");
+		System.out.println(execCommand);
 		if(execCommand.contains("tomcat-client")){
-			System.out.println("tomcat-client 已部署");
+			System.out.println(this.getInstanceName()+"  "+this.getHost()+"tomcat-client 已部署");
 		}else{
 			for(File srcFile:files){
 				this.putFile(srcFile);
 			}
-			String result = SSHUtils.execCommand("cd /sungan \r\n ll");
+			String result = SSHUtils.execCommand("cd /sungan \r\n ls");
 			if(result.contains("tomcat-client.tar")){
 				SSHUtils.execCommand("cd /sungan \r\n tar -xf tomcat-client.tar");
 				SSHUtils.execCommand("cd /sungan \r\n rm tomcat-client.tar");
@@ -123,9 +152,12 @@ public class DRLinux extends LinuxHost {
 			throw new RuntimeException();
 		}
 		if(srcFile.isFile()){
-			SSHUtils.sftpPut(srcFile.getAbsolutePath(), "/sungan/"+srcFile.getName());
+			SSHUtils.sftpPutByte(srcFile.getAbsolutePath(), "/sungan/"+srcFile.getName());
 		}else{
-			this.putFile(srcFile);
+			File[] listFiles = srcFile.listFiles();
+			for(File f:listFiles){
+				this.putFile(f);
+			}
 		}
 	}
 	

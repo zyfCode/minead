@@ -1,9 +1,14 @@
 package com.sungan.ad.client.tools.linux.ssh;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.ChannelSftp;
@@ -114,7 +119,12 @@ public class SSHUtils {
 				while((line=bufErrReader.readLine())!=null){
 						result.append(line).append("\r\n");
 				}
-				return result.toString();
+				 String resultStr = result.toString();
+				 if(resultStr.contains("command not found")){
+					throw new RuntimeException("未知命令:"+resultStr);
+				 }
+				 return resultStr;
+						 
 			} finally{
 				execChannel.disconnect();
 			}
@@ -181,6 +191,51 @@ public class SSHUtils {
 				openChannel = (ChannelSftp) session.openChannel(SSHUtils.CHANNELTYPE_SFTP);
 				openChannel.connect();
 				openChannel.put(src, dst);
+			} finally {
+				if(openChannel!=null){
+					openChannel.disconnect();
+				}
+			}
+		} catch (Exception e) {
+			throw new RuntimeException("",e);
+		}
+	}
+	
+	/**
+	 *sftp put文件到系统
+	 * @param src
+	 * @param dst
+	 * @return
+	 * @throws RuntimeException
+	 */
+	public static void sftpPutByte(String src,String dst) throws RuntimeException{
+		if(src==null||src.trim().equals("")||!new File(src).exists()){ 
+			throw new RuntimeException("unknow source:::"+src);
+		}
+		Session session = threadLocal.get();
+		if(session==null){
+			throw new RuntimeException("disconnect!");
+		}
+		ChannelSftp openChannel =null;
+		try {
+			try {
+				openChannel = (ChannelSftp) session.openChannel(SSHUtils.CHANNELTYPE_SFTP);
+				openChannel.connect();
+				OutputStream put = openChannel.put(dst, ChannelSftp.OVERWRITE);
+				File file = new File(src);
+				InputStream in = new FileInputStream(file);
+				long length = file.length();
+				byte [] buf = new byte[50*1024];
+				int len = -1;
+				long count = 0;
+				while((len=in.read(buf))!=-1){
+					put.write(buf, 0, len);
+					count = count+len;
+					System.out.println(file.getName()+"文件上传"+count+"/"+length);
+				}
+				put.flush();
+				in.close();
+//				openChannel.put(src, dst);
 			} finally {
 				if(openChannel!=null){
 					openChannel.disconnect();
