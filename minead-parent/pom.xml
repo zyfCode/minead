@@ -16,6 +16,7 @@
 		<module>minead-service</module>
 		<!-- <module>minead-web</module> -->
 <!-- 		<module>minead-client-web</module> -->
+		<module>minead-client-deploytools</module>
 	</modules>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
