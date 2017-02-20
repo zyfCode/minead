@@ -140,7 +140,9 @@ public class ClientoolsMain {
 								System.out.println("未适命令:"+comand+" 不符合期望值");
 							}
 							isStop = Boolean.valueOf(comand);
-							break;
+							if(!isStop){
+								break;
+							}
 						}
 						if(isStop){
 							DRLinux drLinux = new DRLinux(lh);
