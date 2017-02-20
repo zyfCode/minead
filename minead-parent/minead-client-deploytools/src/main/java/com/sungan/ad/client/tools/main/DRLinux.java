@@ -94,6 +94,7 @@ public class DRLinux extends LinuxHost {
 			if(result.contains("tomcat-client.tar")){
 				SSHUtils.execCommand("cd /sungan \r\n tar -xf tomcat-client.tar");
 				SSHUtils.execCommand("cd /sungan \r\n rm tomcat-client.tar");
+				SSHUtils.execCommand("chmod 755 -R /sungan/tomcat-client/bin/");
 			}
 		}
 	}

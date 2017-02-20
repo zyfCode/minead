@@ -36,7 +36,12 @@ public class JsonInterceptor   implements HandlerInterceptor  {
 	@Override
 	public void afterCompletion(HttpServletRequest request, HttpServletResponse resonse, Object arg2, Exception arg3)
 			throws Exception {
-		System.out.println("afterCompletion............");
+		try {
+			String remoteIpAddress = AdConstants.getRemoteIpAddress(request);
+			System.out.println("afterCompletion...."+remoteIpAddress+"......");
+		} catch (Exception e) {
+			log.error("", e);
+		}
 	}
 
 	@Override
