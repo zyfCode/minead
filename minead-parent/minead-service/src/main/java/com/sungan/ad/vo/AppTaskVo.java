@@ -37,6 +37,19 @@ public class AppTaskVo implements Serializable {
 	private Date updateTime;
 	private String updateTimeStr;
 
+	
+	
+
+	@Override
+	public String toString() {
+		return "\r\nAppTaskVo [id=" + id + ", clientId=" + clientId + ", clientIpid=" + clientIpid + ", adTaskid="
+				+ adTaskid + ", throwRate=" + throwRate + ", throwCount=" + throwCount + ", name=" + name + ", type="
+				+ type + ", typeCn=" + typeCn + ", status=" + status + ", statusCn=" + statusCn + ", count=" + count
+				+ ", doneCount=" + doneCount + ", failCount=" + failCount + ", taskRunTime=" + taskRunTime
+				+ ", taskRunTimeStr=" + taskRunTimeStr + ", crateTime=" + crateTime + ", crateTimeStr=" + crateTimeStr
+				+ ", updateTime=" + updateTime + ", updateTimeStr=" + updateTimeStr + "]\r\n";
+	}
+
 	public String getTypeCn() {
 		return typeCn;
 	}

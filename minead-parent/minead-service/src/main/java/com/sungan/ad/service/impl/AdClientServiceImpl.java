@@ -251,6 +251,7 @@ public class AdClientServiceImpl implements AdClientService {
 			return resonse;
 		} else {
 			find.setPreAccessTime(new Date());
+			find.setStatus(AdClient.ADCLIENT_STATUS_RUNNING);
 			if (!find.getCurrentIp().equals(currentIp)) {
 				AdClientIp condition = new AdClientIp();
 				condition.setClientId(find.getId());

@@ -31,6 +31,14 @@ public class AdClientVo implements Serializable{
 	private String sysOs;
 	private String statusCn;
 	
+	@Override
+	public String toString() {
+		return "AdClientVo [id=" + id + ", name=" + name + ", mac=" + mac + ", currentIp=" + currentIp + ", preIp="
+				+ preIp + ", countIps=" + countIps + ", ipstDesc=" + ipstDesc + ", preAccessTime=" + preAccessTime
+				+ ", preAccessTimeStr=" + preAccessTimeStr + ", createTime=" + createTime + ", createTimeStr="
+				+ createTimeStr + ", systemType=" + systemType + ", status=" + status + ", sysOs=" + sysOs
+				+ ", statusCn=" + statusCn + "]";
+	}
 	public String getSysOs() {
 		return sysOs;
 	}

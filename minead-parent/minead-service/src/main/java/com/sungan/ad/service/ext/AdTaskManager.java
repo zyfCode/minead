@@ -16,4 +16,5 @@ public interface AdTaskManager {
 	List<AppTaskVo> getTask(AdClientVo client);
 	 void cleanTask();
 	 void genTask();
+	 void checkInvalidClient();
 }

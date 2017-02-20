@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.apache.commons.lang.time.DateUtils;
 
+import com.sungan.ad.commons.AdDateUtil;
 import com.sungan.ad.domain.AppTask;
 import com.sungan.ad.service.AdClientService;
 import com.sungan.ad.service.ext.HourUtil;
@@ -32,9 +33,6 @@ public class AppCycleTskHandler extends TaskHandler{
 		List<AppTask> result = new ArrayList<AppTask>();
 			List<AdHourWeightVo> default1 = HourUtil.getDefault();
 			for( AdHourWeightVo ah:default1){
-				Date setHours = DateUtils.setHours(new Date(), ah.getHour());
-				setHours = DateUtils.setMinutes(setHours, 0);
-				 setHours =  DateUtils.setSeconds(setHours, 0);
 				AppTask task = new AppTask();
 				task.setAppName(clientVo.getCurrentIp()+"_"+clientVo.getSysOs());
 				task.setAppNo(clientVo.getCurrentIp());
@@ -46,7 +44,7 @@ public class AppCycleTskHandler extends TaskHandler{
 				task.setDescript("");
 				task.setThrowRate(ah.getThrowRate());
 				task.setDoneCount(0L);
-				task.setTaskRunTime(setHours);
+				task.setTaskRunTime(AdDateUtil.getTaskRunDate(ah.getHour()));
 				task.setFailCount(0L);
 				task.setName(vo.getName());
 				task.setStatus(AppTask.APPTASK_STATUS_PUBLIC);

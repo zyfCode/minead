@@ -54,6 +54,7 @@
 		<property name="startDelay" value="0" /><!-- 调度工厂实例化后，经过0秒开始执行调度 -->  
 		<property name="repeatInterval" value="50000" /><!-- 每2秒调度一次 -->  
 	</bean>
+	
 	<bean id="cleanTaskJob"  
 		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">  
 		<property name="targetObject" ref="adTaskManager"></property>  
@@ -66,11 +67,25 @@
 		<property name="repeatInterval" value="3600000" /><!-- 每2秒调度一次 -->  
 	</bean>
 	
+	<bean id="checkClientJob"  
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">  
+		<property name="targetObject" ref="adTaskManager"></property>  
+		<property name="targetMethod" value="checkInvalidClient" />  
+		<property name="concurrent" value="false" /><!-- 作业不并发调度 -->  
+	</bean>
+	
+	<bean id="checkClientJobTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">  
+		<property name="jobDetail" ref="checkClientJob" />  
+		<property name="startDelay" value="0" /><!-- 调度工厂实例化后，经过0秒开始执行调度 -->  
+		<property name="repeatInterval" value="3600000" /><!-- 每2秒调度一次 -->  
+	</bean>
+	
 		<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
 		<property name="triggers">
 			<list>
 				<ref bean="addTaskJobTrigger" />
 				<ref bean="cleanTaskJobTrigger" />
+				<ref bean="checkClientJobTrigger" />
 			</list>
 		</property>
 	</bean>  

@@ -1,24 +1,25 @@
 package com.sungan.ad.service.ext;
 
-import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.sungan.ad.commons.AdCommonsUtil;
+import com.sungan.ad.commons.AdDateUtil;
+import com.sungan.ad.domain.AdClient;
 import com.sungan.ad.domain.AdClientIp;
 import com.sungan.ad.domain.AdTask;
 import com.sungan.ad.domain.AppTask;
 import com.sungan.ad.expand.common.bean.TaskInfo;
 import com.sungan.ad.service.AdClientService;
 import com.sungan.ad.service.AdHourWeightService;
+import com.sungan.ad.service.AdSysParamService;
 import com.sungan.ad.service.AdTaskService;
 import com.sungan.ad.service.AppTaskServivce;
 import com.sungan.ad.service.ext.handler.AppCycleTskHandler;
@@ -45,7 +46,36 @@ public class AdTaskManagerImpl implements AdTaskManager {
 	private AppTaskServivce appTaskServivce;
 	@Autowired
 	private AdHourWeightService adHourWeightService;
+	@Autowired
+	private AdSysParamService adSysParamService;
+	@Value(value = "${ad.mock}")
+	private String isMock;
 	
+	
+	public AdClientService getAdClientService() {
+		return adClientService;
+	}
+
+	public void setAdClientService(AdClientService adClientService) {
+		this.adClientService = adClientService;
+	}
+
+	public AdSysParamService getAdSysParamService() {
+		return adSysParamService;
+	}
+
+	public void setAdSysParamService(AdSysParamService adSysParamService) {
+		this.adSysParamService = adSysParamService;
+	}
+
+	public String getIsMock() {
+		return isMock;
+	}
+
+	public void setIsMock(String isMock) {
+		this.isMock = isMock;
+	}
+
 	public Date getCurrentDate(){
 		return new Date();
 	}
@@ -74,6 +104,7 @@ public class AdTaskManagerImpl implements AdTaskManager {
 		}
 		return result;
 	}
+	
 	
 	/**
 	 * 客户端上传任务详细
@@ -135,6 +166,12 @@ public class AdTaskManagerImpl implements AdTaskManager {
 			condition.setStatus(AppTask.APPTASK_STATUS_RUNNING);
 			List<AppTaskVo> queryRunning = appTaskServivce.query(condition );
 			 condition.setStatus(AppTask.APPTASK_STATUS_PUBLIC);
+			 condition.setClientId(client.getId());
+			 if(!StringUtils.isBlank(isMock)&&isMock.equalsIgnoreCase("true")){
+				 condition.setTaskRunTime(adSysParamService.getSysRuntime());
+			 }else{
+				 condition.setTaskRunTime(AdDateUtil.getTaskRunDate());
+			 }
 			List<AppTaskVo> querypublic = appTaskServivce.query(condition );
 			if(queryRunning!=null){
 				if(querypublic!=null){
@@ -143,47 +180,32 @@ public class AdTaskManagerImpl implements AdTaskManager {
 			}else{
 				queryRunning =querypublic;
 			}
-			Date date = this.getCurrentDate();
-			Set<Long> adTskIds = new LinkedHashSet<Long>();
-			for(AppTaskVo vo:queryRunning){          //根据AdTaskId对任务进行分类 
-				adTskIds.add(vo.getAdTaskid());
-			}
-			List<AppTaskVo>resultList = new ArrayList<AppTaskVo>();
-			for(Long adTaskId:adTskIds){
-				AppTaskVo result = null;
-				AppTaskVo runningTask = null;
-				for(AppTaskVo vo:queryRunning){
-					if(!vo.getAdTaskid().equals(adTaskId)){
-						continue;
-					}
-					if(vo.getStatus().equals(AppTask.APPTASK_STATUS_RUNNING)){
-						runningTask = vo;
-					}
-					if(vo.getStatus().equals(AppTask.APPTASK_STATUS_PUBLIC)&&vo.getTaskRunTime().getTime()<=date.getTime()){
-						Calendar calendar = Calendar.getInstance();  
-						calendar.setTime(date);
-						int currentHour = calendar.get(Calendar.HOUR);
-						calendar.setTime(vo.getTaskRunTime());
-						int taskRunHour = calendar.get(Calendar.HOUR);
-						//如果相差大于2小时任务忽略
-						if(currentHour-taskRunHour>2){
-							continue;
-						}
-						result = vo;
-					}
-				}
-				if(runningTask!=null&&runningTask.getDoneCount()<runningTask.getCount()){
-					resultList.add(runningTask);
-				}else if(result!=null){
-					resultList.add(result);
-				}
-				
-			}
-			return resultList;
+			return queryRunning;
 		}
 		return null;
 	}
 	
+	
+	public void checkInvalidClient(){
+		AdClient adclientContition = new AdClient(); 
+		adclientContition.setStatus(AdClient.ADCLIENT_STATUS_RUNNING);
+		List<AdClientVo> clients = adClientService.query(adclientContition);
+		if(clients!=null&&clients.size()>0){
+			for(AdClientVo vo:clients){
+				Date preAccessTime = vo.getPreAccessTime();
+				//如果上次访问时间与当前时间相差2小时则置为无效
+				long timeInterval = System.currentTimeMillis()-preAccessTime.getTime();
+				if(timeInterval>2*60*60*1000){
+					AdClient client = new AdClient();
+					client.setId(vo.getId());
+					client.setStatus(AdClient.ADCLIENT_STATUS_INVALID);
+					adClientService.update(client );
+				}
+			}
+		}
+		
+		
+	}
 	
 	
 	public void cleanTask(){
@@ -225,7 +247,9 @@ public class AdTaskManagerImpl implements AdTaskManager {
 			log.warn("未配置任务权重");
 			return ;
 		}
-		List<AdClientVo> clients = adClientService.query();
+		AdClient adclientContition = new AdClient(); 
+		adclientContition.setStatus(AdClient.ADCLIENT_STATUS_RUNNING);
+		List<AdClientVo> clients = adClientService.query(adclientContition);
 		for(AdTaskVo vo:queryList){
 			for(AdClientVo client:clients){
 				try {

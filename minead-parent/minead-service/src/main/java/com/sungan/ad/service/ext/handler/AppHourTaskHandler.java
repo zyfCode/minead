@@ -8,6 +8,7 @@ import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.sungan.ad.commons.AdDateUtil;
 import com.sungan.ad.domain.AdClient;
 import com.sungan.ad.domain.AdClientIp;
 import com.sungan.ad.domain.AppTask;
@@ -52,9 +53,6 @@ public class AppHourTaskHandler  extends TaskHandler {
 		int countWeight = HourUtil.countAllweight(query);
 		for(AdHourWeightVo hvo : query){
 			long taskamount = HourUtil.taskamount(hvo.getWght(), countWeight, count);
-			Date setHours = DateUtils.setHours(new Date(), hvo.getHour());
-			setHours = DateUtils.setMinutes(setHours, 0);
-			 setHours =  DateUtils.setSeconds(setHours, 0);
 			AppTask task = new AppTask();
 			task.setAppName(clientVo.getCurrentIp()+"_"+clientVo.getSysOs());
 			task.setAppNo(clientVo.getCurrentIp());
@@ -66,7 +64,7 @@ public class AppHourTaskHandler  extends TaskHandler {
 			task.setDescript("");
 			task.setThrowRate(hvo.getThrowRate());
 			task.setDoneCount(0L);
-			task.setTaskRunTime(setHours);
+			task.setTaskRunTime(AdDateUtil.getTaskRunDate(hvo.getHour()));
 			task.setFailCount(0L);
 			task.setName(vo.getName());
 			task.setStatus(AppTask.APPTASK_STATUS_PUBLIC);
