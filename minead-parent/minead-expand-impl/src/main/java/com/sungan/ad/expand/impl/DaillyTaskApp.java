@@ -119,8 +119,8 @@ public class DaillyTaskApp implements TaskApp{
 			HttpGet get = this.getUrl(url, "m.mansorychina.net", this.getUserAgent(),randomIp);
 			DefaultHttpClient client = new DefaultHttpClient();
 			try {
-				client.getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 1000); 
-				client.getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, 1000);
+				client.getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 2000); 
+				client.getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, 2000);
 				CloseableHttpResponse execute = client.execute(get);
 				int statusCode = execute.getStatusLine().getStatusCode();
 				log.info(url+"  CODE:"+statusCode);
@@ -184,7 +184,9 @@ public class DaillyTaskApp implements TaskApp{
 			}
 		}catch (Exception e){
 			log.error("",e);
-		} 
+		} finally{
+			client.getConnectionManager().shutdown();
+		}
 		return urls;
 	}
 	
@@ -270,20 +272,28 @@ public class DaillyTaskApp implements TaskApp{
 		excutor.scheduleAtFixedRate(new Runnable() {
 			@Override
 			public void run() {
-				excutor.execute(new Runnable() {
-					@Override
-					public void run() {
-						try {
-							log.debug(actuallCount+"/"+DaillyTaskApp.this.add(1)+"任务开始....");
-							DaillyTaskApp.this.doExcute();
-							log.debug(actuallCount+"/"+DaillyTaskApp.this.add(0)+"===任务完成...");
-						} catch (Exception e) {
-							log.error("任务异常", e);
-						}
+				try {
+					if(DaillyTaskApp.this.rInfo.getCount().compareTo(Long.valueOf(DaillyTaskApp.this.count))<0){
+						excutor.shutdownNow();
+						return;
 					}
-				});
+					excutor.execute(new Runnable() {
+						@Override
+						public void run() {
+							try {
+								log.debug(actuallCount+"/"+DaillyTaskApp.this.add(1)+"任务开始....");
+								DaillyTaskApp.this.doExcute();
+								log.debug(actuallCount+"/"+DaillyTaskApp.this.add(0)+"===任务完成...");
+							} catch (Exception e) {
+								log.error("任务异常", e);
+							}
+						}
+					});
+				} catch (Exception e) {
+					log.error("", e);
+				}
 			}
-		}, 0, 100, TimeUnit.MILLISECONDS);
+		}, 0, 500, TimeUnit.MILLISECONDS);
 	}
 
 	@Override

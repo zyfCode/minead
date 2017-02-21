@@ -91,7 +91,6 @@ public class ClientoolsMain {
 							drLinux.deploy(new File[]{file2});
 				//			drLinux.deploy(new File[]{new File("C:\\Users\\zhangyf18255\\Desktop\\11\\test\\tomcat-client.tar")});
 				//			drLinux.deploy(new File[]{new File("C:\\Users\\zhangyf18255\\Desktop\\11\\test\\tomcat-client.txt")});
-							drLinux.startClient();
 							drLinux.info();
 							drLinux.disConnect();
 						}
@@ -131,26 +130,31 @@ public class ClientoolsMain {
 					}
 				}
 				if(nextLine.equals(STOP)){
-					Boolean isStop = null;
-					for(LinuxHost lh:linux){
-						if(isStop==null){
-							System.out.println("确定要停止客户端"+lh.getInstanceName()+" "+lh.getHost()+"吗?(true确定/false取消):");  
-							String comand = scanner.nextLine();
-							if(!comand.equalsIgnoreCase("true")&&!comand.equalsIgnoreCase("false")){
-								System.out.println("未适命令:"+comand+" 不符合期望值");
-							}
-							isStop = Boolean.valueOf(comand);
-							if(!isStop){
-								break;
+						Boolean isStop = null;
+						for(LinuxHost lh:linux){
+							try {
+								if(isStop==null){
+									System.out.println("确定要停止客户端"+lh.getInstanceName()+" "+lh.getHost()+"吗?(true确定/false取消):");  
+									String comand = scanner.nextLine();
+									if(!comand.equalsIgnoreCase("true")&&!comand.equalsIgnoreCase("false")){
+										System.out.println("未适命令:"+comand+" 不符合期望值");
+									}
+									isStop = Boolean.valueOf(comand);
+									if(!isStop){
+										break;
+									}
+								}
+								if(isStop){
+									DRLinux drLinux = new DRLinux(lh);
+									drLinux.stop();
+									drLinux.info();
+									drLinux.disConnect();
+								}
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
 							}
 						}
-						if(isStop){
-							DRLinux drLinux = new DRLinux(lh);
-							drLinux.stop();
-							drLinux.info();
-							drLinux.disConnect();
-						}
-					}
 				}
 				nextLine = null;
 		}
