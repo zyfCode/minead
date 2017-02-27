@@ -224,7 +224,6 @@
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>servlet-api</artifactId>
-			<version>${servletVersion}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -245,7 +244,10 @@
 			<version>3.0.0</version>
 			<scope>provided</scope>
 		</dependency>
-		
+		<dependency>
+			<groupId>com.hundsun.jresplus</groupId>
+			<artifactId>jresplus-ui-runtime</artifactId>
+		</dependency>
 		
 		 <dependency>
 		  	 <groupId>com.sungan.ad</groupId>

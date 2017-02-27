@@ -15,7 +15,7 @@
 		<module>minead-dao</module>
 		<module>minead-service</module>
 		<!-- <module>minead-web</module> -->
-<!-- 		<module>minead-client-web</module> -->
+		<!-- <module>minead-client-web</module> -->
 		<module>minead-client-deploytools</module>
 	</modules>
 	<properties>
@@ -59,31 +59,31 @@
 				<artifactId>spring-context</artifactId>
 				<version>${springVersion}</version>
 			</dependency>
-			
-<!-- 			<dependency> -->
-<!-- 				<groupId>org.springframework</groupId> -->
-<!-- 				<artifactId>spring-aop</artifactId> -->
-<!-- 				<version>${springVersion}</version> -->
-<!-- 			</dependency> -->
-<!-- 			<dependency> -->
-<!-- 				<groupId>org.springframework</groupId> -->
-<!-- 				<artifactId>spring-core</artifactId> -->
-<!-- 				<version>${springVersion}</version> -->
-<!-- 			</dependency> -->
-<!-- 			<dependency> -->
-<!-- 				<groupId>org.springframework</groupId> -->
-<!-- 				<artifactId>spring-beans</artifactId> -->
-<!-- 				<version>${springVersion}</version> -->
-<!-- 			</dependency> -->
-			
-	
-	
+
+			<!-- <dependency> -->
+			<!-- <groupId>org.springframework</groupId> -->
+			<!-- <artifactId>spring-aop</artifactId> -->
+			<!-- <version>${springVersion}</version> -->
+			<!-- </dependency> -->
+			<!-- <dependency> -->
+			<!-- <groupId>org.springframework</groupId> -->
+			<!-- <artifactId>spring-core</artifactId> -->
+			<!-- <version>${springVersion}</version> -->
+			<!-- </dependency> -->
+			<!-- <dependency> -->
+			<!-- <groupId>org.springframework</groupId> -->
+			<!-- <artifactId>spring-beans</artifactId> -->
+			<!-- <version>${springVersion}</version> -->
+			<!-- </dependency> -->
+
+
+
 			<dependency>
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-aspects</artifactId>
 				<version>${springVersion}</version>
 			</dependency>
-			
+
 			<dependency>
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-tx</artifactId>
@@ -94,7 +94,7 @@
 				<artifactId>spring-test</artifactId>
 				<version>${springVersion}</version>
 			</dependency>
-	
+
 
 			<dependency>
 				<groupId>org.springframework</groupId>
@@ -288,6 +288,20 @@
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>
 				<version>${junitVersion}</version>
+			</dependency>
+
+
+			<!-- UI -->
+			<dependency>
+				<groupId>javax.servlet</groupId>
+				<artifactId>servlet-api</artifactId>
+				<version>2.5</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>com.hundsun.jresplus</groupId>
+				<artifactId>jresplus-ui-runtime</artifactId>
+				<version>2.0.6-SNAPSHOT</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
