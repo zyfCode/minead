@@ -1,0 +1,142 @@
+#@screen({"title":"查询表格示例"})  
+    #@form({"name":"searchForm"})  
+        #@panel({"title":"查询条件"})  
+           #textfield({"label":"名称", "name":"name","value":"","defValue":""})  
+           #textfield({"label":"当前IP", "name":"currentIp","value":"","defValue":""})  
+            #button_group({"buttons":[  
+                {"label":"查询","event":"queryData()","className":"u-btn-primary"}  
+            ]})  
+        #end  
+    #end  
+    #datagrid({  
+        "id":"dataTable",  
+        "name":"dataTable",  
+        "bindFormName":"searchForm",  
+        "title":"查询列表",  
+        "selectModel":"multi",  
+        "autoLoad":true,  
+        "url":"/client/list.json",  
+        "buttons":[{"label":"新增","cls":"add","event":"add()"},  
+                  {"label":"修改","cls":"edit","event":"edit()","disabled":false},  
+                  {"label":"删除","cls":"del","event":""}
+                  ],  
+        "items":[ 
+            {"name":"id",  
+            "text":"id",  
+            "hAlign":"center",  
+            "tAlign":"center",  
+            "hidden":true  
+            },  
+            {"name":"name",  
+            "text":"名称",  
+            "hAlign":"center",  
+            "tAlign":"center"  
+            },  
+            {"name":"mac",  
+            "text":"mac",  
+            "hAlign":"center",  
+            "tAlign":"center",  
+            "width":150  
+            },  
+            {"name":"currentIp",  
+            "text":"当前IP",  
+            "hAlign":"center",  
+            "tAlign":"center"  
+            },  
+            {"name":"sysOs",  
+            "text":"操作系统",  
+            "hAlign":"center",  
+            "tAlign":"center"  
+            },  
+            {"name":"status",  
+            "text":"系统状态",  
+            "hAlign":"center",  
+            "tAlign":"center"  
+            },  
+            {"name":"statusCn",  
+            "text":"系统状态",  
+            "hAlign":"center",  
+            "tAlign":"center"  
+            } 
+        ],  
+        "numbercolumn":"true",  
+        "pageConfig":{"pageSize":10,"pageNo":1},  
+        "rowSelect":"false",  
+        "hasPage":"true",  
+        "events":[{"event":"rowClick","function":"queryTableClick"},  
+                 {"event":"rowDblclick","function":"queryTableDbClick"}]  
+       })  
+            
+    #@window({"title":"编辑窗口", "name":"w1", "width":"750", "height":"250",  
+            "buttons":[  
+                {"label":"提交","event":"saveData()","className":"u-btn-primary"},  
+                {"label":"重置","event":"resetDataForm()"}  
+            ]})  
+        #@form({"name":"dataForm","url":""})  
+            #@panel({})  
+                #textfield({"label":"项目名称", "name":"projectName","value":"","defValue":"","check":"required"})  
+                #textfield({"label":"项目类型","name":"projectType","value":""})  
+                #textfield({"label":"项目总金额","name":"projTotalAmount","value":""})  
+                #calendar({"label":"开始日期", "name":"beginDate","value":"","defValue":"","check":"required"})  
+                #calendar({"label":"结束日期", "name":"endDate","value":"","defValue":"","check":"required"})  
+                #textfield({"label":"投资金额","name":"investAmount","value":""})  
+                #textfield({"label":"实现收益","name":"realizedGains","value":""})  
+            #end  
+        #end  
+    #end  
+#end  
+  
+  
+#jscode()  
+    var action = "";  
+  
+    function investDetailCodeRender(data){  
+       return '<font style="color:red;">'+data.val+'</font>';  
+    }  
+      
+    function queryTableClick(rowData){  
+      
+    }  
+    function queryTableDbClick(rowData){  
+        edit(rowData);  
+    }  
+      
+    function successCallback() {  
+          
+    }  
+      
+    function add(rowData){  
+        Horn.getComp("dataForm").reset();  
+        Horn.getComp("w1").show();  
+        action = "add";  
+    }  
+      
+    function edit(rowData){  
+        rowDatarowData = rowData || Horn.getComp('dataTable').getSelecteds().length && (Horn.getComp('dataTable').getSelecteds())[0];  
+        Horn.getComp("dataForm").setValues(rowData);  
+        Horn.getComp("w1").show();  
+        action = "edit";  
+    }  
+      
+    function del(rowData){  
+       Horn.Tip.info("删除成功");  
+    }  
+    function saveData() {  
+        Horn.getComp("w1").hide();  
+        if (action == "add") {  
+            Horn.Tip.info("新增成功");  
+        } else if (action == "edit") {  
+            Horn.Tip.info("更新成功");  
+        } else {  
+              
+        }  
+    }  
+      
+    function resetDataForm() {  
+        Horn.getComp("paramform").reset();  
+    }  
+      
+    function queryData() {  
+   		 Horn.getComp("dataTable").load();  
+    }  
+#end  

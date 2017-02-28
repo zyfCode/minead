@@ -219,10 +219,10 @@ public class AdHourWeightServiceImpl implements AdHourWeightService,ApplicationC
 	@Override
 	public AdPager<AdHourWeightVo> queryPager(AdHourWeight condition, int pageIndex, int rows) {
 		AdPager<AdHourWeight> queryPage = adHourWeightDAO.queryPage(condition, pageIndex, rows);
-		List<AdHourWeight> result = queryPage.getResult();
+		List<AdHourWeight> result = queryPage.getRows();
 		List<AdHourWeightVo> parseToVoList = AnnotationParser.parseToVoList(AdHourWeightVo.class,result);
-		AdPager<AdHourWeightVo> resultVo = new AdPager<AdHourWeightVo>(pageIndex, rows, queryPage.getCount());
-		resultVo.setResult(parseToVoList);
+		AdPager<AdHourWeightVo> resultVo = new AdPager<AdHourWeightVo>(pageIndex, rows, queryPage.getTotal());
+		resultVo.setRows(parseToVoList);
 		return resultVo;
 	}
 	

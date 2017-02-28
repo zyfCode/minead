@@ -17,23 +17,16 @@
 	}
 	,"navigation":{"items":[
 		{"id":"30","title":"主页","icon":"home"}
-		,{"id":"10","title":"DEMO","icon":"th-large"}
+		,{"id":"10","title":"客户端","icon":"th-large"}
+		,{"id":"20","title":"微信","icon":"th-large"}
 	]}
 	,"menu":{"items":[
 		{"id":"30","title":"主页","items":[
-			{"id":"301","title":"获取UI资源","icon":"file fa fa-laptop","items":[
-				{"id":"30101","title":"获取UI资源","icon":"inbox","url":"${appServer}/home/use/getUI.htm"}
-			]}
-			,{"id":"302","title":"UI介绍","icon":"inbox fa fa-suitcase","items":[
-				{"id":"30201","title":"UI体系介绍","icon":"inbox","url":"${appServer}/home/tutorial/overview.htm"}
-				,{"id":"30204","title":"UI主题介绍","icon":"inbox","url":"${appServer}/home/use/custom.htm"}
-				,{"id":"30205","title":"界面响应式介绍","icon":"inbox","url":"${appServer}/home/use/response.htm"}
-				,{"id":"30202","title":"页面结构介绍","icon":"inbox","url":"${appServer}/home/tutorial/pageDom.htm"}
-			]}
+			{"id":"301","title":"获取UI资源","url":"${appServer}/home/use/getUI.htm"}
 		]}
-		,{"id":"10","title":"DEMO","items":[
-			{"id":"101","title":"基础应用","icon":"user fa fa-laptop","items":[
-				{"id":"10101","title":"查询列表","url":"${appServer}/demo/view/app/queryList.htm"}
+		,{"id":"10","title":"客户端","items":[
+			{"id":"101","title":"客户端详细","icon":"user fa fa-laptop","items":[
+				{"id":"10101","title":"客户端列表","url":"${appServer}/app/listclient.htm"}
 				,{"id":"10102","title":"多标签页表单","url":"${appServer}/demo/view/app/tabForm.htm"}
 				,{"id":"10103","title":"弹出窗口","url":"${appServer}/demo/view/app/window.htm"}
 				,{"id":"10104","title":"面板(panel)各种布局展示","url":"${appServer}/demo/view/app/panel.htm"}
@@ -45,7 +38,7 @@
 				,{"id":"10110","title":"多表格列表","url":"${appServer}/demo/view/app/ltlrQuerytable.htm"}
 				,{"id":"10111","title":"多标签页表格列表","url":"${appServer}/demo/view/app/add3.htm"}
 			]}
-			,{"id":"102","title":"表单应用","icon":"th-list fa fa-suitcase","items":[
+			,{"id":"102","title":"报表","icon":"th-list fa fa-suitcase","items":[
 				{"id":"10201","title":"表单与校验","url":"${appServer}/demo/view/form/validForm.htm"}
 				,{"id":"10208","title":"标签页","url":"${appServer}/demo/view/form/tabForm.htm"}
 				,{"id":"10202","title":"文本录入","url":"${appServer}/demo/view/form/textfield.htm"}
@@ -85,12 +78,12 @@
 			]}
 			
 		]}
-		,{"id":"20","title":"API","items":[
-			{"id":"201","title":"基础与辅助","icon":"file fa fa-laptop","items":[
-				{"id":"20101","title":"基础Horn","url":"${appServer}/doc/symbols/Horn.html"}
-				,{"id":"20102","title":"校验Validate","url":"${appServer}/doc/symbols/Horn.Validate.html"}
+		,{"id":"20","title":"微信","items":[
+			{"id":"201","title":"微信报文","icon":"file fa fa-laptop","items":[
+				{"id":"20101","title":"报文列表","url":"${appServer}/doc/symbols/Horn.html"}
+				,{"id":"20102","title":"说明","url":"${appServer}/doc/symbols/Horn.Validate.html"}
 			]}
-			,{"id":"202","title":"容器","icon":"inbox fa fa-suitcase","items":[
+			,{"id":"202","title":"微信用户","icon":"inbox fa fa-suitcase","items":[
 				{"id":"20201","title":"面板Panel","url":"${appServer}/doc/symbols/Horn.Panel.html"}
 				,{"id":"20202","title":"标签面板TabPanel","url":"${appServer}/doc/symbols/Horn.TabPanel.html"}
 				,{"id":"20203","title":"窗口Window","url":"${appServer}/doc/symbols/Horn.Window.html"}

@@ -20,12 +20,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.sungan.ad.commons.AdCommonsUtil;
 import com.sungan.ad.commons.AdConstants;
+import com.sungan.ad.dao.AdPager;
+import com.sungan.ad.domain.AdClient;
 import com.sungan.ad.expand.common.bean.InitTaskConnectRequest;
 import com.sungan.ad.expand.common.bean.InitTaskConnectResponse;
 import com.sungan.ad.expand.common.bean.TaskRequest;
 import com.sungan.ad.expand.common.bean.TaskResonse;
 import com.sungan.ad.service.AdClientService;
+import com.sungan.ad.vo.AdClientVo;
 
 import net.sf.json.JSONObject;
 
@@ -40,6 +44,18 @@ public class AdClientController {
 	private static final Log log = LogFactory.getLog(AdClientController.class);
 	@Autowired
 	private AdClientService adClientService;
+	
+	@RequestMapping("/list.json")
+	@ResponseBody
+	public AdPager<AdClientVo>  listClient(AdClient condition,Integer pageSize,Integer pageNo ){
+		if(condition!=null){
+			AdCommonsUtil.proStrEmpytToNull(condition);
+		}
+		AdPager<AdClientVo> queryPager = adClientService.queryPager(condition, pageNo, pageSize);
+		return queryPager;
+	}
+	
+	
 	
 	@RequestMapping("/info")
 	@ResponseBody

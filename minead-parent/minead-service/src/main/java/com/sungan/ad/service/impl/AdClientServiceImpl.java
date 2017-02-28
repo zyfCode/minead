@@ -112,10 +112,10 @@ public class AdClientServiceImpl implements AdClientService {
 	@Override
 	public AdPager<AdClientVo> queryPager(AdClient condition, int pageIndex, int rows) {
 		AdPager<AdClient> queryPage = adClientDAO.queryPage(condition, pageIndex, rows);
-		List<AdClient> result = queryPage.getResult();
+		List<AdClient> result = queryPage.getRows();
 		List<AdClientVo> parseToVoList = AnnotationParser.parseToVoList(AdClientVo.class, result);
-		AdPager<AdClientVo> resultVo = new AdPager<AdClientVo>(pageIndex, rows, queryPage.getCount());
-		resultVo.setResult(parseToVoList);
+		AdPager<AdClientVo> resultVo = new AdPager<AdClientVo>(pageIndex, rows, queryPage.getTotal());
+		resultVo.setRows(parseToVoList);
 		return resultVo;
 	}
 

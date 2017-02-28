@@ -12,6 +12,7 @@ import org.springframework.orm.hibernate3.HibernateTemplate;
 
 import com.sungan.ad.cmmon.test.BaseTest;
 import com.sungan.ad.commons.AdDateUtil;
+import com.sungan.ad.dao.AdPager;
 import com.sungan.ad.domain.AdClient;
 import com.sungan.ad.domain.AdTask;
 import com.sungan.ad.service.AdClientService;
@@ -20,6 +21,8 @@ import com.sungan.ad.service.ext.AdTaskManager;
 import com.sungan.ad.vo.AdClientVo;
 import com.sungan.ad.vo.AdTaskVo;
 import com.sungan.ad.vo.AppTaskVo;
+
+import net.sf.json.JSONObject;
 
 /**
  * 说明:
@@ -121,6 +124,15 @@ public class ServiceAdTest  extends BaseTest{
 		condition.setStatus(AdTask.ADTASK_STATUS_PUBLIC);
 		List<AdTaskVo> queryList = adTaskService.queryList(condition );
 		System.out.println(queryList);
+	}
+	@Test
+	public void testTemplatePage(){
+		AdClient condition = new AdClient();
+		AdPager<AdClientVo> queryPager = adClientService.queryPager(condition, 1, 10);
+		JSONObject obj = JSONObject.fromObject(queryPager);
+		System.out.println(obj);
+//		List<AdClientVo> query = adClientService.query(condition );
+//		System.out.println(query);
 	}
 //	@Test
 //	public void testAd(){

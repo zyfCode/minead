@@ -86,10 +86,10 @@ public class AppTaskServivceImpl implements AppTaskServivce{
 	@Override
 	public AdPager<AppTaskVo> queryPage(AppTask condition, int pageIndex, int rows) {
 		AdPager<AppTask> queryPage = appTaskDAO.queryPage(condition, pageIndex, rows);
-		List<AppTask> result = queryPage.getResult();
+		List<AppTask> result = queryPage.getRows();
 		List<AppTaskVo> parseToVoList = AnnotationParser.parseToVoList(AppTaskVo.class, result);
-		AdPager<AppTaskVo> resultVo = new AdPager<AppTaskVo>(pageIndex, rows, queryPage.getCount());
-		resultVo.setResult(parseToVoList);
+		AdPager<AppTaskVo> resultVo = new AdPager<AppTaskVo>(pageIndex, rows, queryPage.getTotal());
+		resultVo.setRows(parseToVoList);
 		return resultVo;
 	}
 

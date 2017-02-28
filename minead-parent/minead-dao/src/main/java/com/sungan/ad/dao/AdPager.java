@@ -7,77 +7,76 @@ import java.util.List;
  * 说明:
  */
 public class AdPager<T> {
-	private List<T> result = new ArrayList<T>();
-	private int pageIndex;
-	private int rows; 
-	private int count;
-	private int nextIndex;
-	private int preIndex;
-	private int countPagers;
+	private List<T> rows = new ArrayList<T>();
+	private int pageNo;  //第n页
+	private int total;  //总条算
+	private int pages;  //总页数
+	private int pageSize;  //每行显示的数据
 	
 	
-	public AdPager(int pageIndex, int rows, int count) {
+	
+	public AdPager(int pageNo, int pageSize, int total) {
 		super();
-		this.pageIndex = pageIndex;
-		this.rows = rows;
-		this.count = count;
-		if(pageIndex>0){
-			this.preIndex = pageIndex-1;
-		}
-		countPagers = count/rows;
-		if(count%rows>0){
-			countPagers++;
-		}
-		this.nextIndex = this.pageIndex+1;
-		if(nextIndex>countPagers){
-			this.nextIndex=countPagers;
+		this.pageNo = pageNo;
+		this.pageSize = pageSize;
+		this.total = total;
+		pages = total/pageSize;
+		if(total%pageSize>0){
+			pages++;
 		}
 	}
 
-	public int getPageIndex() {
-		return pageIndex;
+	
+	
+	
+	public void setRows(List<T> rows) {
+		this.rows = rows;
 	}
-	public void setPageIndex(int pageIndex) {
-		this.pageIndex = pageIndex;
-	}
-	public int getRows() {
+
+
+
+
+	public List<T> getRows() {
 		return rows;
 	}
-	public void setRows(int rows) {
-		this.rows = rows;
+
+
+
+
+	public int getPageNo() {
+		return pageNo;
 	}
-	public int getCount() {
-		return count;
+
+
+
+
+	public int getTotal() {
+		return total;
 	}
-	public void setCount(int count) {
-		this.count = count;
+
+
+
+
+	public int getPages() {
+		return pages;
 	}
-	public int getNextIndex() {
-		return nextIndex;
+
+
+
+
+	public int getPageSize() {
+		return pageSize;
 	}
-	public void setNextIndex(int nextIndex) {
-		this.nextIndex = nextIndex;
-	}
-	public int getPreIndex() {
-		return preIndex;
-	}
+
+
+
+
 	public int getCountPagers() {
-		return countPagers;
+		return pageSize;
 	}
 
-	public List<T> getResult() {
-		return result;
-	}
-
-	public void setResult(List<T> result) {
-		this.result = result;
-	}
-
-	public void setPreIndex(int preIndex) {
-		this.preIndex = preIndex;
-	}
 
 	public void setCountPagers(int countPagers) {
-		this.countPagers = countPagers;
+		this.pageSize = countPagers;
 	}
 }

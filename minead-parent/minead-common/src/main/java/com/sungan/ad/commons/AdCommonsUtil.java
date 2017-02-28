@@ -15,6 +15,31 @@ import java.util.Map;
  */
 public class AdCommonsUtil {
 	private AdCommonsUtil(){}
+	
+	public static<T> T proStrEmpytToNull(T t){
+		if(t==null){
+			return null;
+		}
+		try {
+			BeanInfo sourceBeanInfo = Introspector.getBeanInfo(t.getClass());
+			PropertyDescriptor[] propertyDescriptors = sourceBeanInfo.getPropertyDescriptors();
+			for(PropertyDescriptor pro:propertyDescriptors){
+				Method readMethod = pro.getReadMethod();
+				Class<?> returnType = readMethod.getReturnType();
+				if(returnType.equals(String.class)){
+					String value = (String) readMethod.invoke(t);
+					if(value==null||value.trim().equals("")){
+						Method writeMethod = pro.getWriteMethod();
+						writeMethod.invoke(t, new Object[]{null});
+					}
+				}
+			}
+			return t;
+		} catch (Exception e) {
+			throw new RuntimeException();
+		}
+	}
+	
 	/**
 	 * 获取属性值
 	 * @param sourceBean 将sourceBean中的属性复制到targetBean
