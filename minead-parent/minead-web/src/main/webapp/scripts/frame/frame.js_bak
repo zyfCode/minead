@@ -716,38 +716,12 @@ Horn.Frame = {
 					    		var id = $(this).attr("id");
 					    		var iframeWin = document.getElementById(id).contentWindow;
 					    		if(tabBody.length>0&&currTab==id){
-					    			$(this).show();
 					    			$(this).contents().find("html").css("overflow","auto");//此处兼容谷歌浏览器51版本
-					    			var pos = $(this).attr("pos");
+					    			var pos = $().attr("pos");
 					    			if(pos){
 					    				iframeWin.document.documentElement.scrollTop=pos;
 					    			}
-					    			var isChrome = navigator.userAgent.toLowerCase().match(/chrome/) != null;//判断是否是谷歌浏览器
-					    			if(isChrome){
-					    				var isFirst = true;//是否第一次滚动
-					    				document.getElementById(id).contentWindow.onmousewheel =function (event) {//监听鼠标滚动事件
-					    					
-					    					if(isFirst){
-						    					$(this)[0].document.body.scrollTop=0;
-						    					$(this)[0].document.documentElement.scrollTop=0;
-						    					$(this)[0].document.body.scrollTop=pos;
-						    					$(this)[0].document.documentElement.scrollTop=pos;
-						    					isFirst = false;
-					    					}
-					    					
-					    				};
-					    				document.getElementById(id).contentWindow.onscroll =function (event) {//监听滚动条事件
-					    					if(isFirst){
-						    					$(this)[0].document.body.scrollTop=0;
-						    					$(this)[0].document.documentElement.scrollTop=0;
-						    					$(this)[0].document.body.scrollTop=pos;
-						    					$(this)[0].document.documentElement.scrollTop=pos;
-						    					isFirst = false;
-					    					}
-					    					
-					    				};
-					    				
-					    			}
+					    			$(this).show()
 						    		var tabSrc=tabBody.attr("src");
 						    		if(typeof tabSrc !='string'||tabSrc==""){
 						    			tabBody.attr("src",tab.attr("url"));
