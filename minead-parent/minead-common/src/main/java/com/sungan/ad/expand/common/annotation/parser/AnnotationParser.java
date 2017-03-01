@@ -9,10 +9,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeanUtils;
 
+import com.sungan.ad.commons.DictUtil;
+import com.sungan.ad.commons.dict.DictItem;
 import com.sungan.ad.expand.common.annotation.DateToStr;
 import com.sungan.ad.expand.common.annotation.StatusCn;
 
@@ -78,18 +81,30 @@ public class AnnotationParser {
 						targetFile.set(newInstance, sourceVal);
 					}else if(at instanceof StatusCn){
 						StatusCn statuscn = (StatusCn)at;
-						String[] value = statuscn.value();
-						Map<String,String> entryMap = new LinkedHashMap<String,String>();
-						for(String str:value){
-							if(!str.contains("=")){
-								throw new RuntimeException("非法属性"+str+",期望属性是key=value");
+						String dictId = statuscn.dictId();
+						String valuCn = null;
+						if(StringUtils.isNotBlank(dictId)&&DictUtil.getDictHandler()!=null){
+							DictItem dictItem = DictUtil.getDictItem(dictId, object.toString());
+							if(dictItem==null){
+								log.warn("数据字典项:"+dictId+" key:"+object+"为空");
+							}else{
+								valuCn = dictItem.getLabel();
 							}
-							String[] split = str.split("=");
-							entryMap.put(split[0], split[1]);
+						}else{
+							String[] value = statuscn.value();
+							Map<String,String> entryMap = new LinkedHashMap<String,String>();
+							for(String str:value){
+								if(!str.contains("=")){
+									throw new RuntimeException("非法属性"+str+",期望属性是key=value");
+								}
+								String[] split = str.split("=");
+								entryMap.put(split[0], split[1]);
+							}
+							valuCn = entryMap.get(object);
 						}
 						String statusFileCn = name+"Cn";
 						Field targetFile = newInstance.getClass().getDeclaredField(statusFileCn);
-						String valuCn = entryMap.get(object);
+						
 						targetFile.setAccessible(true);
 						targetFile.set(newInstance, valuCn);
 					}

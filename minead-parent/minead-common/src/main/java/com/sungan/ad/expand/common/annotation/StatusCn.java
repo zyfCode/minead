@@ -11,5 +11,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface StatusCn {
-	public String[] value();
+	public String[] value(); 
+	public String dictId() default "";
 }

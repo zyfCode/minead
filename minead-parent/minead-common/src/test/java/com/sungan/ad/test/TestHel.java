@@ -3,6 +3,7 @@ package com.sungan.ad.test;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
@@ -12,6 +13,7 @@ import org.junit.Test;
 
 import com.sungan.ad.expand.common.annotation.parser.AnnotationParser;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
@@ -69,6 +71,24 @@ public class TestHel {
 		}
 	}
 	
+	@Test
+	public void testJsonArr(){
+		AnTestVo testVo3 = new AnTestVo();
+		testVo3.setStatus("2");
+		AnTestVo testVo2 = new AnTestVo();
+		testVo2.setStatus("1");
+		AnTestVo testVo1 = new AnTestVo();
+		testVo1.setStatus("0");
+		AnTestVo [] arr = new AnTestVo[]{testVo1,testVo2,testVo3};
+		JSONArray fromObject = JSONArray.fromObject(arr);
+		String string = fromObject.toString();
+		System.out.println(string);
+		JSONArray fromObject3 = JSONArray.fromObject(string);
+		AnTestVo [] array = (AnTestVo[]) JSONArray.toArray(fromObject3, AnTestVo.class);
+//		Object[] array = fromObject3.toArray();
+		System.out.println(Arrays.asList(array));
+	 
+	}
 	@Test
 	public void test2(){
 		AnTestJson json = new AnTestJson();

@@ -48,7 +48,7 @@ public class AdTask implements Serializable{
 	 */
 	public static final String ADTASK_TYPE_HOUR="0";
 	public static final String ADTASK_TYPE_CIRCLE="1";
-	@StatusCn({ADTASK_TYPE_HOUR+"=小时任务",ADTASK_TYPE_CIRCLE+"=循环任务"})
+	@StatusCn(value={ADTASK_TYPE_HOUR+"=小时任务",ADTASK_TYPE_CIRCLE+"=循环任务"})
 	@Column(length=2)
 	private String type;
 	

@@ -11,7 +11,7 @@ import com.sungan.ad.expand.common.annotation.StatusCn;
 public class AnTestDmain {
 	@DateToStr("yyyy-MM-dd HH:mm:ss")
 	private Date date;
-	@StatusCn({ "1=你好", "2=不谢" })
+	@StatusCn(value={ "1=你好", "2=不谢" })
 	private String status;
 
 	public Date getDate() {

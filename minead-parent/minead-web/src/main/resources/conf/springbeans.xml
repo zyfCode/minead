@@ -21,7 +21,6 @@
 	<import resource="classpath*:/conf/*-beans.xml" />
 	
 	<!-- JRESUI begin -->
-	<bean class="com.hundsun.jresplus.base.dict.DictManagerImpl"/>
 	<bean id="messageSource"
 		class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
 		<property name="basenames">

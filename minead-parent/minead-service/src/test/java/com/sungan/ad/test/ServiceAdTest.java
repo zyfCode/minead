@@ -12,6 +12,8 @@ import org.springframework.orm.hibernate3.HibernateTemplate;
 
 import com.sungan.ad.cmmon.test.BaseTest;
 import com.sungan.ad.commons.AdDateUtil;
+import com.sungan.ad.commons.DictUtil;
+import com.sungan.ad.commons.dict.DictItem;
 import com.sungan.ad.dao.AdPager;
 import com.sungan.ad.domain.AdClient;
 import com.sungan.ad.domain.AdTask;
@@ -124,6 +126,11 @@ public class ServiceAdTest  extends BaseTest{
 		condition.setStatus(AdTask.ADTASK_STATUS_PUBLIC);
 		List<AdTaskVo> queryList = adTaskService.queryList(condition );
 		System.out.println(queryList);
+	}
+	@Test
+	public void dictUtil(){	
+		List<DictItem> dict = DictUtil.getDict("0004");
+		System.out.println(dict);
 	}
 	@Test
 	public void testTemplatePage(){

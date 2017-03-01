@@ -1,4 +1,4 @@
-package com.sungan.ad.domain;
+package com.sungan.ad.commons.dict;
 
 import java.io.Serializable;
 
@@ -15,12 +15,12 @@ public class DictItem implements Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 	private String key;
-	private String value;
+	private String label;
 	public DictItem(){}
-	public DictItem(String key, String value) {
+	public DictItem(String key, String label) {
 		super();
 		this.key = key;
-		this.value = value;
+		this.label = label;
 	}
 	public String getKey() {
 		return key;
@@ -28,13 +28,16 @@ public class DictItem implements Serializable {
 	public void setKey(String key) {
 		this.key = key;
 	}
-	public String getValue() {
-		return value;
+
+	public String getLabel() {
+		return label;
 	}
-	public void setValue(String value) {
-		this.value = value;
+	public void setLabel(String label) {
+		this.label = label;
 	}
-	
-	
+	@Override
+	public String toString() {
+		return "DictItem [key=" + key + ", label=" + label + "]";
+	}
 	
 }

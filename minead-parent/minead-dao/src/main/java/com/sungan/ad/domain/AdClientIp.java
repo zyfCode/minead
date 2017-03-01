@@ -47,7 +47,7 @@ public class AdClientIp implements Serializable{
 	private String ip;
 	
 	/**状态  0停用 1运行中*/
-	@StatusCn({ADCLIENTIP_STATUS_INVALID+"=停用",ADCLIENTIP_STATUS_RUNNING+"=运行中"})
+	@StatusCn(value={ADCLIENTIP_STATUS_INVALID+"=停用",ADCLIENTIP_STATUS_RUNNING+"=运行中"})
 	private String status;
 	@DateToStr
 	private Date updateTime;

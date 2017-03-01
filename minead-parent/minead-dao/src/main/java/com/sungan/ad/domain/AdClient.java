@@ -51,8 +51,9 @@ public class AdClient implements Serializable{
 	private String systemType;
 	public static final String ADCLIENT_STATUS_INVALID="0";
 	public static final String ADCLIENT_STATUS_RUNNING="1";
+	public static final String ADCLIENT_STATUS_STOP="1";
 	/**状态  0停用 1运行中*/
-	@StatusCn({ADCLIENT_STATUS_INVALID+"=停用",ADCLIENT_STATUS_RUNNING+"=运行中"})
+	@StatusCn(value={},dictId=DictEnum.ADCLIENTSTATUS_KEY)
 	private String status;
 	public Long getId() {
 		return id;
