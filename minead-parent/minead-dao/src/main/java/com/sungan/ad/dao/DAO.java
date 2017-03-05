@@ -14,6 +14,15 @@ public interface DAO<T>{
 	 * @return
 	 */
 	AdPager<T> queryPage(T t,int pageIndex,int rows);
+	
+	/**
+	 * 查询分页结果，没有模糊查询
+	 * @param t
+	 * @param pageIndex
+	 * @param rows
+	 * @return
+	 */
+	AdPager<T> queryPageEq(T t,int pageIndex,int rows);
 	/**
 	 * 根据条件查询记录数 
 	 * @param t

@@ -11,6 +11,17 @@ public class AdRuntimeException extends RuntimeException{
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	private String errorCode;
+	
+	
+
+	public String getErrorCode() {
+		return errorCode;
+	}
+
+	public void setErrorCode(String errorCode) {
+		this.errorCode = errorCode;
+	}
 
 	public AdRuntimeException() {
 		super();
@@ -18,6 +29,10 @@ public class AdRuntimeException extends RuntimeException{
 
 	public AdRuntimeException(String message, Throwable cause) {
 		super(message, cause);
+	}
+	public AdRuntimeException(String errorCode,String message, Throwable cause) {
+		super(message, cause);
+		this.errorCode = errorCode;
 	}
 
 	public AdRuntimeException(String message) {

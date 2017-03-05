@@ -11,7 +11,10 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.sungan.ad.commons.AdConstants;
+import com.sungan.ad.commons.AdResponse;
 import com.sungan.ad.exception.AdRuntimeException;
+
+import net.sf.json.JSONObject;
 
 /**
  * 说明:
@@ -29,10 +32,14 @@ public class AdHandlerExceptionResolver implements HandlerExceptionResolver{
 				if(log.isInfoEnabled()){
 					log.info("", ex);
 				}
-				String message = ex.getMessage();
+				AdRuntimeException exception = (AdRuntimeException) ex;
 				response.setContentType(AdConstants.JSONTYPE);
 				response.setCharacterEncoding("UTF-8");
-				response.getWriter().write(message);
+				AdResponse mesg = new AdResponse();
+				mesg.setSuccess(false);
+				mesg.setErrorMesg(exception.getMessage());
+				mesg.setErrorCode(exception.getErrorCode());
+				response.getWriter().write(JSONObject.fromObject(mesg).toString());
 				response.getWriter().flush();
 			} catch (IOException e) {
 				 log.error("", e);

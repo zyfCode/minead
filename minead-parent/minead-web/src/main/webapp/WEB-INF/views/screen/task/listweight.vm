@@ -129,7 +129,18 @@
         if (action == "add") {  
             Horn.Tip.info("新增成功");  
         } else if (action == "edit") {  
-            Horn.Tip.info("更新成功");  
+			//JSON.stringify($("form[name='dataForm']").serializeJSON());
+			var data = $("form[name='dataForm']").serializeJSON();
+			$.post("/task/update",data,function(backData){
+				if(backData){
+					if(backData.success){
+        				 Horn.getComp("dataTable").load();  
+        				 Horn.Tip.warn("更新成功2222"); 
+					 }else{
+						Horn.Tip.warn(backData.errorMesg); 
+					 }
+				 }
+			},"json")
         } else {  
               
         }  

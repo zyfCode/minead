@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.sungan.ad.commons.AdCommonsUtil;
+import com.sungan.ad.dao.AdPager;
 import com.sungan.ad.dao.base.AdTaskDAO;
 import com.sungan.ad.domain.AdTask;
 import com.sungan.ad.exception.AdRuntimeException;
@@ -71,6 +72,15 @@ public class AdTaskServiceImpl implements AdTaskService{
 		bix.update(adTaskDAO);
 //			adTaskDAO.update(find);
 		
+	}
+
+	@Override
+	public AdPager<AdTaskVo> queryPager(AdTask adTask, int pageIndex, int rows) {
+		AdPager<AdTask> queryPage = adTaskDAO.queryPage(adTask, pageIndex, rows);
+		List<AdTaskVo> parseToVoList = AnnotationParser.parseToVoList(AdTaskVo.class, queryPage.getRows());
+		AdPager<AdTaskVo> result = new AdPager<AdTaskVo>(pageIndex, rows, queryPage.getTotal());
+		result.setRows(parseToVoList);
+		return result;
 	}
 }
 

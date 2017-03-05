@@ -94,7 +94,7 @@ public abstract class AbstractDAO<T> implements DAO<T> {
 	
 	
 	@SuppressWarnings("unchecked")
-	public AdPager<T> queryPage(T t,int pageIndex,int rows) {
+	public AdPager<T> queryPageEq(T t,int pageIndex,int rows) {
 		Session currentSession = this.template.getSessionFactory().getCurrentSession();
 		Criteria createCriteria = currentSession.createCriteria(currentClass);//.add(Restrictions.eq("appid", appid)).list();
 		try {
@@ -108,6 +108,39 @@ public abstract class AbstractDAO<T> implements DAO<T> {
 				}
 				Object object = beanFile.get(name);
 				if(object!=null){
+					createCriteria = createCriteria.add(Restrictions.eq(name, object));
+				}
+			}
+		} catch (Exception e) {
+			throw new RuntimeException("",e);
+		}
+		
+		int firstResult = (pageIndex-1)*rows;
+		createCriteria.setFirstResult(firstResult).setMaxResults(rows);
+		List<T> list = createCriteria.list();
+		int count = Integer.valueOf(this.count(t).toString());
+		AdPager<T> pager = new AdPager<T>(pageIndex, rows, count);
+		pager.setRows(list);
+		return pager;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public AdPager<T> queryPage(T t,int pageIndex,int rows) {
+		Session currentSession = this.template.getSessionFactory().getCurrentSession();
+		Criteria createCriteria = currentSession.createCriteria(currentClass);//.add(Restrictions.eq("appid", appid)).list();
+		try {
+			Map<String, Object> beanFile = AdCommonsUtil.getBeanFile(t);
+			BeanInfo beanInfo = Introspector.getBeanInfo(currentClass);
+			PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
+			for(PropertyDescriptor pt:propertyDescriptors){
+				String name = pt.getName();
+				if(name.equals("class")){
+					continue;
+				}
+				Object object = beanFile.get(name);
+				if(object!=null&&(object instanceof String||object instanceof java.util.Date)){
+					createCriteria = createCriteria.add(Restrictions.like(name, object+"%"));
+				}else if(object!=null){
 					createCriteria = createCriteria.add(Restrictions.eq(name, object));
 				}
 			}

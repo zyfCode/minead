@@ -26,6 +26,8 @@
 					class="org.springframework.http.converter.support.AllEncompassingFormHttpMessageConverter"></bean>
 				<bean
 					class="org.springframework.http.converter.xml.SourceHttpMessageConverter"></bean>
+				<bean
+					class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter" />
 			</list>
 		</property>
 	</bean>
@@ -56,16 +58,7 @@
 	<mvc:resources mapping="/imges/**" location="/images/" />
 	<mvc:resources mapping="/plugins/**" location="/plugins/" />
 	<mvc:resources mapping="/scripts/**" location="/scripts/" />
-	<bean id="messageAdapter"
-		class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
-		<property name="messageConverters">
-			<list>
-				<!-- Support JSON -->
-				<bean
-					class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter" />
-			</list>
-		</property>
-	</bean>
+	
 	<bean id="exceptionMessageAdapter"
 		class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerExceptionResolver">
 		<property name="messageConverters">

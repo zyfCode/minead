@@ -15,6 +15,7 @@ $horn.addGlobal("headScriptLinks", "/plugins/zTree/jquery.ztree.core-3.5.min.js"
 $horn.addGlobal("headScriptLinks", "/plugins/zTree/jquery.ztree.exhide-3.5.min.js")
 $horn.addGlobal("headScriptLinks", "/plugins/zTree/jquery.ztree.excheck-3.5.min.js")
 $horn.addGlobal("headScriptLinks", "/plugins/jquery/jquery.resizableColumns.js")
+$horn.addGlobal("headScriptLinks", "/scripts/jquery.serializejson.min.js")
 #if($devMode)
 	$horn.addGlobal("headScriptLinks", "/components/components-debug.js")
 #else

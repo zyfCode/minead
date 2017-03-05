@@ -26,28 +26,29 @@ public class AdTaskBiz extends AdTask {
 			BeanUtils.copyProperties(this, task);
 			this.task = task;
 		} catch (Exception e) {
-			throw new RuntimeException("",e);
+			throw new 	AdRuntimeException("",e);
 		}
 	}
 	
 	public void update(AdTaskDAO adTaskDAO){
-		if(this.getStatus().equals(AdTask.ADTASK_STATUS_PUBLIC)){
-			AdTask t = new AdTask();
-			t.setTaskGroup(this.getTaskGroup()); 
-			Collection<AdTask> query = adTaskDAO.query(t);
-			if(query!=null){
-				for(AdTask tk:query){
-					if(!tk.getId().equals(this.getId())&&tk.getStatus().equals(AdTask.ADTASK_STATUS_PUBLIC)){
-						throw new AdRuntimeException("组"+tk.getTaskGroup()+"已存在发布的任务");
-					}
-				}
-			}
-		}
+		//暂时去掉校验
+//		if(this.getStatus().equals(AdTask.ADTASK_STATUS_PUBLIC)){
+//			AdTask t = new AdTask();
+//			t.setTaskGroup(this.getTaskGroup()); 
+//			Collection<AdTask> query = adTaskDAO.query(t);
+//			if(query!=null){
+//				for(AdTask tk:query){
+//					if(!tk.getId().equals(this.getId())&&tk.getStatus().equals(AdTask.ADTASK_STATUS_PUBLIC)){
+//						throw new AdRuntimeException("组"+tk.getTaskGroup()+"已存在发布的任务");
+//					}
+//				}
+//			}
+//		}
 		try {
 			BeanUtils.copyProperties(task, this);
-			adTaskDAO.update(this);
+			adTaskDAO.update(task);
 		} catch (Exception e) {
-			throw new RuntimeException("",e);
+			throw new AdRuntimeException("",e);
 		}
 	}
 
