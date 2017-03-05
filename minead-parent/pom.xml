@@ -268,6 +268,11 @@
 				</exclusions>
 			</dependency>
 			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-api</artifactId>
+				<version>1.7.2</version>
+			</dependency>
+			<dependency>
 				<groupId>org.mvel</groupId>
 				<artifactId>mvel2</artifactId>
 				<version>${mvelVersion}</version>
@@ -289,7 +294,12 @@
 				<artifactId>junit</artifactId>
 				<version>${junitVersion}</version>
 			</dependency>
-
+			<!-- 参数校验器 -->
+			<dependency>
+				<groupId>org.hibernate</groupId>
+				<artifactId>hibernate-validator</artifactId>
+				<version>${hibernatevalidationVersion}</version>
+			</dependency>
 
 			<!-- UI -->
 			<dependency>

@@ -13,9 +13,23 @@
 	http://www.springframework.org/schema/aop/spring-aop-3.2.xsd 
 	http://www.springframework.org/schema/tx 
 	http://www.springframework.org/schema/tx/spring-tx-3.2.xsd ">
+	
+	<bean id="methodChainManager" class="com.sungan.ad.web.chain.MethodChainManager">
+			<property name="methodInterceptors">
+				<list>
+					<bean class="com.sungan.ad.web.chain.interceptor.impl.MethodInterceptorT1"></bean>
+					<bean class="com.sungan.ad.web.chain.interceptor.impl.MethodInterceptorT2"></bean>
+					<bean class="com.sungan.ad.web.chain.interceptor.impl.MethodInterceptorT2"></bean>
+					<bean class="com.sungan.ad.web.chain.interceptor.impl.MethodInterceptorT2"></bean>
+					<bean class="com.sungan.ad.web.chain.interceptor.impl.MethodInterceptorT2"></bean>
+					<bean class="com.sungan.ad.web.chain.interceptor.impl.MethodInterceptorT2"></bean>
+					<bean class="com.sungan.ad.web.chain.interceptor.impl.MethodInterceptorT2"></bean>
+				</list>
+			</property>
+	</bean>
 	<!-- 解决@ResponseBody响应乱码问题 -->
 	<bean
-		class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
+		class="com.sungan.ad.web.AdRequestMappingHandlerAdapter">
 		<property name="messageConverters">
 			<list>
 				<bean
@@ -30,6 +44,7 @@
 					class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter" />
 			</list>
 		</property>
+		<property name="methodChainManager" ref="methodChainManager"></property>
 	</bean>
 	<!--注解驱动写在最后面，否则对用<bean>标签定的属性有影响 -->
 	<mvc:annotation-driven />

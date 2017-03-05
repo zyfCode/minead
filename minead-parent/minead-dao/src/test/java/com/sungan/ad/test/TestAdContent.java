@@ -4,9 +4,16 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 
 import org.apache.commons.lang.time.DateUtils;
 import org.hibernate.SessionFactory;
+import org.hibernate.validator.HibernateValidatorFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +53,15 @@ public class TestAdContent extends BaseTest{
 	@Autowired
 	protected HibernateTemplate template;
 	
+	@Test
+	public void testAdClientValid() {
+//		Validator validator = Validation.buildDefaultValidatorFactory()  
+//                .getValidator(); 
+		ValidatorFactory buildDefaultValidatorFactory = Validation.buildDefaultValidatorFactory();
+		Validator validator = buildDefaultValidatorFactory.getValidator();
+		Set<ConstraintViolation<TestValiBean>> validate = validator.validate(new TestValiBean());
+		System.out.println(validate);
+	}
 	@Test
 	public void testAdClientIp() {
 		AdClient adClient = new AdClient();
