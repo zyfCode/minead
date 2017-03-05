@@ -139,6 +139,7 @@
         #@form({"name":"addtaskForm","url":""})  
             #@panel({})  
                 #textfield({"label":"名称", "name":"name","value":"","defValue":"","check":"required"})  
+                #textfield({"label":"实例名称", "name":"clazzName","value":"","defValue":"","check":"required"})  
                 #textfield({"label":"数量", "name":"count","value":"","defValue":"","check":"required"})  
                 #textfield({"label":"组", "name":"taskGroup","value":"","defValue":"","check":"required"})  
 				#combox({"name":"type","label":"类型","defValue":"",  "dictName": "0001",  "check": "required"})

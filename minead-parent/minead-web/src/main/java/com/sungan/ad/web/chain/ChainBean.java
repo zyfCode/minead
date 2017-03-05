@@ -29,7 +29,7 @@ public class ChainBean {
 		Annotation[][] parameterAnnotations = method.getParameterAnnotations();
 		 MethodParam [] methodParam = new MethodParam[parameterTypes.length];
 		 for(int i=0;i<parameterTypes.length;i++){
-			 MethodParam param = new MethodParam(parameterTypes[i], args[0], parameterAnnotations[i]);
+			 MethodParam param = new MethodParam(parameterTypes[i], args[i], parameterAnnotations[i]);
 			 methodParam[i]=param;
 		 }
 		 return methodParam;

@@ -17,13 +17,7 @@
 	<bean id="methodChainManager" class="com.sungan.ad.web.chain.MethodChainManager">
 			<property name="methodInterceptors">
 				<list>
-					<bean class="com.sungan.ad.web.chain.interceptor.impl.MethodInterceptorT1"></bean>
-					<bean class="com.sungan.ad.web.chain.interceptor.impl.MethodInterceptorT2"></bean>
-					<bean class="com.sungan.ad.web.chain.interceptor.impl.MethodInterceptorT2"></bean>
-					<bean class="com.sungan.ad.web.chain.interceptor.impl.MethodInterceptorT2"></bean>
-					<bean class="com.sungan.ad.web.chain.interceptor.impl.MethodInterceptorT2"></bean>
-					<bean class="com.sungan.ad.web.chain.interceptor.impl.MethodInterceptorT2"></bean>
-					<bean class="com.sungan.ad.web.chain.interceptor.impl.MethodInterceptorT2"></bean>
+					<bean class="com.sungan.ad.web.chain.interceptor.impl.FormValidInterceptor"></bean>
 				</list>
 			</property>
 	</bean>

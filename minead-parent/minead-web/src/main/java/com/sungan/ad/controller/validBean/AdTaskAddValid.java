@@ -16,53 +16,29 @@ public class AdTaskAddValid extends AdTask{
 	public static long getSerialversionuid() {
 		return serialVersionUID;
 	}
-	@NotNull
-	public String tt;
-	
 
-	public String getTt() {
-		return tt;
-	}
-
-	public void setTt(String tt) {
-		this.tt = tt;
+	@Override
+	@NotNull(message="任务组不能为空")
+	public String getTaskGroup() {
+		return super.getTaskGroup();
 	}
 
 	@Override
-	@NotNull
-	public void setTaskGroup(String taskGroup) {
-		super.setTaskGroup(taskGroup);
+	@NotNull(message="实例不能为空")
+	public String getClazzName() {
+		return super.getClazzName();
 	}
 
 	@Override
-	@NotNull
-	public void setClazzName(String clazzName) {
-		super.setClazzName(clazzName);
+	@NotNull(message="任务名不能为空")
+	public String getName() {
+		return super.getName();
 	}
 
 	@Override
-	@NotNull
-	@Max(value=120)
-	public void setDescript(String descript) {
-		super.setDescript(descript);
-	}
-
-	@Override
-	@NotNull
-	public void setName(String name) {
-		super.setName(name);
-	}
-
-	@Override
-	@NotNull
-	public void setCount(Long count) {
-		super.setCount(count);
-	}
-
-	@Override
-	@NotNull
-	public void setType(String type) {
-		super.setType(type);
+	@NotNull(message="数量不能为空")
+	public Long getCount() {
+		return super.getCount();
 	}
 
 	

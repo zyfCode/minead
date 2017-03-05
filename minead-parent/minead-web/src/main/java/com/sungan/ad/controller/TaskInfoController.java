@@ -51,17 +51,11 @@ public class TaskInfoController {
 	}
 	@RequestMapping(value="/add",produces={"application/json"})
 	@ResponseBody
-	public Object add(@Valid AdTaskAddValid task, BindingResult result){
-		System.out.println(result.hasErrors());
-		  if (result.hasErrors()){
-	            List<ObjectError> errorList = result.getAllErrors();
-	            for(ObjectError error : errorList){
-	                System.out.println(error.getDefaultMessage());
-	            }
-	        }
-		if(task!=null){
-			AdCommonsUtil.proStrEmpytToNull(task);
-		}
+	public Object add(String id,@Valid AdTaskAddValid task){
+//		public Object add(@Valid AdTaskAddValid task){
+//		if(task!=null){
+//			AdCommonsUtil.proStrEmpytToNull(task);
+//		}
 //		service.insert(task);
 		return new AdResponse();
 	}
