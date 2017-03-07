@@ -1,5 +1,6 @@
 package com.sungan.ad.service.impl;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,9 @@ public class AdTaskServiceImpl implements AdTaskService{
 
 	@Override
 	public Long insert(AdTask adtask) {
+		adtask.setCreateTime(new Date());
+		adtask.setUpdateTime(new Date());
+		adtask.setStatus(AdTask.ADTASK_STATUS_NOTPUBLIC);
 		Long insert = (Long) adTaskDAO.insert(adtask);
 		return insert;
 	}

@@ -1,13 +1,13 @@
 package com.sungan.ad.commons;
 
 import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import org.apache.commons.beanutils.BeanUtils;
 
 /**
  * 说明:
@@ -42,7 +42,7 @@ public class AdCommonsUtil {
 	
 	/**
 	 * 获取属性值
-	 * @param sourceBean 将sourceBean中的属性复制到targetBean
+	 * @param sourceBean  
 	 * @param targetBean
 	 * @return
 	 * @throws Exception
@@ -59,6 +59,14 @@ public class AdCommonsUtil {
 			map.put(name, invoke);
 		}
 		return map;
+	}
+	
+	public static void copyProperties(Object dest,Object sources){
+		try {
+			BeanUtils.copyProperties(dest, sources);
+		} catch (Exception e) {
+			throw new RuntimeException();
+		}
 	}
 	/**
 	 * bean的发属性复制，只复制类型相同的属性。

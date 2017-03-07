@@ -62,9 +62,12 @@ public class AnnotationParser {
 				for(Annotation at:declaredAnnotations){
 					String name = f.getName();
 					Object object = f.get(sourece);
+					if(object==null){
+						continue;
+					}
 					if(at instanceof DateToStr){
 						if(!(object instanceof java.util.Date)){
-							throw new RuntimeException("注解"+at.getClass()+"必须用在java.util.Date上");
+							throw new RuntimeException("属性："+name+"注解"+at.getClass()+"必须用在java.util.Date上");
 						}
 						Date date = (Date) object;
 						DateToStr dateToStr = (DateToStr) at;

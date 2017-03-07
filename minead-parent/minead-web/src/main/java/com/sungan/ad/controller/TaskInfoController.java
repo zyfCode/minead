@@ -1,9 +1,11 @@
 package com.sungan.ad.controller;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 import javax.validation.Valid;
 
+import org.apache.commons.beanutils.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
@@ -51,12 +53,13 @@ public class TaskInfoController {
 	}
 	@RequestMapping(value="/add",produces={"application/json"})
 	@ResponseBody
-	public Object add(String id,@Valid AdTaskAddValid task){
-//		public Object add(@Valid AdTaskAddValid task){
-//		if(task!=null){
-//			AdCommonsUtil.proStrEmpytToNull(task);
-//		}
-//		service.insert(task);
+	public Object add(@Valid AdTaskAddValid task){
+		if(task!=null){
+			AdCommonsUtil.proStrEmpytToNull(task);
+		}
+		AdTask adTask = new AdTask();
+		AdCommonsUtil.copyProperties(adTask, task);
+		service.insert(adTask);
 		return new AdResponse();
 	}
 	
