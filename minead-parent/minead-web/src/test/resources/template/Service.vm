@@ -1,0 +1,20 @@
+package ${package}.service;
+
+import java.util.List;
+
+import ${package}.dao.AdPager;
+import ${package}.domain.${domain};
+import com.sungan.ad.service.common.MadService;
+import ${package}.vo.${domain}Vo;
+
+/**
+ * 说明:
+ */
+public interface ${domain}Servivce extends  MadService{
+	${domain}Vo find(Long id);
+	Long insert(${domain} record);
+	void delete(Long id);
+	void update(${domain} task);
+	List<${domain}Vo> queryList(${domain} condition);
+	AdPager<${domain}Vo> queryPager(${domain} condition,int pageIndex,int rows);
+}

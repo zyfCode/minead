@@ -1,0 +1,99 @@
+package ${package}.service.impl;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.sungan.ad.commons.AdCommonsUtil;
+import ${package}.dao.${domain}DAO;
+import ${package}.domain.${domain};
+import com.sungan.ad.exception.AdRuntimeException;
+import com.sungan.ad.expand.common.annotation.parser.AnnotationParser;
+import ${package}.service.${domain}Service;
+import ${package}.vo.${domain}Vo;
+
+/**
+ * 说明:
+ * 
+ * @version V1.1
+ */
+@Service
+public class ${domain}ServiceImpl implements ${domain}Service{
+	
+	@Autowired
+	private ${domain}DAO ${varname};
+	
+
+	public ${domain}DAO get${domain}DAO() {
+		return ${varname};
+	}
+
+	public void set${domain}DAO(${domain}DAO ${varname}) {
+		this.${varname} = ${varname};
+	}
+
+	@Override
+	public Long insert(${domain} record) {
+		Long insert = (Long) ${varname}.insert(record);
+		return insert;
+	}
+
+	@Override
+	public List<${domain}Vo> queryList(${domain} condition) {
+		List<${domain}> query = (List<${domain}>) ${varname}.query(condition);
+		 List<${domain}Vo> parseToVoList = AnnotationParser.parseToVoList(${domain}Vo.class, query);
+		return parseToVoList;
+	}
+
+		@Override
+	public void delete(Long id) {
+		${domain} find = this.${varname}.find(id);
+		if (find != null) {
+			${varname}.delete(find);
+		}
+	}
+	
+	@Override
+	public ${domain}Vo find(Long id) {
+		${domain} find = ${varname}.find(id);
+		if(find==null){
+			return null;
+		}
+		${domain}Vo parseToVo = AnnotationParser.parseToVo(${domain}Vo.class, find);
+		return parseToVo;
+	}
+
+		@Override
+	public AdPager<${domain}Vo> queryPager(${domain} condition, int pageIndex, int rows) {
+		AdPager<${domain}> queryPage = ${varname}.queryPage(condition, pageIndex, rows);
+		List<${domain}> result = queryPage.getRows();
+		List<${domain}Vo> parseToVoList = AnnotationParser.parseToVoList(${domain}Vo.class, result);
+		AdPager<${domain}Vo> resultVo = new AdPager<${domain}Vo>(pageIndex, rows, queryPage.getTotal());
+		resultVo.setRows(parseToVoList);
+		return resultVo;
+	}
+	
+	@Override
+	public void update(${domain} record) {
+		if(record.getId()==null){
+			throw new AdRuntimeException("记录ID为空");
+		}
+		${domain} find = ${varname}.find(record.getId());
+		if(find==null){
+			throw new AdRuntimeException("记录不存在");
+		}
+		try {
+			AdCommonsUtil.beanCopyWithoutNull(record, find);
+		} catch (Exception e) {
+			throw new AdRuntimeException("参数异常");
+		}
+ 		${varname}.update(find);
+		
+	}
+}
+
+
+
+
+

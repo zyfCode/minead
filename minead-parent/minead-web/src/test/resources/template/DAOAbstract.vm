@@ -1,0 +1,12 @@
+package ${package}.dao;
+
+import com.sungan.ad.dao.AbstractDAO;
+import  ${domainPackage}.domain.${domain};
+
+/**
+ * 说明:
+ * 
+ */
+public abstract class ${domain}DAOAbstract extends AbstractDAO<${domain}> implements ${domain}DAO {
+
+}

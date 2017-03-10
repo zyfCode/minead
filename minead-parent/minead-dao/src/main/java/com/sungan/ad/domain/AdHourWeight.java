@@ -34,6 +34,11 @@ public class AdHourWeight implements Serializable {
 	/** 0-24通过率 */
 	private Integer throwRate;
 	private String descript;
+	
+	private String groupName;
+	private Long groupId;
+	
+	
 
 	public Long getId() {
 		return id;
