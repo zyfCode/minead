@@ -29,16 +29,26 @@ public class AdHourWeight implements Serializable {
 	@Column(unique = false, nullable = false)
 	private Integer wght;
 	/** 0-24小时 */
-	@Column(unique = true, nullable = false)
+	@Column(unique = false, nullable = false)
 	private Integer hour;
 	/** 0-24通过率 */
 	private Integer throwRate;
 	private String descript;
-	
-	private String groupName;
+	/**
+	 * ####升级脚本####
+	 * alter table t_adhour_weight   add groupId bigint;
+	 */
 	private Long groupId;
 	
 	
+
+	public Long getGroupId() {
+		return groupId;
+	}
+
+	public void setGroupId(Long groupId) {
+		this.groupId = groupId;
+	}
 
 	public Long getId() {
 		return id;

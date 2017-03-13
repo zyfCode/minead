@@ -8,11 +8,14 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Field;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
@@ -23,7 +26,11 @@ import org.apache.velocity.exception.ResourceNotFoundException;
 import org.apache.velocity.runtime.RuntimeConstants;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.junit.Test;
+
+import com.sungan.ad.commons.AdCommonsUtil;
 import com.sungan.ad.domain.AdClient;
+import com.sungan.ad.domain.AdHourWeight;
+import com.sungan.ad.domain.AdWeightGroup;
 
 import net.sf.json.JSONObject;
 
@@ -109,14 +116,38 @@ public class TaskMain {
 			 
 			 String pk = "com.sungan.ad";
 			 String daminPk = "com.sungan.ad";
-			 String domainName = "AdWeightGroup";
-			 String domainLow = "adWeightGroup";
-			 String varname = "adWeightGroupDAO";
+			 Class clazz = AdClient.class;
+			 String[] split = clazz.getName().split("\\.");
+			 String domainName = split[split.length-1];
+			 String domainLow = domainName.substring(0,1).toLowerCase() + domainName.substring(1); ;//"adWeightGroup" ;
+			 String varname = domainLow+"DAO";
+			 
+//			 Map<String, Object> beanFile = AdCommonsUtil.getBeanFile(clazz);
+//			 Set<String> keySet = beanFile.keySet();
+			 Field[] declaredFields = clazz.getDeclaredFields();
+			 List<String> keySet = new ArrayList<String>();
+			 for(Field fname :declaredFields){
+				 if(fname.getName().equals("class")){
+					 continue;
+				 }
+				 keySet.add(fname.getName());
+			 }
+			 
+			 //conroller
+			 String contollerMapping = domainName.toLowerCase();
+			 String suffix = domainName.toLowerCase();
+			 
+			 //VM
+			 String vcKey = "#";
+			 
 			 
 			 for(String tname:list){
 				 Template t = ve.getTemplate("/template/"+tname);
 				 VelocityContext ctx = new VelocityContext();
 				 String javaName = domainName+tname.replace(".vm", ".java");
+				 if(tname.equals("list.vm")){
+					 javaName = domainName.toLowerCase()+".vm";
+				 }
 				 File newF= new File("D:/log/"+javaName);
 				 if(!newF.exists()){
 					 new File("D:/log/").mkdirs();
@@ -129,6 +160,10 @@ public class TaskMain {
 				 ctx.put("domain", domainName);
 				 ctx.put("domainLow", domainLow);
 				 ctx.put("varname", varname);
+				 ctx.put("contollerMapping", contollerMapping);
+				 ctx.put("suffix", suffix);
+				 ctx.put("vcKey", vcKey);
+				 ctx.put("beanPro", keySet);
 //			 List temp = new ArrayList();
 //			 temp.add("1");
 //			 temp.add("2");

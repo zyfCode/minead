@@ -14,10 +14,28 @@ public class AdHourWeightVo implements Serializable {
 	/** 权重值 */
 	private Integer wght;
 	/** 0-24小时 */
+	public static final String COLUMN_HOUR="hour";
 	private Integer hour;
 	/** 0-24通过率 */
 	private Integer throwRate;
 	private String descript;
+	private Long groupId;
+	
+	private String groupName;
+	
+	
+	public String getGroupName() {
+		return groupName;
+	}
+	public void setGroupName(String groupName) {
+		this.groupName = groupName;
+	}
+	public Long getGroupId() {
+		return groupId;
+	}
+	public void setGroupId(Long groupId) {
+		this.groupId = groupId;
+	}
 	public Long getId() {
 		return id;
 	}

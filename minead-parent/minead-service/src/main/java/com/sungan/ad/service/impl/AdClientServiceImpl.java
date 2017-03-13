@@ -12,9 +12,11 @@ import com.sungan.ad.dao.AdPager;
 import com.sungan.ad.dao.base.AdClientDAO;
 import com.sungan.ad.dao.base.AdClientIpDAO;
 import com.sungan.ad.dao.base.AdTaskDAO;
+import com.sungan.ad.dao.base.AdWeightGroupDAO;
 import com.sungan.ad.domain.AdClient;
 import com.sungan.ad.domain.AdClientIp;
 import com.sungan.ad.domain.AdTask;
+import com.sungan.ad.domain.AdWeightGroup;
 import com.sungan.ad.exception.AdRuntimeException;
 import com.sungan.ad.expand.common.annotation.parser.AnnotationParser;
 import com.sungan.ad.expand.common.bean.InitTaskConnectRequest;
@@ -29,6 +31,7 @@ import com.sungan.ad.service.cloud.WYCloudIpManager;
 import com.sungan.ad.service.ext.AdTaskManager;
 import com.sungan.ad.vo.AdClientIpVo;
 import com.sungan.ad.vo.AdClientVo;
+import com.sungan.ad.vo.AdHourWeightVo;
 import com.sungan.ad.vo.AppTaskVo;
 
 /**
@@ -42,7 +45,15 @@ public class AdClientServiceImpl implements AdClientService {
 	private AdClientDAO adClientDAO;
 	@Autowired
 	private AdClientIpDAO adClientIpDAO;
-
+	@Autowired
+	private AdWeightGroupDAO groupDAO;
+	
+	public AdWeightGroupDAO getGroupDAO() {
+		return groupDAO;
+	}
+	public void setGroupDAO(AdWeightGroupDAO groupDAO) {
+		this.groupDAO = groupDAO;
+	}
 	public AdClientDAO getAdClientDAO() {
 		return adClientDAO;
 	}
@@ -88,6 +99,14 @@ public class AdClientServiceImpl implements AdClientService {
 	}
 
 	@Override
+	public void resetGroup(Long id) {
+		AdClient find = this.adClientDAO.find(id);
+		if (find != null) {
+			find.setGroupId(null);
+			this.adClientDAO.update(find);
+		}
+	}
+	@Override
 	public void delete(Long id) {
 		AdClient find = this.adClientDAO.find(id);
 		if (find != null) {
@@ -114,6 +133,15 @@ public class AdClientServiceImpl implements AdClientService {
 		AdPager<AdClient> queryPage = adClientDAO.queryPage(condition, pageIndex, rows);
 		List<AdClient> result = queryPage.getRows();
 		List<AdClientVo> parseToVoList = AnnotationParser.parseToVoList(AdClientVo.class, result);
+		if(parseToVoList!=null){
+			for(AdClientVo adVo:parseToVoList){
+				 if(adVo.getGroupId()==null){
+					 continue;
+				 }
+				 AdWeightGroup find = groupDAO.find(adVo.getGroupId());
+				 adVo.setGroupName(find.getGroupName());
+			 }
+		}
 		AdPager<AdClientVo> resultVo = new AdPager<AdClientVo>(pageIndex, rows, queryPage.getTotal());
 		resultVo.setRows(parseToVoList);
 		return resultVo;

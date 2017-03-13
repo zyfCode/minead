@@ -10,6 +10,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.criteria.Expression;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -157,6 +159,47 @@ public abstract class AbstractDAO<T> implements DAO<T> {
 		return pager;
 	}
 	@SuppressWarnings("unchecked")
+	public AdPager<T> queryPageInOrder(T t,int pageIndex,int rows,OrderType orderType,String orderColumn) {
+		Session currentSession = this.template.getSessionFactory().getCurrentSession();
+		Criteria createCriteria = currentSession.createCriteria(currentClass);//.add(Restrictions.eq("appid", appid)).list();
+		try {
+			Map<String, Object> beanFile = AdCommonsUtil.getBeanFile(t);
+			BeanInfo beanInfo = Introspector.getBeanInfo(currentClass);
+			PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
+			for(PropertyDescriptor pt:propertyDescriptors){
+				String name = pt.getName();
+				if(name.equals("class")){
+					continue;
+				}
+				Object object = beanFile.get(name);
+				if(object!=null&&(object instanceof String||object instanceof java.util.Date)){
+					createCriteria = createCriteria.add(Restrictions.like(name, object+"%"));
+				}else if(object!=null){
+					createCriteria = createCriteria.add(Restrictions.eq(name, object));
+				}
+			}
+		} catch (Exception e) {
+			throw new RuntimeException("",e);
+		}
+		
+		int firstResult = (pageIndex-1)*rows;
+		createCriteria.setFirstResult(firstResult).setMaxResults(rows);
+		List<T> list = null;
+		if(orderColumn!=null&&orderType!=null){
+			if(orderType==OrderType.DESC){
+				list=createCriteria.addOrder(Order.desc(orderColumn)).list();
+			}else{
+				list=createCriteria.addOrder(Order.asc(orderColumn)).list();
+			}
+		}else{
+			list=createCriteria.list();
+		}
+		int count = Integer.valueOf(this.count(t).toString());
+		AdPager<T> pager = new AdPager<T>(pageIndex, rows, count);
+		pager.setRows(list);
+		return pager;
+	}
+	@SuppressWarnings("unchecked")
 	public Collection<T> query(T t,QueryHandler handler) {
 		Session currentSession = this.template.getSessionFactory().getCurrentSession();
 		Criteria createCriteria = currentSession.createCriteria(currentClass);//.add(Restrictions.eq("appid", appid)).list();
@@ -175,6 +218,38 @@ public abstract class AbstractDAO<T> implements DAO<T> {
 				}
 			}
 			createCriteria = handler.addCondition(createCriteria);
+		} catch (Exception e) {
+			throw new RuntimeException("",e);
+		}
+		List<T> list = createCriteria.list();
+		return list;
+	}
+	@SuppressWarnings("unchecked")
+	public Collection<T> queryIsEmpty(String... proNames) {
+		if(proNames==null||proNames.length<1){
+			throw new RuntimeException("属性字段不能为空");
+		}
+		Session currentSession = this.template.getSessionFactory().getCurrentSession();
+		Criteria createCriteria = currentSession.createCriteria(currentClass);//.add(Restrictions.eq("appid", appid)).list();
+		try {
+			BeanInfo beanInfo = Introspector.getBeanInfo(currentClass);
+			PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
+			for(PropertyDescriptor pt:propertyDescriptors){
+				String name = pt.getName();
+				if(name.equals("class")){
+					continue;
+				}
+				for(String proName:proNames){
+					Class<?> propertyType = pt.getPropertyType();
+					if(proName.equals(name)){
+						if(propertyType==String.class){
+							createCriteria = createCriteria.add(Restrictions.or(Restrictions.isNull(name),Restrictions.eq(name, "")));
+						}else{
+							createCriteria = createCriteria.add(Restrictions.isNull(name));
+						}
+					}
+				}
+			}
 		} catch (Exception e) {
 			throw new RuntimeException("",e);
 		}

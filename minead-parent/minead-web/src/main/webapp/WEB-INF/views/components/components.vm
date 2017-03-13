@@ -15,7 +15,7 @@
  *#
  #**
   * 修改记录：
-  * 
+  * 2016-12-27    王兰        bug#37098	combox控件，通过getListData获取数据，value值前后多了空格
   *
   *#
 #macro(screen_start $uiScreenConfig)
@@ -60,7 +60,7 @@
 			<div class="hc_checkboxdiv" multiple_line="true" ref_target="${componentSelect}_m">
 				<ul>
 					#foreach($dictEntry in $dictManager.getDicts($componentSelect))
-					<li key="${dictEntry.label}" pKey="$!{dictEntry.pLabel}" title="#if($showLabel&&"$showLabel"=="true") ${dictEntry.label}:${dictEntry.value} #else ${dictEntry.value} #end" copyTitle="#if($showLabel&&"$showLabel"=="true") ${dictEntry.label}:${dictEntry.value} #else ${dictEntry.value} #end">
+					<li key="${dictEntry.label}" pKey="$!{dictEntry.pLabel}" title="#if($showLabel&&"$showLabel"=="true")${dictEntry.label}:${dictEntry.value}#else${dictEntry.value}#end" copyTitle="#if($showLabel&&"$showLabel"=="true")${dictEntry.label}:${dictEntry.value}#else${dictEntry.value}#end">
 						<label>
 						<input type="checkbox" class="combox_input">
 						<span class="hce_dictlabel" #if($showLabel&&"$showLabel"=="true") style="display:inline-block;" #else style="display:none;" #end >${dictEntry.label}:</span>${dictEntry.value}</label>
@@ -73,7 +73,7 @@
 			<div class="hc_checkboxdiv" multiple_line="false" ref_target="${componentSelect}_s">
 				<ul>
 					#foreach($dictEntry in $dictManager.getDicts($componentSelect))
-					<li key="${dictEntry.label}" pKey="$!{dictEntry.pLabel}" title="#if($showLabel&&"$showLabel"=="true") ${dictEntry.label}:${dictEntry.value} #else ${dictEntry.value} #end" copyTitle="#if($showLabel&&"$showLabel"=="true") ${dictEntry.label}:${dictEntry.value} #else ${dictEntry.value} #end">
+					<li key="${dictEntry.label}" pKey="$!{dictEntry.pLabel}" title="#if($showLabel&&"$showLabel"=="true")${dictEntry.label}:${dictEntry.value}#else${dictEntry.value}#end" copyTitle="#if($showLabel&&"$showLabel"=="true")${dictEntry.label}:${dictEntry.value}#else${dictEntry.value}#end">
 						<label>
 						<span class="hce_dictlabel" #if($showLabel&&"$showLabel"=="true") style="display:inline-block;" #else style="display:none;" #end >${dictEntry.label}:</span>${dictEntry.value}</label>
 					</li>
@@ -139,11 +139,43 @@
                             #set($itemLabel = "#evaluate($itemLabelCommand)")
                             #set($itemTitle = "#evaluate($itemTitleCommand)")
                             #set($pKey = "#evaluate($pKeyCommand)")
-                            <li title="#if($showLabel&&"$showLabel"=="true") $!{itemLabel}:$!{itemTitle} #else $!{itemTitle} #end" pKeyCommand="$pKeyCommand" pKey="$!{pKey}" key="$!{itemLabel}"><label>
+                            <li title="#if($showLabel&&"$showLabel"=="true")$!{itemLabel}:$!{itemTitle}#else$!{itemTitle}#end" pKeyCommand="$pKeyCommand" pKey="$!{pKey}" key="$!{itemLabel}"><label>
                                 #if($componentSelect.multiple == true)
                                     <input type="checkbox" class="combox_input">
                                 #end
                                 <span class="hce_dictlabel"  #if($showLabel&&"$showLabel"=="true") style="display:inline-block;" #else style="display:none;" #end >$!{itemLabel}:</span>$!{itemTitle}</label>
+							</li>
+					#end
+				</ul>
+			</div>
+		#end
+		##combox和select组件支持url方式加载下拉项 20161202 add by 周智星
+		#foreach($componentSelect in $componentSelects_url)
+            #set($items = $horn.getDictListByUrl($componentSelect.url))
+        	##设置是否显示标签
+        	#set($showLabel = false)
+        	#if($componentSelect.showLabel&&$componentSelect.showLabel == "true")
+        		#set($showLabel = true)
+			#end
+			#if($uiScreenConfig.showLabel&&$uiScreenConfig.showLabel == "true")
+        		#set($showLabel = true)
+        	#end
+			<div class="hc_checkboxdiv" 
+				#if($componentSelect.multiple == true)
+					multiple_line="true" 
+					ref_target="${componentSelect.url}_m"
+				#else
+					multiple_line="false" 
+					ref_target="${componentSelect.url}_s"
+				#end
+			>
+				<ul>
+					#foreach($pItem in $items)
+                            <li title="#if($showLabel&&"$showLabel"=="true")${pItem.code}:${pItem.text}#else${pItem.text}#end"  key="${pItem.code}"><label>
+                                #if($componentSelect.multiple == true)
+                                    <input type="checkbox" class="combox_input">
+                                #end
+                                <span class="hce_dictlabel"  #if($showLabel&&"$showLabel"=="true") style="display:inline-block;" #else style="display:none;" #end >${pItem.code}:</span>${pItem.text}</label>
 							</li>
 					#end
 				</ul>
@@ -199,7 +231,7 @@
 			<div class="hc_checkboxdiv" multiple_line="true" ref_target="${componentSelect}_m">
 				<ul>
 					#foreach($dictEntry in $dictManager.getDicts($componentSelect))
-					<li key="${dictEntry.label}" pKey="$!{dictEntry.pLabel}" title="#if($showLabel&&"$showLabel"=="true") ${dictEntry.label}:${dictEntry.value} #else ${dictEntry.value} #end" copyTitle="#if($showLabel&&"$showLabel"=="true") ${dictEntry.label}:${dictEntry.value} #else ${dictEntry.value} #end">
+					<li key="${dictEntry.label}" pKey="$!{dictEntry.pLabel}" title="#if($showLabel&&"$showLabel"=="true")${dictEntry.label}:${dictEntry.value}#else${dictEntry.value}#end" copyTitle="#if($showLabel&&"$showLabel"=="true")${dictEntry.label}:${dictEntry.value}#else${dictEntry.value}#end">
 						<label>
 						<input type="checkbox" class="combox_input">
 							<span class="hce_dictlabel" #if($showLabel&&"$showLabel"=="true") style="display:inline-block;" #else style="display:none;" #end >${dictEntry.label}:</span>${dictEntry.value}</label>
@@ -212,7 +244,7 @@
 			<div class="hc_checkboxdiv" multiple_line="false" ref_target="${componentSelect}_s">
 				<ul>
 					#foreach($dictEntry in $dictManager.getDicts($componentSelect))
-					<li key="${dictEntry.label}" pKey="$!{dictEntry.pLabel}" title="#if($showLabel&&"$showLabel"=="true") ${dictEntry.label}:${dictEntry.value} #else ${dictEntry.value} #end" copyTitle="#if($showLabel&&"$showLabel"=="true") ${dictEntry.label}:${dictEntry.value} #else ${dictEntry.value} #end">
+					<li key="${dictEntry.label}" pKey="$!{dictEntry.pLabel}" title="#if($showLabel&&"$showLabel"=="true")${dictEntry.label}:${dictEntry.value}#else${dictEntry.value}#end" copyTitle="#if($showLabel&&"$showLabel"=="true")${dictEntry.label}:${dictEntry.value}#else${dictEntry.value}#end">
 						<label>
 						<span class="hce_dictlabel" #if($showLabel&&"$showLabel"=="true") style="display:inline-block;" #else style="display:none;" #end >${dictEntry.label}:</span>${dictEntry.value}</label>
 					</li>
@@ -280,7 +312,7 @@
                             #set($itemTitle = "#evaluate($itemTitleCommand)")
                             #set($pKey = "#evaluate($pKeyCommand)")
 
-                            <li title="#if($showLabel&&"$showLabel"=="true") $!{itemLabel}:$!{itemTitle} #else $!{itemTitle} #end" pKeyCommand="$pKeyCommand" pKey="$!{pKey}" key="$!{itemLabel}"><label>
+                            <li title="#if($showLabel&&"$showLabel"=="true")$!{itemLabel}:$!{itemTitle}#else$!{itemTitle}#end" pKeyCommand="$pKeyCommand" pKey="$!{pKey}" key="$!{itemLabel}"><label>
                                 #if($componentSelect.multiple == true)
                                     <input type="checkbox" class="combox_input">
                                 #end
@@ -291,6 +323,38 @@
 			</div>
 		#end
 		
+		##combox和select组件支持url方式加载下拉项 20161202 add by 周智星
+		#foreach($componentSelect in $componentSelects_url)
+            #set($items = $horn.getDictListByUrl($componentSelect.url))
+        	##设置是否显示标签
+        	#set($showLabel = false)
+        	#if($componentSelect.showLabel&&$componentSelect.showLabel == "true")
+        		#set($showLabel = true)
+			#end
+			#if($uiScreenConfig.showLabel&&$uiScreenConfig.showLabel == "true")
+        		#set($showLabel = true)
+        	#end
+			<div class="hc_checkboxdiv" 
+				#if($componentSelect.multiple == true)
+					multiple_line="true" 
+					ref_target="${componentSelect.url}_m"
+				#else
+					multiple_line="false" 
+					ref_target="${componentSelect.url}_s"
+				#end
+			>
+				<ul>
+					#foreach($pItem in $items)
+                            <li title="#if($showLabel&&"$showLabel"=="true")${pItem.code}:${pItem.text}#else${pItem.text}#end"  key="${pItem.code}"><label>
+                                #if($componentSelect.multiple == true)
+                                    <input type="checkbox" class="combox_input">
+                                #end
+                                <span class="hce_dictlabel"  #if($showLabel&&"$showLabel"=="true") style="display:inline-block;" #else style="display:none;" #end >${pItem.code}:</span>${pItem.text}</label>
+							</li>
+					#end
+				</ul>
+			</div>
+		#end
 		<div id = "hc_hide-textfield">
 			<div class="hc_checkboxdiv"></div>
 		</div>
@@ -515,11 +579,11 @@ csrf_token=${csrf_token}#end
 	#end
 	<div class="g-grid-$col #if($cols!="")$cols#end">
 	  	<div class="g-unit-wrap">
-		    <div class="g-grid-8">
+		    <div class="g-grid-12">
 				<div id="$!{uiButtonGroupConfig.id}" $horn.paramsCache($uiButtonGroupConfig)  name="$!{uiButtonGroupConfig.name}" class="hc_button-group" >
             		#if($uiButtonGroupConfig.buttons)
             			#foreach($button in $uiButtonGroupConfig.buttons)
-            				<button type="button" #if($button.refmenu)refmenu="$button.refmenu"#end class="u-btn #if($button.className)$button.className#else u-btn-default#end" name="$!{button.name}" onclick="$!{button.event}">$!{button.label}</button>
+            				<button type="button" #if($button.refmenu)refmenu="$button.refmenu"#end class="u-btn #if($button.className)$button.className#else u-btn-default#end" name="$!{button.name}" id="$!{button.id}" onclick="$!{button.event}">$!{button.label}</button>
             			#end
             		#end
         		</div>
@@ -548,7 +612,7 @@ csrf_token=${csrf_token}#end
 		<button type="reset" class="u-btn u-btn-default" name="button_reset">#if($uiButtonPanelConfig.resetLabel&&"$!uiButtonPanelConfig.resetLabel"!="")$!{uiButtonPanelConfig.resetLabel}#else 重置#end</button>
 		#if($uiButtonPanelConfig.buttons)
 			#foreach($button in $uiButtonPanelConfig.buttons)
-				<button #if($button.refmenu)refmenu="$button.refmenu"#end type="button" class="u-btn #if($button.className)$button.className#else u-btn-default#end" name="$!{button.name}" onclick="$!{button.event}">$!{button.label}</button>
+				<button #if($button.refmenu)refmenu="$button.refmenu"#end type="button" class="u-btn #if($button.className)$button.className#else u-btn-default#end" name="$!{button.name}" id="$!{button.id}" onclick="$!{button.event}">$!{button.label}</button>
 			#end
 		#end
     </div>
@@ -575,6 +639,7 @@ csrf_token=${csrf_token}#end
 			#foreach($button in $uiButtonPanelExConfig.buttons)
 				<button type="button" #if($button.refmenu)refmenu="$button.refmenu"#end
                 name="$!{button.name}"
+				id="$!{button.id}" 
 				class="u-btn #if($button.className)$button.className#else u-btn-default#end"
 				onclick="$!{button.event}">$!{button.label}</button>
 			#end
@@ -645,6 +710,7 @@ csrf_token=${csrf_token}#end
  *  2015-09-28   周智星                                   STORY #12660 【TS:201508240145-JRESPlus-财富管理事业部-王瑞明-若在查询框中通过 tab_panel 控件设置多个 Tab,分页则除第一次选择的TAB页外的其他全选按钮会失效 】
  *  2016-3-9      刘龙                               需求#17378 【TS:201602230423-JRESPlus-资产管理事业部-张翔-【项目名称】非标准化投资管理系统2.0<br><br><br】
  *  2016-3-28    刘龙                                   需求18070 【TS:201603240534-JRESPlus-财富管理事业部-江志伟-【项目名称】恒生信托综合管理平台（TCMP）<br>【产品及】
+ *	2017-1-16         王兰	                          需求#30782 【TS:201701160536-JRES UI-资管业委会（资管）-张翔-【项目名称】非标准化投资管理系统2.0-【需求描述】所有表格组件(datagrid,groupgrid):如果初始化时，buttons为空，约定（ "buttons":[{}]）格式， api要支持添加按钮addButton
  * -----------------------------------------------------------------------
 *#
 #macro(datagrid $params)
@@ -704,7 +770,9 @@ csrf_token=${csrf_token}#end
 				<div class="u-datagrid-toolbar">
 					<ul class="u-datagrid-btn">
 						#foreach($button in $params.buttons )
-    			     	<li><a name="$!{button.name}" href="JavaScript:void(0)" class="hc-datagrid-a hc_datagrid-alink #if($button.disabled)f-disabled#end" #if($button.refmenu&&!$button.disabled)refmenu="${button.refmenu}"#end onClick="$!{button.event}" event = "$!{button.event}"><i class="fa #if($button.cls=="add")fa-plus-circle#elseif($button.cls=="edit")fa-pencil-square-o#elseif($button.cls=="del")fa-remove#elseif($button.cls=="confirm")fa-save#elseif($button.cls=="save")fa-save#elseif($button.cls=="query")fa-search#elseif($button.cls=="open")fa-folder-open-o#elseif($button.cls=="refresh")fa-refresh #else $!{button.cls} #end"></i>$!{button.label}</a></li>
+							#if($button.label&&$button.size()>0)
+								<li><a name="$!{button.name}" href="JavaScript:void(0)" class="hc-datagrid-a hc_datagrid-alink #if($button.disabled)f-disabled#end" #if($button.refmenu&&!$button.disabled)refmenu="${button.refmenu}"#end onClick="$!{button.event}" event = "$!{button.event}"><i class="fa #if($button.cls=="add")fa-plus-circle#elseif($button.cls=="edit")fa-pencil-square-o#elseif($button.cls=="del")fa-remove#elseif($button.cls=="confirm")fa-save#elseif($button.cls=="save")fa-save#elseif($button.cls=="query")fa-search#elseif($button.cls=="open")fa-folder-open-o#elseif($button.cls=="refresh")fa-refresh #else $!{button.cls} #end"></i>$!{button.label}</a></li>
+							#end
 						#end
 					</ul>
     			</div>
@@ -784,7 +852,7 @@ csrf_token=${csrf_token}#end
 								#else	
 									#set($hide="")
 								#end	
-								<td style="WIDTH:#nt(${frozenItem.width} 100)px;$!{hide}" flag="frozen" name="$frozenItem.name"> 
+								<td style="WIDTH:#nt(${frozenItem.width} 100)px;$!{hide}" flag="frozen" name="$frozenItem.name" oldWidth="#nt(${frozenItem.width} 100)"> 
 									<div style="TEXT-aLIGN:#if("$!{frozenItem.hAlign}"!="")$!{frozenItem.hAlign}#else center #end;WIDTH: #nt(${frozenItem.width} 100)px; CURSOR: default"
 										 name="$!{frozenItem.name}" dictName="$!{frozenItem.dictName}"
 										buttons="$!{frozenItem.buttons}" renderer="$!{frozenItem.renderer}">$!{frozenItem.text}</div>
@@ -809,7 +877,7 @@ csrf_token=${csrf_token}#end
 											#set($last = true)
 										#end
 									#end	
-								<td style="#if(($!{frozenItem}!=""||"$!params.frozenHead"=="true")&&($count==$colItems.size()))WIDTH:auto;#else WIDTH:#nt(${colitem.width} 100)px;#end$!{hide}" name="$colitem.name" #if($colitem.isSort) class="u-datagrid-sorting"#end>
+								<td style="#if(($!{frozenItem}!=""||"$!params.frozenHead"=="true")&&($count==$colItems.size()))WIDTH:auto;#else WIDTH:#nt(${colitem.width} 100)px;#end$!{hide}" name="$colitem.name" #if($colitem.isSort) class="u-datagrid-sorting"#end oldWidth="#nt(${colitem.width} 100)">
 									<div style="TEXT-aLIGN:#if("$!{colitem.hAlign}"!="")$!{colitem.hAlign}#else center #end;WIDTH: #nt(${colitem.width} 100)px; CURSOR: default"
     										class="hc-datagrid-cell" name="$!{colitem.name}" dictName="$!{colitem.dictName}"
 											buttons="$!{colitem.buttons}" renderer="$!{colitem.renderer}">$!{colitem.text}</div>
@@ -842,7 +910,7 @@ csrf_token=${csrf_token}#end
 							#if($_data&&$_data.size()>0&&$_data!="")
 								
 							#else
-							<tr><td colspan="$size" style="border-right:0px;padding:15px;"><p>暂时无数据</p></td></tr>
+							<tr><td colspan="$size" style="border-right:0px;padding:15px;"><p>#if(($params.language&&$params.language=="en_US")||($language&&$language=="en_US")) no data #else 暂时无数据#end</p></td></tr>
 							#end	
 							
 						</tbody>
@@ -916,7 +984,7 @@ csrf_token=${csrf_token}#end
 						 #else
 								<tr>
             											
-						        <td colspan="$size" style="border-right:0px;padding:15px;"><p>暂时无数据</p></td>
+						        <td colspan="$size" style="border-right:0px;padding:15px;"><p>#if(($params.language&&$params.language=="en_US")||($language&&$language=="en_US")) no data #else 暂时无数据#end</p></td>
 					           </tr>
 						  #end	
 
@@ -925,40 +993,119 @@ csrf_token=${csrf_token}#end
 				</div>
                <!-- *******************　　pagebar区域　********************** -->
 			   #if($params.hasPage&&$params.hasPage==true)
-               <div class="u-datagrid-page" >
-    				<div class="g-pagebar-wrap">
-        		      <ul class="m-pagebar" id='page_$compid' isNotTotal="$!params.isNotTotal">
-        		        <li>
-        		          <a href="javascript:void(0)" class="first_page_btn" title="首页"><i class="fa fa-step-backward"></i></a>
-        		        </li>
-        		        <li>
-        		          <a href="javascript:void(0)" class="pre_page_btn" title="上一页"><i class="fa fa-caret-left"></i></a>
-        		        </li>
-						#if("$!params.isNotTotal"=="true")
-							<input id='toPage_$compid' class="hc-pagination-num" value="0" size="2" type="hidden" onkeyup="this.value=this.value.replace(/\D/g,'')"  onafterpaste="this.value=this.value.replace(/\D/g,'')"/>
-							<input id='pageSize_$compid' class="hc-pagination-num" style="width: 30px;" value="20" size="20" type="hidden" onkeyup="this.value=this.value.replace(/\D/g,'')"  onafterpaste="this.value=this.value.replace(/\D/g,'')"/>
-						#else
-        		        <li><span>第</span></li>
-        		        <li><input id='toPage_$compid' class="hc-pagination-num" value="0" size="2" type="text" onkeyup="this.value=this.value.replace(/\D/g,'')"  onafterpaste="this.value=this.value.replace(/\D/g,'')"/></li>
-        		        <li><span>页</span></li>
-        		        <li><span>每页</span></li>
-        		        <li><input id='pageSize_$compid' class="hc-pagination-num" style="width: 30px;" value="20" size="20" type="text" onkeyup="this.value=this.value.replace(/\D/g,'')"  onafterpaste="this.value=this.value.replace(/\D/g,'')"/></li>
-        		        <li><span>条</span></li>
-						#end
-        		        <li><a href="javascript:void(0)" class="next_page_btn" title="下一页"><i class="fa fa-caret-right"></i></a></li>
-        		        #if("$!params.isNotTotal"!="true")
-						<li><a href="javascript:void(0)" class="last_page_btn" title="尾页"><i class="fa fa-step-forward"></i></a></li>
-						#end
-        		        <li><a href="javascript:void(0)" class="refresh_btn" title="刷新"><i class="fa fa-refresh"></i></a></li>
-        		      </ul>
-					  #if("$!params.isNotTotal"!="true")
-    				  <div class="m-pagebar-all">共<span id='totalPages_$compid' style="">0</span>页，<span id='pageInfo_$compid' class="hc-pagination-info">当前显示0到0，共0条记录</span></div>
-					  #end
-    				</div>
-    			</div>
+				##新增国际化支持 20170105 add by 周智星
+    				#if(($params.language&&$params.language=="en_US")||($language&&$language=="en_US"))
+						<div class="u-datagrid-page" >
+            				<div class="g-pagebar-wrap">
+                		      <ul class="m-pagebar" id='page_$compid' isNotTotal="$!params.isNotTotal" selectPageSize="$!params.useSelectPageSize">
+                		        <li>
+                		          <a href="javascript:void(0)" class="first_page_btn" title="first page"><i class="fa fa-step-backward"></i></a>
+                		        </li>
+                		        <li>
+                		          <a href="javascript:void(0)" class="pre_page_btn" title="pre page"><i class="fa fa-caret-left"></i></a>
+                		        </li>
+        						#if("$!params.isNotTotal"=="true")
+        							<input id='toPage_$compid' class="hc-pagination-num" value="0" size="2" type="hidden" onkeyup="this.value=this.value.replace(/\D/g,'')"  onafterpaste="this.value=this.value.replace(/\D/g,'')"/>
+        							<input id='pageSize_$compid' class="hc-pagination-num" style="width: 30px;" value="20" size="20" type="hidden" onkeyup="this.value=this.value.replace(/\D/g,'')"  onafterpaste="this.value=this.value.replace(/\D/g,'')"/>
+        						#else
+                		        <li><span>Page</span></li>
+                		        <li><input id='toPage_$compid' class="hc-pagination-num" value="0" size="2" type="text" onkeyup="this.value=this.value.replace(/\D/g,'')"  onafterpaste="this.value=this.value.replace(/\D/g,'')"/></li>
+                		        <li><span>of</span></li>
+                		        	#if("$!params.useSelectPageSize"=="true")
+        						<li>
+        							#set($pageSizeList =[10,15,20,30,50,100])
+        							#if($params.pageSizeList)
+        								#set($pageSizeList =$params.pageSizeList)
+        							#end
+        							<select id='pageSize_$compid' class="u-select-pagesize" >
+        							  #foreach($item in $pageSizeList)
+                                      <option value="$item">$item</option>
+        							  #end
+                                    </select>
+        						</li>
+        						#else
+                		        <li><input id='pageSize_$compid' class="hc-pagination-num" style="width: 30px;" value="20" size="20" type="text" onkeyup="this.value=this.value.replace(/\D/g,'')"  onafterpaste="this.value=this.value.replace(/\D/g,'')"/></li>
+                		        #end
+        						#end
+                		        <li><a href="javascript:void(0)" class="next_page_btn" title="next page"><i class="fa fa-caret-right"></i></a></li>
+                		        #if("$!params.isNotTotal"!="true")
+        						<li><a href="javascript:void(0)" class="last_page_btn" title="end page"><i class="fa fa-step-forward"></i></a></li>
+        						#end
+                		        <li><a href="javascript:void(0)" class="refresh_btn" title="refresh"><i class="fa fa-refresh"></i></a></li>
+                		      </ul>
+        					  #if("$!params.isNotTotal"!="true")
+            				  <div class="m-pagebar-all">Total <span id='totalPages_$compid' style="">0</span> page，<span id='pageInfo_$compid' class="hc-pagination-info">Displaying 0 to 0 of 0 items</span></div>
+        					  #end
+            				</div>
+            			</div>
+    				#else 
+    					<div class="u-datagrid-page" >
+            				<div class="g-pagebar-wrap">
+                		      <ul class="m-pagebar" id='page_$compid' isNotTotal="$!params.isNotTotal" selectPageSize="$!params.useSelectPageSize">
+                		        <li>
+                		          <a href="javascript:void(0)" class="first_page_btn" title="首页"><i class="fa fa-step-backward"></i></a>
+                		        </li>
+                		        <li>
+                		          <a href="javascript:void(0)" class="pre_page_btn" title="上一页"><i class="fa fa-caret-left"></i></a>
+                		        </li>
+        						#if("$!params.isNotTotal"=="true")
+        							<input id='toPage_$compid' class="hc-pagination-num" value="0" size="2" type="hidden" onkeyup="this.value=this.value.replace(/\D/g,'')"  onafterpaste="this.value=this.value.replace(/\D/g,'')"/>
+        							<input id='pageSize_$compid' class="hc-pagination-num" style="width: 30px;" value="20" size="20" type="hidden" onkeyup="this.value=this.value.replace(/\D/g,'')"  onafterpaste="this.value=this.value.replace(/\D/g,'')"/>
+        						#else
+                		        <li><span>第</span></li>
+                		        <li><input id='toPage_$compid' class="hc-pagination-num" value="0" size="2" type="text" onkeyup="this.value=this.value.replace(/\D/g,'')"  onafterpaste="this.value=this.value.replace(/\D/g,'')"/></li>
+                		        <li><span>页</span></li>
+                		        <li><span>每页</span></li>
+                		        	#if("$!params.useSelectPageSize"=="true")
+        						<li>
+        							#set($pageSizeList =[10,15,20,30,50,100])
+        							#if($params.pageSizeList)
+        								#set($pageSizeList =$params.pageSizeList)
+        							#end
+        							<select id='pageSize_$compid' class="u-select-pagesize" >
+        							  #foreach($item in $pageSizeList)
+                                      <option value="$item">$item</option>
+        							  #end
+                                    </select>
+        						</li>
+        						#else
+                		        <li><input id='pageSize_$compid' class="hc-pagination-num" style="width: 30px;" value="20" size="20" type="text" onkeyup="this.value=this.value.replace(/\D/g,'')"  onafterpaste="this.value=this.value.replace(/\D/g,'')"/></li>
+                		        #end
+                		        <li><span>条</span></li>
+        						#end
+                		        <li><a href="javascript:void(0)" class="next_page_btn" title="下一页"><i class="fa fa-caret-right"></i></a></li>
+                		        #if("$!params.isNotTotal"!="true")
+        						<li><a href="javascript:void(0)" class="last_page_btn" title="尾页"><i class="fa fa-step-forward"></i></a></li>
+        						#end
+                		        <li><a href="javascript:void(0)" class="refresh_btn" title="刷新"><i class="fa fa-refresh"></i></a></li>
+                		      </ul>
+        					  #if("$!params.isNotTotal"!="true")
+            				  <div class="m-pagebar-all">共<span id='totalPages_$compid' style="">0</span>页，<span id='pageInfo_$compid' class="hc-pagination-info">当前显示0到0，共0条记录</span></div>
+        					  #end
+            				</div>
+            			</div>
+    				#end
 			   #end
 			</div>
 #end	
+﻿#macro(docview $uiDocViewConfig)
+	#set($doc_view_id ="docViewId")
+	#if("$!{uiDocViewConfig.id}"!="")
+		#set($doc_view_id ="$!{uiDocViewConfig.id}")
+	#end
+	<div class="g-grid-12">
+		<div class="doc_header_mod">
+    		<h2>
+    			<em class="icon" title="" ></em>
+    			<span class="doc_title">$!uiDocViewConfig.fileName</span>
+    		</h2>
+		</div>
+    	<div $horn.paramsCache($uiDocViewConfig) id="$doc_view_id"  name="$!{uiDocViewConfig.name}" appServer="$appServer"   class="hc_docview" style="width:#nt(${uiDocViewConfig.width} 800)px;height:#nt(${uiDocViewConfig.height} 800)px;">
+			##<a id="view_$doc_view_id" style="width:#nt(${params.width} 800)px;height:#nt(${uiDocViewConfig.height} 800)px;"></a> 
+			<iframe  id="view_$doc_view_id"  src="" frameborder="0" width="#nt(${uiDocViewConfig.width} 800)" height="#nt(${uiDocViewConfig.height} 500)" scrolling="no"></iframe>
+        </div>
+	</div>
+#end
 #*
  * @class
  * @name  editgrid
@@ -1246,7 +1393,15 @@ csrf_token=${csrf_token}#end
     	#select($fieldparams)
     #elseif($factor.fieldtype=="11") ##自定义复选框 checkboxGroup
     	#set($fieldparams.items=$!factor.valuebound)
-    	#checkbox_group($fieldparams)    	
+    	#checkbox_group($fieldparams) 
+	#elseif($factor.fieldtype=="12") ##复选框 checkboxGroup 静态数据
+    	#set($fieldparams.items=$!factor.items)
+		#set($fieldparams.hiddenLabel=true)
+    	#checkbox_group($fieldparams)
+	#elseif($factor.fieldtype=="13") ##复选框 checkboxGroup 动态字典
+    	#set($fieldparams.dictName="$!factor.dictName")
+		#set($fieldparams.hiddenLabel=true)
+    	#checkbox_group($fieldparams)
     #elseif($factor.fieldtype=="14") ##自定义服务下拉选择框
     	#set($fieldparams.headItem={"label":"","value":"$selectheadval"})
 		#if($factor.valuebound)
@@ -2104,118 +2259,550 @@ csrf_token=${csrf_token}#end
 #macro(groupgrid $params)
     #set($compid = "dyncGroupGrid")
     #if($params.id&&$params.id!="")
-    	#set($compid = ${params.id})
+      #set($compid = ${params.id})
     #else
-    	#if($params.name&&$params.name!="")
-    		#set($compid = ${params.name})
-    	#end
-    #end	
+      #if($params.name&&$params.name!="")
+        #set($compid = ${params.name})
+      #end
+    #end  
     #set($colItems = $params.items)             ##列数据模型对象
     #set($selectModel = "$!params.selectModel")   ##单选 多选模式
     #set($_data = $!params.data)                 ##静态加载的数据，数据由后台服务返回
     #set($size =$!{colItems.size()} ) 
     #if($selectModel&&$selectModel=="multi")
         #set($size = $size+1 )
-    #elseif($selectModel&&$selectModel=="single")	
-    	#set($size = $size+1 )
+    #elseif($selectModel&&$selectModel=="single") 
+      #set($size = $size+1 )
     #end
-	<div id='$!{params.id}' class='hdsungroupgrid g-datagrid-wrap'  $horn.paramsCache($params)>
-		<!--*************title区域*********************-->
-		#if($params.title&&$!params.title!="")
-			<div class="u-groupgird-header">
-				<h4 class="u-groupgrid-title">$!{params.title}</h4> 
-			</div>
-		#end
-		<!--*************toolbar区域*********************-->
-		#if($params.buttons&&$params.buttons.size()>0)
-			<div class="u-datagrid-toolbar">
-                <ul class="u-datagrid-btn">
-					#foreach($button in $params.buttons)
-						<li><a name="$!{button.name}" href="JavaScript:void(0)" class="hc-datagrid-a hc_datagrid-alink #if($button.disabled)f-disabled#end" #if($button.refmenu&&!$button.disabled)refmenu="${button.refmenu}"#end onClick="$!{button.event}" event = "$!{button.event}"><i class="fa #if($button.cls=="add")fa-plus-circle#elseif($button.cls=="edit")fa-pencil-square-o#elseif($button.cls=="del")fa-remove#elseif($button.cls=="confirm")fa-save#elseif($button.cls=="save")fa-save#elseif($button.cls=="query")fa-search#elseif($button.cls=="open")fa-folder-open-o#elseif($button.cls=="refresh")fa-refresh #else $!{button.cls} #end"></i>$!{button.label}</a></li>
-					#end
-				</ul>
-			</div>
-		#end
-		<!--****************groupgrid tables数据区域***************************-->
-    	<div style="overflow:auto" class="u-groupgrid-body">
-    	   <table id="grouptable_$!{params.id}" class="u-groupgrid-table">
-			  <!--************************表头部位***************************-->
-    			<thead>
-    				<tr>
-						<!--***************单选多选模式************************-->
-						#if($selectModel&&$selectModel=="multi")
-							<td style="width:36px;">
-								<div class="u-groupgrid-cell-check" style="margin: 0 5; padding: 0 5;width:36px;">
-									<input type="checkbox" class="h_groupgrid_select_all" name="selectall"/>
-								</div>
-							</td>
-							#elseif($selectModel&&$selectModel=="single")
-							<td style="width:36px;">
-        								<div class="hc-datagrid-cell-check" style="width:36px;">
-        								</div>
-        						  </td>
-						#end
-							
-						#foreach($colitem in $colItems)
-						<td #if($!{colitem.width}) style="WIDTH: ${colitem.width}px" #end name="$colitem.name">
-							<div style="TEXT-aLIGN:#if("$!{colitem.hAlign}"!="")$!{colitem.hAlign}#else center #end;WIDTH: #if($!{colitem.width})$!{colitem.width}px #else auto #end; CURSOR: default"
-									class="u-groupgrid-cell" name="$!{colitem.name}" dictName="$!{colitem.dictName}"
-									buttons="$!{colitem.buttons}" renderer="$!{colitem.renderer}">$!{colitem.text}</div>
-							</td>
-						#end
-					</tr>
-    			</thead>
-			
-				<!--************************分组数据展示区域**************************-->
-				#if($params.data&&$params.data!="")
-						<tbody id="grouptbody_$!{params.id}" class="datatable">
-						</tbody>
-				#else
-					<tbody id="grouptbody_$!{params.id}">
-						<tr>
-						<td colspan="$size" id="noResult" style="border-right:0px;padding:15px;"><p>暂时无数据</p></td> 
-						</tr>
-					</tbody>
+  <div id='$!{params.id}' class='hdsungroupgrid g-datagrid-wrap'  $horn.paramsCache($params)>
+    <!--*************title区域*********************-->
+    #if($params.title&&$!params.title!="")
+      <div class="u-groupgird-header">
+        <h4 class="u-groupgrid-title">$!{params.title}</h4> 
+      </div>
+    #end
+    <!--*************toolbar区域*********************-->
+   
+      <div class="u-datagrid-toolbar">
+          <ul class="u-datagrid-btn">
+			#if($params.editable)
+			<li><a name="save" id="saveBTN_$!{params.id}" href="JavaScript:void(0)" class="hc-datagrid-a hc_datagrid-alink">
+                <i class="fa fa-save"> 
+                </i>保存</a></li>
+            <li><a name="refresh" id="refreshBTN_$!{params.id}" href="JavaScript:void(0)" class="hc-datagrid-a hc_datagrid-alink">
+                <i class="fa fa-refresh"> 
+                </i>刷新</a></li> 
+			#end
+           
+         #if($params.buttons&&$params.buttons.size()>0)         
+          #foreach($button in $params.buttons)
+			#if($button.label&&$button.size()>0)
+				<li><a name="$!{button.name}" href="JavaScript:void(0)" class="hc-datagrid-a hc_datagrid-alink #if($button.disabled)f-disabled#end" #if($button.refmenu&&!$button.disabled)refmenu="${button.refmenu}"#end onClick="$!{button.event}" event = "$!{button.event}"><i class="fa #if($button.cls=="add")fa-plus-circle#elseif($button.cls=="edit")fa-pencil-square-o#elseif($button.cls=="del")fa-remove#elseif($button.cls=="confirm")fa-save#elseif($button.cls=="save")fa-save#elseif($button.cls=="query")fa-search#elseif($button.cls=="open")fa-folder-open-o#elseif($button.cls=="refresh")fa-refresh #else $!{button.cls} #end"></i>$!{button.label}</a></li>
+			#end 
+          #end
+          #end
+        </ul>
+      </div>
+    
+    <!-- 默认编辑行-->
+    <table id="grouptable_$!{params.id}_copyedittab" >
+    <tr id="grouptable_$!{params.id}_copyeditrow" rownum="0" compindex="0" style="display:none;">
+     #if($colItems&&$params.editable)
+      #set($j=0)
+   <!-- 行号设置-->
+     #if($selectModel&&$selectModel=="multi")
+      <td style="width:36px;">
+      <div class="hc-datagrid-cell-check u-table-check" style="text-align: center;width:36px">
+        <input  type="checkbox" name="${params.name}checkbox"  class="hc-datagrid-cell-check"/>
+      </div>
+      </td>
+     #elseif($selectModel&&$selectModel=="single")   
+      <td style="width:36px;">
+      <div class="hc-datagrid-cell-check u-table-check" style="text-align: center;width:36px">
+       <input  type="radio" name="${params.name}radiobtn" class="hc-datagrid-cell-check"/>
+      </div>
+      </td>
+    #end
+       #set($count=1)
+      #foreach($groupfactor in $colItems)
+       #set($groupfactor.compid="field${groupfactor.name}0ID")
+	   
+	     #if($groupfactor.hidden&&$groupfactor.hidden==true)
+		   #set($Ghide="display:none")
+		 #else
+		   #set($Ghide="")   
+		 #end
+       <td id="td_$groupfactor.compid" style="#if($count==$colItems.size())WIDTH:auto;#else WIDTH:#nt(${groupfactor.width} 100)px;#end $!{Ghide}"  compid="$groupfactor.compid" factorcode="${groupfactor.name}" rownum="0" colnum="${j}" fieldtype="$!groupfactor.fieldtype">
+        <div class="content" style="display:none;width:#nt(${groupfactor.width} 100)px">#groupfactorfield($groupfactor)</div>
+        <div class="showvalue"  style="width:#nt(${groupfactor.width} 100)px;overflow: hidden; white-space: nowrap;text-overflow: ellipsis;"></div>
+       </td>
+       #set($j=$j+1)
+	   #set($count=$count+1)
+      #end
+    #end  
+    </tr>
+</table>
+	
+	<!--***********************************冻结表头区域*******************************************-->
+ <div style="WIDTH: 100%;" class="hc-datagrid-header">
+          #if("$!params.frozenHead"=="true")
+          <table id='head_$compid' class="hc-datagrid-fixed-table" border="0" cellSpacing="0" cellPadding="0" style="width:100%">
+            <tbody>
+              <tr>
+                #if($selectModel&&$selectModel=="multi")
+                      <td style="width:36px;">
+                        <div class="hc-datagrid-cell-check u-table-check" style="margin: 0 5; padding: 0 5;width:36px;">
+                      <input id="allcb_datagrid_id" type="checkbox" class="h_datagrid_select_all"/>
+                    </div>
+                      </td>
+                #elseif($selectModel&&$selectModel=="single")   
+                  <td style="width:36px;">
+                        <div class="hc-datagrid-cell-check u-table-check" style="width:36px;">
+                        </div>
+                      </td>
+                #end
+                ##所有列头(如果有冻结列则排除)
+                #set($count = 1)
+                #set($last = false)
+                #foreach($colitem in $colItems)
+                  #if($colitem.hidden&&$colitem.hidden==true)
+				   #set($hide="display:none")
+				 #else
+				   #set($hide="")   
+				  #end
+            <td style="#if(("$!params.frozenHead"=="true")&&($count==$colItems.size()))WIDTH:auto;#else WIDTH:#nt(${colitem.width} 100)px;#end $!{hide}" name="$colitem.name" #if($colitem.dictName) dictName="$colitem.dictName" #end>
+              <div style="TEXT-aLIGN:#if("$!{colitem.hAlign}"!="")$!{colitem.hAlign}#else center #end;WIDTH:#nt(${colitem.width} 100)px; CURSOR: default" class="u-groupgrid-cell" name="$!{colitem.name}" dictName="$!{colitem.dictName}"  buttons="$!{colitem.buttons}" renderer="$!{colitem.renderer}">$!{colitem.text}</div>
+              </td>  
+			       #set($count = $count+1)	
+                #end  
+              </tr>
+            </tbody>
+          </table>
+          #end
+        </div>
+    <!--****************groupgrid tables数据区域***************************-->
+      <div style="overflow:auto" class="u-groupgrid-body">
+         <table id="grouptable_$!{params.id}" class="u-groupgrid-table">
+        <!--************************表头部位***************************-->
+           #if("$!params.frozenHead"!="true")
+          <thead>
+            <tr>
+            <!--***************单选多选模式************************-->
+            #if($selectModel&&$selectModel=="multi")
+              <td style="width:36px;">
+                <div class="u-groupgrid-cell-check" style="margin: 0 5; padding: 0 5;width:36px;">
+                  <input type="checkbox" class="h_groupgrid_select_all" name="selectall"/>
+                </div>
+              </td>
+              #elseif($selectModel&&$selectModel=="single")
+              <td style="width:36px;">
+                        <div class="hc-datagrid-cell-check" style="width:36px;">
+                        </div>
+                      </td>
+              #end
+             #set($colcount = 1) 
+            #foreach($colitem in $colItems)
+            #if($colitem.hidden&&$colitem.hidden==true)
+				   #set($hide="display:none")
+				 #else
+				   #set($hide="")   
 				#end
-				
-				
-    	   </table>
-    	</div>
-		 <!-- *******************　　pagebar区域　********************** -->
-			   #if($params.hasPage&&$params.hasPage==true)
+            <td style="#if($colcount==$colItems.size())WIDTH:auto;#else WIDTH:#nt(${colitem.width} 100)px;#end  $!{hide}" name="$colitem.name" #if($colitem.dictName) dictName="$colitem.dictName" #end>
+              <div style="TEXT-aLIGN:#if("$!{colitem.hAlign}"!="")$!{colitem.hAlign}#else center #end;WIDTH: #nt(${colitem.width} 100)px; CURSOR: default" class="u-groupgrid-cell" name="$!{colitem.name}" dictName="$!{colitem.dictName}"  buttons="$!{colitem.buttons}" renderer="$!{colitem.renderer}">$!{colitem.text}</div>
+              </td>
+			  #set($colcount = $colcount+1) 
+            #end          
+          </tr>
+          </thead>
+        #end
+      
+        <!--************************分组数据展示区域**************************-->
+        #if($params.data&&$params.data!="")
+            <tbody id="grouptbody_$!{params.id}" class="datatable">
+            </tbody>
+        #else
+          <tbody id="grouptbody_$!{params.id}">
+            <tr>
+            <td colspan="$size" id="noResult" style="border-right:0px;padding:15px;"><p>暂时无数据</p></td> 
+            </tr>
+          </tbody>
+        #end
+         </table>
+      </div>
+     <!-- *******************　　pagebar区域　********************** -->
+         #if($params.hasPage&&$params.hasPage==true)
                <div class="u-datagrid-page" >
-    				<div class="g-pagebar-wrap">
-        		      <ul class="m-pagebar" id='page_$compid' isNotTotal="$!params.isNotTotal">
-        		        <li>
-        		          <a href="javascript:void(0)" class="first_page_btn" title="首页"><i class="fa fa-step-backward"></i></a>
-        		        </li>
-        		        <li>
-        		          <a href="javascript:void(0)" class="pre_page_btn" title="上一页"><i class="fa fa-caret-left"></i></a>
-        		        </li>
-						#if("$!params.isNotTotal"=="true")
-							<input id='toPage_$compid' class="hc-pagination-num" value="0" size="2" type="hidden" onkeyup="this.value=this.value.replace(/\D/g,'')"  onafterpaste="this.value=this.value.replace(/\D/g,'')"/>
-							<input id='pageSize_$compid' class="hc-pagination-num" style="width: 30px;" value="20" size="20" type="hidden" onkeyup="this.value=this.value.replace(/\D/g,'')"  onafterpaste="this.value=this.value.replace(/\D/g,'')"/>
-						#else
-        		        <li><span>第</span></li>
-        		        <li><input id='toPage_$compid' class="hc-pagination-num" value="0" size="2" type="text" onkeyup="this.value=this.value.replace(/\D/g,'')"  onafterpaste="this.value=this.value.replace(/\D/g,'')"/></li>
-        		        <li><span>页</span></li>
-        		        <li><span>每页</span></li>
-        		        <li><input id='pageSize_$compid' class="hc-pagination-num" style="width: 30px;" value="20" size="20" type="text" onkeyup="this.value=this.value.replace(/\D/g,'')"  onafterpaste="this.value=this.value.replace(/\D/g,'')"/></li>
-        		        <li><span>条</span></li>
-						#end
-        		        <li><a href="javascript:void(0)" class="next_page_btn" title="下一页"><i class="fa fa-caret-right"></i></a></li>
-        		        #if("$!params.isNotTotal"!="true")
-						<li><a href="javascript:void(0)" class="last_page_btn" title="尾页"><i class="fa fa-step-forward"></i></a></li>
-						#end
-        		        <li><a href="javascript:void(0)" class="refresh_btn" title="刷新"><i class="fa fa-refresh"></i></a></li>
-        		      </ul>
-					  #if("$!params.isNotTotal"!="true")
-    				  <div class="m-pagebar-all">共<span id='totalPages_$compid' style="">0</span>页，<span id='pageInfo_$compid' class="hc-pagination-info">当前显示0到0，共0条记录</span></div>
-					  #end
-    				</div>
-    			</div>
-			   #end
+            <div class="g-pagebar-wrap">
+                  <ul class="m-pagebar" id='page_$compid' isNotTotal="$!params.isNotTotal">
+                    <li>
+                      <a href="javascript:void(0)" class="first_page_btn" title="首页"><i class="fa fa-step-backward"></i></a>
+                    </li>
+                    <li>
+                      <a href="javascript:void(0)" class="pre_page_btn" title="上一页"><i class="fa fa-caret-left"></i></a>
+                    </li>
+            #if("$!params.isNotTotal"=="true")
+              <input id='toPage_$compid' class="hc-pagination-num" value="0" size="2" type="hidden" onkeyup="this.value=this.value.replace(/\D/g,'')"  onafterpaste="this.value=this.value.replace(/\D/g,'')"/>
+              <input id='pageSize_$compid' class="hc-pagination-num" style="width: 30px;" value="20" size="20" type="hidden" onkeyup="this.value=this.value.replace(/\D/g,'')"  onafterpaste="this.value=this.value.replace(/\D/g,'')"/>
+            #else
+                    <li><span>第</span></li>
+                    <li><input id='toPage_$compid' class="hc-pagination-num" value="0" size="2" type="text" onkeyup="this.value=this.value.replace(/\D/g,'')"  onafterpaste="this.value=this.value.replace(/\D/g,'')"/></li>
+                    <li><span>页</span></li>
+                    <li><span>每页</span></li>
+                    <li><input id='pageSize_$compid' class="hc-pagination-num" style="width: 30px;" value="20" size="20" type="text" onkeyup="this.value=this.value.replace(/\D/g,'')"  onafterpaste="this.value=this.value.replace(/\D/g,'')"/></li>
+                    <li><span>条</span></li>
+            #end
+                    <li><a href="javascript:void(0)" class="next_page_btn" title="下一页"><i class="fa fa-caret-right"></i></a></li>
+                    #if("$!params.isNotTotal"!="true")
+            <li><a href="javascript:void(0)" class="last_page_btn" title="尾页"><i class="fa fa-step-forward"></i></a></li>
+            #end
+                    <li><a href="javascript:void(0)" class="refresh_btn" title="刷新"><i class="fa fa-refresh"></i></a></li>
+                  </ul>
+            #if("$!params.isNotTotal"!="true")
+              <div class="m-pagebar-all">共<span id='totalPages_$compid' style="">0</span>页，<span id='pageInfo_$compid' class="hc-pagination-info">当前显示0到0，共0条记录</span></div>
+            #end
+            </div>
+          </div>
+         #end
+  </div>
+#end
+#macro(groupfactorfield $editfield)
+  <div class="hs-modifyform-input"  fieldtype="$editfield.fieldtype">
+  
+  ##变量
+    #set($selectheadval="空") ##下拉第一项值
+    
+    ##组件配置参数
+    #set($fieldparams={})
+    #set($fieldparams.id="$!{editfield.compid}")
+    #set($fieldparams.name="$!{editfield.compid}")
+    #set($fieldparams.check=$!{editfield.check})
+  
+    #if($editfield.fieldtype=="0") ##
+        #group_label($fieldparams)	
+	#elseif($editfield.fieldtype=="1") ##文本框
+     #set($fieldparams.hiddenLabel=true)
+      #if($fieldparams.check)
+        #set($fieldparams.check=$!editfield.check)
+	  #end
+      #textfield_groupgrid($fieldparams)
+	   #elseif($editfield.fieldtype=="2") ##数字框
+    	#if($fieldparams.check)
+    		#set($fieldparams.check="${fieldparams.check};num")
+    	#else
+    		#set($fieldparams.check="num")
+		#end
+		#set($fieldparams.hiddenLabel=true)
+    	#textfield_groupgrid($fieldparams)
+	  #elseif($!editfield.fieldtype=="3") ##金额数字框
+    	#set($fieldparams.inputType="money")
+    	#set($fieldparams.split=",")
+		#set($fieldparams.hiddenLabel=true)
+		#if($fieldparams.check)
+    		#set($fieldparams.check=$!editfield.check)
+		#end
+    	#typefield_grid($fieldparams)
+    #elseif($!editfield.fieldtype=="4") ##日期控件
+    	#set($fieldparams.config="{format:'yyyyMMdd'}")
+		#set($fieldparams.hiddenLabel=true)
+		#if($fieldparams.check)
+    		#set($fieldparams.check=$!editfield.check)
+		#end
+    	#calendar_grid($fieldparams)
+		#elseif($!editfield.fieldtype=="5") ##静态下拉选择框
+    	##set($fieldparams.headItem={"label":"","value":"$selectheadval"})
+    	#set($fieldparams.items=$!editfield.items)
+		#set($fieldparams.multiple=$!editfield.multiple)
+		#if($fieldparams.check)
+    		#set($fieldparams.check=$!editfield.check)
+		#end
+		#set($fieldparams.hiddenLabel=true)
+    	#combox_groupgrid($fieldparams)
+    #elseif($!editfield.fieldtype=="6") ##字典下拉选择框
+    	#set($fieldparams.dictName="$!editfield.dictName")
+		#set($fieldparams.multiple=$!editfield.multiple)
+    	#set($fieldparams.headItem={"label":"","value":"$selectheadval"})
+		#set($fieldparams.hiddenLabel=true)
+		#if($fieldparams.check)
+    		#set($fieldparams.check=$!editfield.check)
+		#end
+    	#combox_groupgrid($fieldparams)
+    #end
+  </div>
+#end
+
+
+#macro(textfield_groupgrid $uiTextfieldConfig)
+
+    #set($val = "")
+    #set($val = $uiTextfieldConfig.value)
+    #if((!$val || $val =="") && $uiTextfieldConfig.name )
+        #set($val =  "$horn.getValue($!uiTextfieldConfig.name)")
+    #end
+	#set($checkStr=$horn.getCheckStr($!uiTextfieldConfig.name,$!uiTextfieldConfig.check))
+	#set($groupStr=$horn.getGroupStr($!uiTextfieldConfig.name,$!uiTextfieldConfig.group))
+	<div id="$!{uiTextfieldConfig.id}" $horn.paramsCache($uiTextfieldConfig) name="$uiTextfieldConfig.name" class="hc_textfield _text">
+      <input type="text" name="$uiTextfieldConfig.name" class="u-textfield"  value="$!val" title="$!val" #if($!uiTextfieldConfig.emptyText)placeholder="$!uiTextfieldConfig.emptyText"#end
+		#if($uiTextfieldConfig.alias)
+			alias="${uiTextfieldConfig.alias}"
+		#end
+        #if(${uiTextfieldConfig.disabled})
+            disabled="disabled"
+        #end
+        #if(${uiTextfieldConfig.readonly})
+            readonly="readonly"
+        #end
+		check="$!{checkStr}"
+		group="$!{groupStr}"
+	/>
+	#if($uiTextfieldConfig.isSearch)
+	  <i class="fa fa-search u-select-down"></i>
+	#end
 	</div>
+	#if($uiTextfieldConfig.isSearch)
+	<div class="hc_checkboxdiv"></div>
+	#end
+	#set($uiTextfieldConfig = {})
+#end
+
+#macro(group_label $uiLabelConfig)
+	
+	#set($val = "")
+	#set($val = $uiLabelConfig.value)
+    #if((!$val || $val =="") && $uiLabelConfig.name )
+		#set($val =  "$horn.getValue($!uiLabelConfig.name)")
+	#end
+			<div class="g-grid-12">
+				<div  id="$!{uiLabelConfig.id}" $horn.paramsCache($uiLabelConfig) name="$!{uiLabelConfig.name}" alias="$!{uiLabelConfig.alias}" class="hc_label u-label" mutivalue="$!{uiLabelConfig.mutivalue}"
+    			title="$!{val}"	
+    			>$!val</div>
+				#if($uiLabelConfig.hiddenName) <input type='hidden' name='$uiLabelConfig.hiddenName' value='$!val' /> #end
+			</div>
+	#set($uiLabelConfig = {})
+#end
+
+#macro(combox_groupgrid $uiComboxConfig)
+    	#set($items=[])
+		#set($pKeyField = "pLabel" ) 
+		#set($keyField = "label" ) 
+        #set($titleField = "value")
+        #if($uiComboxConfig.items)
+        	#set($items = $uiComboxConfig.items)
+        #elseif($dictManager && $uiComboxConfig.dictName)
+            #set($items = $dictManager.getDicts($uiComboxConfig.dictName))
+		#end
+		#foreach($item in $items)
+			#if($item.code)
+				#set($keyField = "code" ) 
+				#set($titleField = "text")
+			#end
+			#break
+		#end
+
+    	##如果有传入参数，则替换掉对应的field
+    	#if($uiComboxConfig.pKeyField) 
+    		#set($pKeyField = $uiComboxConfig.pKeyField ) 
+		#end
+
+    	#if($uiComboxConfig.labelField && $uiComboxConfig.labelField.length() > 0)
+    		#set($keyField = $uiComboxConfig.labelField ) 
+    	#end
+    	#if($uiComboxConfig.codeField && $uiComboxConfig.codeField.length() > 0)
+    		#set($keyField = $uiComboxConfig.codeField ) 
+    	#end
+    	#if($uiComboxConfig.valueField && $uiComboxConfig.valueField.length() > 0) 
+    		#set($titleField = $uiComboxConfig.valueField )
+    	#end
+    	#if($uiComboxConfig.textField && $uiComboxConfig.textField.length() > 0) 
+    		#set($titleField = $uiComboxConfig.textField )
+    	#end
+    	
+    	##设置是否显示标签
+    	#set($showLabel = false)
+    	#if($uiComboxConfig.showLabel&&$uiComboxConfig.showLabel == "true")
+    		#set($showLabel = true)
+    	#end
+        #set($multipleValue="")
+		#set($multipleText="")
+        #if($uiComboxConfig.delimiter)
+            #set($delimiter=$!{uiComboxConfig.delimiter})
+        #else
+            #set($delimiter=",")
+        #end
+    	<div class="g-unit-wrap">
+		 #set($checkStr=$horn.getCheckStr($uiComboxConfig.name,$uiComboxConfig.check))
+        #set($groupStr=$horn.getGroupStr($uiComboxConfig.name,$uiComboxConfig.group))
+		<div #if($uiComboxConfig.hiddenLabel)class="g-grid-12" #else class="g-grid-8"#end>
+		<div class="hc_combox" id="$!{uiComboxConfig.id}" $horn.paramsCache($uiComboxConfig)  pKeyField=$!{pKeyField} keyField=$!{keyField} titleField=$!{titleField} showLabel="$!{showLabel}">
+        	#set($curvalue="")
+        	#if($uiComboxConfig.value)
+        		#set($curvalue=$!{uiComboxConfig.value})
+        	#else
+        		#set($curvalue="$horn.getValue($!uiComboxConfig.name)")
+        	#end
+        	<input type="hidden" name="$uiComboxConfig.name" 
+        		#if($uiComboxConfig.alias)
+        			alias="${uiComboxConfig.alias}"
+        		#end
+        	#if($uiComboxConfig.refname)
+        		refname="$uiComboxConfig.refname" 
+        	#end
+        	#if(!$curvalue.equals(""))
+        		value="$curvalue"
+            #else
+            	#if("$!uiComboxConfig.multiple" != "true" && $items.size()>0)
+        			#set($item = $items.get(0))
+        	        #set($itemLabelCommand="$"+"!"+"{item."+"$keyField"+"}")
+        			#set($itemLabel = "#evaluate($itemLabelCommand)")
+                    #if($uiComboxConfig.headItem)
+                        #set($headItem = $uiComboxConfig.headItem)
+                        #set($headItemLabelCommand="$"+"!"+"{headItem."+"$keyField"+"}")
+                        #set($headItemLabel = "#evaluate($headItemLabelCommand)")
+                        value="$headItemLabel"
+                    #else
+                        value="$itemLabel"
+                    #end
+                #elseif("$!uiComboxConfig.multiple" == "true" && $items.size()>0 && ("$!uiComboxConfig.checkAll"=="true" || "$!uiComboxConfig.selectAll" == "true"))
+					#foreach($item in $items)
+                            #set($itemLabelCommand="$"+"!"+"{item."+"$keyField"+"}")
+                            #set($itemLabel = "#evaluate($itemLabelCommand)")
+							#set($itemTitleCommand="$"+"!"+"{item."+"$titleField"+"}")
+                			#set($itemTitle = "#evaluate($itemTitleCommand)")
+                            #if($velocityCount == $items.size())
+                                #set($multipleValue = $multipleValue+$!{itemLabel})
+								#set($multipleText = $multipleText+$!{itemTitle})
+                            #else
+                                #set($multipleValue = $multipleValue+$!{itemLabel}+$!{delimiter})
+								#set($multipleText = $multipleText+$!{itemTitle}+$!{delimiter})
+                            #end
+                        #end
+                    value = "$!{multipleValue}"
+            	#end
+        	#end
+        	check="$checkStr"
+        	group="$groupStr"
+        	 />
+        	<input multiple="$!{uiComboxConfig.multiple}" selectMode="$!{uiComboxConfig.multiple}" type="text" class="u-select" 
+            	##foreach($event in $uiComboxConfig.events)
+            	##	$event.event = "$event.function" 
+            	##end
+            	#if($uiComboxConfig.dictName && $horn)
+            		#if($uiComboxConfig.multiple == true)
+            		 	ref="${uiComboxConfig.dictName}_m"
+            		#else
+            		 	ref="${uiComboxConfig.dictName}_s"
+            		#end
+            	#end
+            	#if(!$curvalue.equals(""))
+            		#if($uiComboxConfig.multiple == true)
+						#if($dictManager && $uiComboxConfig.dictName)
+							#foreach($tmpVal in $curvalue.split("$!delimiter"))
+                				#set($tmp = $dictManager.getDictEntry($uiComboxConfig.dictName,$tmpVal));
+								#set($multipleText = $multipleText+$!tmp.getValue()+$!{delimiter})
+							#end
+							#if("$!multipleText"!="")
+								#set($length=$multipleText.length())
+								#set($length=$length - 1)
+								#set($multipleText = $multipleText.substring(0,$length))
+							#end
+							value="$!multipleText"
+						#else
+							#foreach($tmpVal in $curvalue.split("$!delimiter"))
+                				#foreach($item in $items)
+									#set($itemLabelCommand="$"+"!"+"{item."+"$keyField"+"}")
+                        			#set($itemTitleCommand="$"+"!"+"{item."+"$titleField"+"}")
+									#set($itemLabel = "#evaluate($itemLabelCommand)")
+                    				#set($itemTitle = "#evaluate($itemTitleCommand)")
+									#if($itemLabel==$tmpVal)
+										#set($multipleText = $multipleText+$!itemTitle+$!{delimiter})
+									#end
+								#end
+							#end
+							#if("$!multipleText"!="")
+								#set($length=$multipleText.length())
+								#set($length=$length - 1)
+								#set($multipleText = $multipleText.substring(0,$length))
+							#end
+							value="$multipleText"
+						#end
+            			
+            		#else
+    					#if($dictManager && $uiComboxConfig.dictName)
+    						#set($val = $dictManager.getDictEntry($uiComboxConfig.dictName,$curvalue));
+    						##14098 combox在数据为数据字典时，若是设置的value值不存在，也能显示
+    						#if("$!val"!="")
+    							value="#if($showLabel)$curvalue:#end$!val.getValue()" 
+    						#else
+    							value=""
+    						#end
+                    	#else
+        					#foreach($item in $items)
+            	    			#if($item.label == $curvalue)
+    								#if($showLabel)
+    									value="$item.label:$item.value" 
+    								#else
+    									value="$item.value" 
+    								#end
+            	    			#end
+    						#end
+    						
+    						
+                    		#foreach($item in $items)
+                    			#set($itemLabelCommand="$"+"!"+"{item."+"$keyField"+"}")
+                    			#set($itemTitleCommand="$"+"!"+"{item."+"$titleField"+"}")
+                				#set($itemLabel = "#evaluate($itemLabelCommand)")
+                				#set($itemTitle = "#evaluate($itemTitleCommand)")
+                    			#if($itemLabel == $curvalue)
+                					##如果有设置showLabel，则显示
+                        			value="#if($showLabel)$itemLabel:#end$itemTitle"
+                				#end
+                    		#end
+                    	#end
+    					
+    					
+    					
+            		#end
+            	#elseif($uiComboxConfig.multiple != true && $items.size()>0)
+            		#set($item = $items.get(0))
+            		##如果有设置showLabel，则显示
+                    #set($itemLabelCommand="$"+"!"+"{item."+"$keyField"+"}")
+            		#set($itemTitleCommand="$"+"!"+"{item."+"$titleField"+"}")
+            		#set($itemLabel = "#evaluate($itemLabelCommand)")
+            		#set($itemTitle = "#evaluate($itemTitleCommand)")
+            		##如果有设置showLabel，则显示
+                    #if($uiComboxConfig.headItem)
+                        #set($headItem = $uiComboxConfig.headItem)
+                        #set($headItemTitleCommand="$"+"!"+"{headItem."+"$titleField"+"}")
+                        #set($headItemTitle = "#evaluate($headItemTitleCommand)")
+                        value="$headItemTitle"
+                    #else
+                        value="#if($showLabel)$itemLabel:#end$itemTitle"
+                    #end
+                #elseif($uiComboxConfig.multiple == true && $items.size()>0 && ($uiComboxConfig.checkAll==true || $uiComboxConfig.selectAll == true))
+					value="$!{multipleText}"
+            	#end
+                    delimiter="$!{delimiter}" 
+        	/>
+			<i class="fa fa-caret-down u-select-down"></i>
+        		
+			</div>	
+		 </div>
+		</div>
+	#if($uiComboxConfig.dictName && $horn)
+		#foreach($dicname in $uiComboxConfig.dictName.split(","))
+			#if($uiComboxConfig.multiple == true)
+    		 	$horn.addGlobal('componentSelects_m',$dicname)
+    		#else
+    		 	$horn.addGlobal('componentSelects_s',$dicname)
+			#end
+		#end
+		
+	#else
+		
+		#if($items)
+			$horn.addGlobal('componentSelects_static',$uiComboxConfig)
+		#end
+	#end
+	#set($uiComboxConfig = {})
 #end
 #**   
  * @author huling   
@@ -2257,6 +2844,131 @@ csrf_token=${csrf_token}#end
 	</li>
 #end
 
+#macro(imageBox $uiImageBoxConfig)
+	#set($image_box_id ="imageBoxId")
+	#if("$!{uiImageBoxConfig.id}"!="")
+		#set($image_box_id ="$!{uiImageBoxConfig.id}")
+	#else 
+		#if("$!{uiImageBoxConfig.name}"!="")
+			#set($image_box_id ="$!{uiImageBoxConfig.name}")
+		#end
+	#end
+	<div class="g-wrap">		
+		<div class="g-grid-12 imgContent">
+			<div class="imgsMain hc_imageBox"  $horn.paramsCache($uiImageBoxConfig) id="$image_box_id" name="$!{uiImageBoxConfig.name}" appServer="$appServer">
+				#if ($uiImageBoxConfig.title&&"$!uiImageBoxConfig.title"!="")
+    				<div class="clearfix imgBoxHeader">
+    					<strong class="f-fl imgListTitle" title="$!{uiImageBoxConfig.title}">
+    						<i class="fa fa-th"></i>$!{uiImageBoxConfig.title}
+    					</strong>
+    					<div class="f-fr icon-list">
+    						<a href="javascript:void(0)" id="iconBtn_$image_box_id" class="iconBtn active">
+    							<i class="fa fa-th-large"></i>
+    						</a>
+    						<a href="javascript:void(0)" id="listBtn_$image_box_id" class="iconBtn">
+    							<i class="fa fa-list"></i>
+    						</a>
+    					</div>
+    				</div>
+				#end
+				<div id="iconMode_$image_box_id" class="iconMode clearfix" #if($uiImageBoxConfig.height) style="height:$!{uiImageBoxConfig.height}px;overflow:auto;" #end>
+					
+				</div>
+				<div id="listMode_$image_box_id" class="listMode clearfix" style="display:none;#if($uiImageBoxConfig.height) height:$!{uiImageBoxConfig.height}px;overflow:auto; #end" >
+					<ul></ul>
+				</div>
+				#if($uiImageBoxConfig.hasPage&&$uiImageBoxConfig.hasPage==true)
+    				<footer class="clearfix">
+    					<div class="pageBar" id='page_$image_box_id'>
+    						<div class="pageNum">
+								<input id='toPage_$image_box_id' class="hc-pagination-num" value="0" size="2" type="hidden" onkeyup="this.value=this.value.replace(/\D/g,'')"  onafterpaste="this.value=this.value.replace(/\D/g,'')"/>
+    							<span class="nowPage">1</span>
+    							<span>/</span>
+    							<span class="totalPage" id='totalPages_$image_box_id'>5</span>
+    						</div>
+    						<div class="pageIcon">	
+								<ul>
+        							<li><a href="javascript:void(0)" class="first_page_btn"><i class="fa fa-backward" title="首页"></i></a></li>
+        							<li><a href="javascript:void(0)" class="pre_page_btn"><i class="fa fa-play fa-rotate-180" title="上一页"></i></a>
+        							<li><a href="javascript:void(0)" class="next_page_btn"><i class="fa fa-play" title="下一页"></i></a></li>
+        							<li><a href="javascript:void(0)" class="last_page_btn"><i class="fa fa-forward" title="尾页"></i></a></li>
+								</ul>
+    						</div>
+    					</div>
+    				</footer>
+				#end 
+			</div>
+		</div>
+	</div>
+	#set($uiImageBoxConfig = {})
+#end
+#macro(imageView $uiImageViewConfig)
+	#set($image_view_id ="imageViewId")
+	#if("$!{uiImageViewConfig.id}"!="")
+		#set($image_view_id ="$!{uiImageViewConfig.id}")
+	#end
+	#set($imgHeight=0)
+	#set($imgWidth=0)
+	#if(!$!{uiImageViewConfig.height}||$!{uiImageViewConfig.height} < 200||$!{uiImageViewConfig.height}=="")
+		#set($imgHeight=300)
+	#else 
+		#set($imgHeight=$!{uiImageViewConfig.height})
+	#end 
+	#if(!$!{uiImageViewConfig.width}||$!{uiImageViewConfig.width} < 200||$!{uiImageViewConfig.width}=="")
+		#set($imgWidth=300)
+	#else 
+		#set($imgWidth=$!{uiImageViewConfig.width})
+	#end 
+	
+	#set($datas=[])
+	#if($uiImageViewConfig.data)
+        #set($datas = $uiImageViewConfig.data)
+	#end
+	#set($smallWidth=0)
+	#if($imgWidth)
+        #set($smallWidth = (${imgWidth} - 50 - 60) / 6)
+	#end
+	#if($imgHeight)
+		#set($scaleHeight=$!{imgHeight} * 0.53)
+		#set($enlarge=$!{imgHeight} * 2)
+	#end 
+	#if($imgWidth)
+		#set($scaleWidth=$!{imgWidth} * 0.59)
+	#end 
+	<div class="g-unit-wrap hc_imageView" $horn.paramsCache($uiImageViewConfig) id="$image_view_id" name="$!{uiImageViewConfig.name}" appServer="$appServer">
+		<div class=" g-grid-12 imgView" id="preview_$image_view_id">
+			<div class="bigImg" style="#if($imgHeight) height:$!{imgHeight}px; #end #if($imgWidth) width:$!{imgWidth}px;#end ">
+				<div class="Img" id="midImgDiv_$image_view_id">
+					<img id="midimg_$image_view_id" #if($datas.size()>0) src="$!{datas[0].mid}" #else src="" #end alt="">
+				</div>
+				<div class="bigSelector" id="winSelector_$image_view_id" style="#if($imgHeight) height:$!{scaleHeight}px; #end #if($imgWidth) width:$!{scaleWidth}px;#end left:0;top:0;display:none;"></div>
+			</div>
+			<div class="smallImg" style="#if($imgWidth) width:$!{imgWidth}px;#end">
+				<button style="left:0;#if($imgHeight) height:$!{smallWidth}px; #end" class="scrollbutton smallImgUp disabled" id="smallImgUp_$image_view_id">
+					<i class="fa fa-caret-left"></i>
+				</button>
+				<div class="smallImgList" id="imageMenu_$image_view_id" style="#if($imgHeight) height:$!{smallWidth}px; #end">
+					<ul>
+						#set($dataIndex=0)
+						#foreach($data in $datas)
+							<li class="smallImgItem" #if($dataIndex==0) id="onlickImg" #end>
+								<img imgindex="$dataIndex" style="#if($imgHeight) height:$!{smallWidth}px;width:$!{smallWidth}px; #end" src="$!{data.small}" alt="">
+							</li>
+							#set($dataIndex=$dataIndex+1)
+						#end 
+					</ul>
+				</div>
+				<button style="right:0;#if($imgHeight) height:$!{smallWidth}px; #end" class="scrollbutton smallImgDown" id="smallImgDown_$image_view_id">
+					<i class="fa fa-caret-right"></i>
+				</button>
+			</div>
+			<div class="bigImgView" id="bigView_$image_view_id" style="display:none;">
+				<img style="#if($imgHeight) height:$!{enlarge}px; #end #if($imgWidth) width:$!{enlarge}px;#end " #if($datas.size()>0) src="$!{datas[0].mid}" #else src="" #end  alt="">
+			</div>
+		</div>
+	</div>
+	#set($uiImageViewConfig = {})
+#end
 #**   
  * @author huling   
  * @class
@@ -2307,12 +3019,48 @@ csrf_token=${csrf_token}#end
 				#end
 			#end
 		#end
-    #end
+	#end
+	#set($keyView = "label" ) 
+    #set($titleView = "value") 
+	#foreach($viewItem in $viewItems)
+		#if($viewItem.code)
+			#set($keyView = "code" ) 
+			#set($titleView = "text")
+		#end
+		#break
+	#end
 	#set($val = "")
+	#set($viewVal="")
 	#set($val = $!{uiLabelConfig.value})
     #if((!$val || $val =="") && $uiLabelConfig.name )
 		#set($val =  "$horn.getValue($!uiLabelConfig.name)")
 	#end
+	#if($dictManager && $uiLabelConfig.dictName)
+			#if($val&&$val!="")
+				#foreach($tmpVal in $val.split(","))
+    				
+    				#set($tmp = $dictManager.getDictEntry($uiLabelConfig.dictName,$tmpVal))
+    				#set($dicValue = $tmp.getValue()) 
+    				#if($dicValue)
+    					#set($viewVal=$viewVal+$!tmp.getValue()+",")
+    				#end
+					
+					#end
+			#end
+	    #else
+    	   #foreach($tmpVal in $val.split(","))
+    		  #foreach($viewItem in $viewItems)
+				#set($viewValue="$"+"!"+"{viewItem."+"$keyView"+"}")
+    			#set($vValue = "#evaluate($viewValue)")
+				#set($vLabel="$"+"!"+"{viewItem."+"$titleView"+"}")
+    			#set($viewLabel = "#evaluate($vLabel)")
+    			#if($vValue==$tmpVal)
+    				#set($viewVal=$!{viewVal}+$!{viewLabel}+",")
+    			#end
+    		  #end
+    	   #end 
+	    #end
+
 	#if($view && $uiLabelConfig.hiddenName)
 		#set($command = "$" + "!" + $!{uiLabelConfig.hiddenName} )
 		#set($val = "#evaluate($command)")
@@ -2320,12 +3068,17 @@ csrf_token=${csrf_token}#end
             #set($val =  "$horn.getValue($!uiLabelConfig.hiddenName)")
 		#end
 	#end
-	<div class="g-grid-$col #if($cols!="")$cols#end">
+		 #if("$!viewVal"!="")
+		  #set($viewLen=$viewVal.length())
+		  #set($viewLen=$viewLen - 1)
+		  #set($viewVal = $viewVal.substring(0,$viewLen))
+		#end
+	<div class="g-grid-$col #if($cols!="")$cols#end #if($uiLabelConfig.className)$!{uiLabelConfig.className}#end">
 	  	<div class="g-unit-wrap">
 			#if(!$uiLabelConfig.hiddenLabel)
 		    <label #if($layoutcolumn==1)class="g-grid-3 unit-label"#else class="g-grid-4 unit-label"#end><span ref="$!uiLabelConfig.name" title="$!{uiLabelConfig.label}">$!{uiLabelConfig.label}</span></label>
 		    #end
-			<div #if($uiLabelConfig.hiddenLabel)class="g-grid-12"#else class="g-grid-8" #end>
+			<div #if($uiLabelConfig.hiddenLabel)class="g-grid-12"#else #if($layoutcolumn==1)class="g-grid-9"#else class="g-grid-8"#end #end>
 				<div $horn.paramsCache($uiLabelConfig) id="$!{uiLabelConfig.id}" name="$!{uiLabelConfig.name}" alias="$!{uiLabelConfig.alias}" class="hc_label u-label" mutivalue="$!{uiLabelConfig.mutivalue}"
     			title="$!{val}"
     			#if($uiLabelConfig.dictName)
@@ -2336,16 +3089,299 @@ csrf_token=${csrf_token}#end
         			alias="$!{uiLabelConfig.alias}"
         		#end
                 #if($uiLabelConfig.dictName)
-    				dictName="$!{uiLabelConfig.dictName}"
+    				dictName="$!{uiLabelConfig.dictName}" code="$!{val}"
     				$horn.addGlobal('componentSelects_s',$!{uiLabelConfig.dictName})
 
     			#end	
-    			>$!val</div>
+    			>#if($uiLabelConfig.dictName)$!viewVal#else$!val#end</div>
 				#if($uiLabelConfig.hiddenName) <input type='hidden' name='$uiLabelConfig.hiddenName' value='$!val' /> #end
 			</div>
 	    </div>
 	 </div>
 	
+#end
+﻿#macro(listbox $uiListBoxConfig)
+	#set($listboxId = "listboxId")
+	#set($heiht = 350)
+	#if($uiListBoxConfig.height&&$uiListBoxConfig.height!="")
+		#set($heiht = $uiListBoxConfig.height)
+	#end
+	#set($listH = ${heiht})
+	#if("$!uiListBoxConfig.id"!="")
+		#set($listboxId = $!uiListBoxConfig.id)
+	#else
+		#if("$!uiListBoxConfig.name"!="")
+			#set($listboxId = $!uiListBoxConfig.name)
+		#end
+	#end
+	<div class="listbox u_customCols" id="$listboxId" style="height:${heiht}px;" $horn.paramsCache($uiListBoxConfig)>
+        	<div class="u-customCols-wrap">
+        		<div class="g-grid-5" #if($uiListBoxConfig.lwidth)style="width:${uiListBoxConfig.lwidth}px;"#end>
+        			<div class="u-customCols-list">
+        				<div class="u-customCols-list-title">#if($!uiListBoxConfig.ltitle) $!uiListBoxConfig.ltitle #else 待选 #end </div>
+        				<div class="u-customCols-list-head">
+							<input type="checkbox" id="leftCheckbox" name="leftCheckbox">
+        					<span>$!uiListBoxConfig.lColumnName</span>
+        				</div>
+        				<div id="left-columns_$listboxId" class="u-customCols-list-con" style="overflow:auto;height:${listH}px;margin-top:-8px; margin-left:5px;padding:5px 0;">
+        				   <ul></ul>
+        				</div>
+        			</div>
+        		</div>
+        		<div class="g-grid-2 u_customCols-button-wrap">
+        				<div class="u_customCols-button clearfix">
+        					<div class="f-fl u_customCols-button-icon">
+        						<span class="fa-stack fa-lg" id="leftMove_$listboxId" name="leftMove">
+        							<i class="fa fa-arrow-circle-o-right fa-stack-2x"></i>
+        						</span>
+        					</div>
+        					<div class="f-fl u_customCols-button-icon">
+        					<span class=" fa-stack fa-lg" id="rightMove_$listboxId" name="rightMove">
+        						<i class="fa fa-arrow-circle-o-left fa-stack-2x"></i>
+        					</span>
+        					</div>
+        					<div class="f-fl u_customCols-button-icon">
+        						<span class="fa-stack fa-lg" id="leftMoveAll_$listboxId" name="leftMoveAll">
+        						    <i class="fa fa-circle-o fa-stack-2x"></i>
+        						    <i class="fa fa-forward fa-stack-1x" style="left:2px"></i>
+        						</span>
+        					</div>
+        					<div class="f-fl u_customCols-button-icon">
+        						<span class="fa-stack fa-lg" id="rightMoveAll_$listboxId" name="rightMoveAll">
+        						    <i class="fa fa-circle-o fa-stack-2x"></i>
+        						    <i class="fa fa-backward fa-stack-1x" style="left:-2px"></i>
+        						</span>
+        					</div>
+							<div class="f-fl u_customCols-button-icon">
+                                <span class="fa-stack fa-lg" id="up_$listboxId" name="upMove">
+                                    <i class="fa fa-arrow-circle-o-up fa-stack-2x"></i>                               
+                                </span>
+                            </div>
+                            <div class="f-fl u_customCols-button-icon">
+                                <span class="fa-stack fa-lg" id="down_$listboxId" name="downMove">
+                                    <i class="fa fa-arrow-circle-o-down fa-stack-2x"></i>          
+                                </span>
+                            </div>
+        				</div>		
+        		</div>
+        		<div class="g-grid-5" #if($uiListBoxConfig.rwidth)style="width:${uiListBoxConfig.rwidth}px;"#end>
+        			<div class="u-customCols-list">
+        				<div class="u-customCols-list-title">#if($!uiListBoxConfig.rtitle) $!uiListBoxConfig.rtitle #else 已选 #end</div>
+        				<div class="u-customCols-list-head">
+							<input type="checkbox" id="rightCheckbox" name="rightCheckbox">
+        					<span>$!uiListBoxConfig.rColumnName</span>
+        				</div>
+        				<div id="right-columns_$listboxId" class="u-customCols-list-con" style="overflow:auto;height:${listH}px;margin-top:-8px; margin-left:5px;padding:5px 0;">
+        				  <ul></ul>
+        				</div>
+        			</div>
+        		</div>
+        	</div>
+        </div>
+#end
+#macro(listbox_table $params)
+	#set($listboxId = "listboxId")
+	#set($heiht = 350)
+	#if($params.height&&$params.height!="")
+		#set($heiht = $params.height)
+	#end
+	#set($listH = ${heiht})
+	#if("$!params.id"!="")
+		#set($listboxId = $!params.id)
+	#else
+		#if("$!params.name"!="")
+			#set($listboxId = $!params.name)
+		#end
+	#end
+	<div class="listbox_table u_customCols" id="$listboxId" style="height:${heiht}px;" $horn.paramsCache($params)>
+        	<div class="u-customCols-wrap">
+        		<div class="g-grid-5" #if($params.lwidth)style="width:${params.lwidth}px;"#end>
+        			<div class="u-customCols-list">
+        				<div class="u-customCols-list-title">#if($!params.ltitle) $!params.ltitle #else 待选 #end </div>
+        				<!--<div class="u-customCols-list-head">
+							<input type="checkbox" id="leftCheckbox" name="leftCheckbox">
+        					<span>$!params.lColumnName</span>
+        				</div>-->
+        				<div id="left-columns_$listboxId" class="u-customCols-list-con" style="overflow:auto;height:${listH}px;padding:0 0 5px 0;">
+        				   <!-- 表格部分 -->
+						   <table cellpadding="0" cellspacing="0"  class="table table-bordered table-stripe" id="left_$!{params.id}" name="left_$!{params.id}">
+							   <thead id="left_thead_$!{params.id}">
+                                  <tr>
+                        			  <!-- 多选框-->
+									  <th width="30" style="text-align: center;">
+            							<div style="width:30px;"><input type="checkbox" id="leftCheckbox" name="leftCheckbox" class="h_querytable_select_all"/></div>
+            						  </th>
+                                      #if($params.lcolumns)
+                                         #foreach($header in $params.lcolumns)
+                                            <th name="$header.factorcode" #if($header.dictName) dictName="$header.dictName" #end  style="#if($header.hidden)display:none#end" 
+												#if($header.hidden)
+                        							hidden = "$!{header.hidden}"
+												#end
+												#if($header.width)
+                        							width = "$!{header.width}"
+                        						#end
+												>
+												#set($align="center")
+                        						#if($header.align)
+                        							#set($align=$header.align)
+                        						#end
+                        						<div style="TEXT-aLIGN:$align;#if($header.width) width:$!{header.width}px #end" title="${header.text}" class="hc-datagrid-cell">$header.text</div>
+                        				    </th>
+                                         #end
+                                      #end
+                                  </tr>   
+                        	</thead>  
+							<tbody id="left_tbody_$!{params.id}">
+								#if($params.ldata&&$params.ldata.size()>0&&$params.ldata!="")
+								   #set($dataIndex=0)
+                                   #foreach($mdata in $params.ldata)
+                                    #set($rowNumber = $velocityCount % 2)
+                                    ##<tr line="$velocityCount" class="#if($rowNumber==0)u-table-bg #end" >
+									<tr line="left_$velocityCount">
+                    					#set($j=0)
+										<!--复选框-->
+										<td style="text-align: center;width: 30px;"><div style="width: 30px;"><input type="checkbox" class="h_querytable_select" /></div></td>
+                                        #foreach($pcolumn in $params.lcolumns)
+                                            #set($evalval = "$"+"!" + "{mdata." + "$!{pcolumn.factorcode}" + "}" )
+											#set($dataval = "#evaluate($evalval)")
+											#set($pcolumn.compid="left_${pcolumn.factorcode}"+${dataIndex}+"ID")
+											#set($pcolumn.factorname="")
+											#set($pcolumn.factordefval=$!{dataval})
+											<td id="left_td_$!{pcolumn.compid}" style="#if($pcolumn.hidden)display:none#end" width="$!{pcolumn.width}" compid="$pcolumn.compid" factorcode="${pcolumn.factorcode}" rownum="0" colnum="${j}" fieldtype="$!pcolumn.fieldtype">
+            								#set($align = "center")
+            								#if($pcolumn.align)
+            									#set($align = $pcolumn.align)
+											#end
+            									<div factorval="$!{dataval}" style="#if("$!{pcolumn.textOverHidden}"=="false") overflow: visible;white-space: normal;word-wrap:break-word; word-break:break-all;WIDTH: ${pcolumn.width}px; #else WIDTH: #nt(${pcolumn.width} 110)px; #end TEXT-aLIGN:$align; CURSOR: default ">#if($pcolumn.fieldtype) #factorfield($pcolumn)	#else $!{dataval} #end</div>
+            								</td>
+											#set($j=$j+1)
+            							#end
+                                    </tr>
+									#set($dataIndex=$dataIndex+1)
+								   #end
+								#else 
+									<tr>
+										#set($size =$!{params.lcolumns.size()} ) 
+										<td colspan="$size" class="hc_formtable-nodata"><p>暂时无数据</p></td>
+									</tr>
+							    #end 
+                             </tbody>
+						   </table>
+        				</div>
+        			</div>
+        		</div>
+        		<div class="g-grid-2 u_customCols-button-wrap">
+        				<div class="u_customCols-button clearfix">
+        					<div class="f-fl u_customCols-button-icon">
+        						<span class="fa-stack fa-lg" id="leftMove_$listboxId" name="leftMove">
+        							<i class="fa fa-arrow-circle-o-right fa-stack-2x"></i>
+        						</span>
+        					</div>
+        					<div class="f-fl u_customCols-button-icon">
+        					<span class=" fa-stack fa-lg" id="rightMove_$listboxId" name="rightMove">
+        						<i class="fa fa-arrow-circle-o-left fa-stack-2x"></i>
+        					</span>
+        					</div>
+                            <div class="f-fl u_customCols-button-icon">
+                                <span class="fa-stack fa-lg" id="leftMoveAll_$listboxId" name="leftMoveAll">
+                                    <i class="fa fa-circle-o fa-stack-2x"></i>
+                                    <i class="fa fa-forward fa-stack-1x" style="left:2px"></i>
+                                </span>
+                            </div>
+                            <div class="f-fl u_customCols-button-icon">
+                                <span class="fa-stack fa-lg" id="rightMoveAll_$listboxId" name="rightMoveAll">
+                                    <i class="fa fa-circle-o fa-stack-2x"></i>
+                                    <i class="fa fa-backward fa-stack-1x" style="left:-2px"></i>
+                                </span>
+                            </div>
+                            <div class="f-fl u_customCols-button-icon">
+                                <span class="fa-stack fa-lg" id="up_$listboxId" name="upMove">
+                                    <i class="fa fa-arrow-circle-o-up fa-stack-2x"></i>                               
+                                </span>
+                            </div>
+                            <div class="f-fl u_customCols-button-icon">
+                                <span class="fa-stack fa-lg" id="down_$listboxId" name="downMove">
+                                    <i class="fa fa-arrow-circle-o-down fa-stack-2x"></i>          
+                                </span>
+                            </div>
+        				</div>		
+        		</div>
+        		<div class="g-grid-5" #if($params.rwidth)style="width:${params.rwidth}px;"#end>
+        			<div class="u-customCols-list">
+        				<div class="u-customCols-list-title">#if($!params.rtitle) $!params.rtitle #else 已选 #end</div>
+        				<!--<div class="u-customCols-list-head">
+							<input type="checkbox" id="rightCheckbox" name="rightCheckbox">
+        					<span>$!params.rColumnName</span>
+        				</div>-->
+        				<div id="right-columns_$listboxId" class="u-customCols-list-con" style="overflow:auto;height:${listH}px;padding:0 0 5px 0;">
+        				  <!-- 表格部分 -->
+						   <table cellpadding="0" cellspacing="0"  class="table table-bordered table-stripe" id="right_$!{params.id}" name="right_$!{params.id}">
+							   <thead id="right_thead_$!{params.id}">
+                                  <tr>
+                        			  <!-- 多选框-->
+									  <th width="30" style="text-align: center;">
+            							<div style="width:30px;"><input type="checkbox" id="rightCheckbox" name="rightCheckbox" class="h_querytable_select_all"/></div>
+            						  </th>
+                                      #if($params.rcolumns)
+                                         #foreach($header in $params.rcolumns)
+                                            <th name="$header.factorcode" #if($header.dictName) dictName="$header.dictName" #end  style="#if($header.hidden)display:none#end" 
+												#if($header.hidden)
+                        							hidden = "$!{header.hidden}"
+												#end
+												#if($header.width)
+                        							width = "$!{header.width}"
+                        						#end
+												>
+												#set($align="center")
+                        						#if($header.align)
+                        							#set($align=$header.align)
+                        						#end
+                        						<div style="TEXT-aLIGN:$align;#if($header.width) width:$!{header.width}px #end" title="${header.text}" class="hc-datagrid-cell">$header.text</div>
+                        				    </th>
+                                         #end
+                                      #end
+                                  </tr>   
+                        	</thead>  
+							<tbody id="right_tbody_$!{params.id}">
+								#if($params.rdata&&$params.rdata.size()>0&&$params.rdata!="")
+								   #set($rigtIndex=0)
+                                   #foreach($mdata in $params.rdata)
+                                    #set($rowNumber = $velocityCount % 2)
+                                    <tr line="right_$velocityCount">
+                    					#set($k=0)
+										<!--复选框-->
+										<td style="text-align: center;width: 30px;"><div style="width: 30px;"><input type="checkbox" class="h_querytable_select" /></div></td>
+                                        #foreach($pcolumn in $params.rcolumns)
+                                            #set($rval = "$"+"!" + "{mdata." + "$!{pcolumn.factorcode}" + "}" )
+											#set($rightval = "#evaluate($rval)")
+											#set($pcolumn.compid="right_${pcolumn.factorcode}"+${rigtIndex}+"ID")
+											#set($pcolumn.factorname="")
+											#set($pcolumn.factordefval=$!{rightval})
+											<td id="right_td_$!{pcolumn.compid}" title='#evaluate($evalval)' style="#if($pcolumn.hidden)display:none#end" width="$!{pcolumn.width}" compid="$pcolumn.compid" factorcode="${pcolumn.factorcode}" rownum="0" colnum="${k}" fieldtype="$!pcolumn.fieldtype">
+            								#set($align = "center")
+            								#if($pcolumn.align)
+            									#set($align = $pcolumn.align)
+											#end
+            									<div factorval="$!{rightval}" style="#if("$!{pcolumn.textOverHidden}"=="false") overflow: visible;white-space: normal;word-wrap:break-word; word-break:break-all;WIDTH: ${pcolumn.width}px; #else WIDTH: #nt(${pcolumn.width} 110)px; #end TEXT-aLIGN:$align; CURSOR: default ">#if($pcolumn.fieldtype) #factorfield($pcolumn)	#else $!{rightval} #end</div>
+            								</td>
+											#set($k=$k+1)
+            							#end
+                                    </tr>
+									#set($rigtIndex=$rigtIndex+1)
+								   #end
+								#else 
+									<tr>
+										#set($size =$!{params.rcolumns.size()} ) 
+										<td colspan="$size" class="hc_formtable-nodata"><p>暂时无数据</p></td>
+									</tr>
+							    #end 
+                             </tbody>
+						   </table>
+        				</div>
+        			</div>
+        		</div>
+        	</div>
+        </div>
 #end
 #macro(menu $params)
 	<div name="$!params.name" class="hc_menu" id="$!params.id" $horn.paramsCache($params)>
@@ -2407,9 +3443,9 @@ csrf_token=${csrf_token}#end
 	#end
 	
 	#if($params.id&&$params.id!="")
-	#set($id = ${params.id})
+	#set($pagecompid = ${params.id})
 	#else
-		#set($id = "dyncGrid")    ##id默认值
+		#set($pagecompid = "dyncGrid")    ##id默认值
 	#end
       <div class="u-datagrid-page">
 		<div class="h_pages g-pagebar-wrap"
@@ -2459,7 +3495,7 @@ csrf_token=${csrf_token}#end
     			<a href="javascript:void(0)"  class="h_pagebtn-end #if($params.count<=0||$pageSum<=0||$pageSum==$pageNo)disabled #end last_page_btn" title="尾页"><i class="fa fa-step-forward"></i></a>
     		</li>
 		</ul>
-		<div id='pageInfo_$id' class="m-pagebar-all">共$!params.pages页,共$!params.count条记录</div>
+		<div id='pageInfo_$pagecompid' class="m-pagebar-all">共$!params.pages页,共$!params.count条记录</div>
 
 	</div>
   </div>
@@ -2590,6 +3626,12 @@ csrf_token=${csrf_token}#end
 #**
  * @lends password
  *#
+#**
+* -----------------------------------------------------------------------
+* 修订记录：
+* 2016-11-15    王兰        需求#26842 [研发中心/内部需求]组件提供getLabel和setLabel方法 （因为getLabel是根据title来取值，需要label标签上有title属性）
+* -----------------------------------------------------------------------
+*# 
 #macro(password $uiPasswordConfig)
 	#set($col = 4)
 	#set($cols = "")
@@ -2636,7 +3678,7 @@ csrf_token=${csrf_token}#end
 			#if(!$uiPasswordConfig.hiddenLabel)
 		    <label #if($layoutcolumn==1)class="g-grid-3 unit-label"#else class="g-grid-4 unit-label"#end><span ref="$!uiPasswordConfig.name" >$!{uiPasswordConfig.label}</span></label>
 		    #end
-			<div #if($uiPasswordConfig.hiddenLabel)class="g-grid-12"#else class="g-grid-8"#end>
+			<div #if($uiPasswordConfig.hiddenLabel)class="g-grid-12"#else #if($layoutcolumn==1)class="g-grid-9"#else class="g-grid-8"#end #end>
 				<div name="$!{uiPasswordConfig.name}" class="hc_label"  $horn.paramsCache($uiPasswordConfig) 
         		#if($uiPasswordConfig.alias)
         			alias="$!{uiPasswordConfig.alias}"
@@ -2651,12 +3693,12 @@ csrf_token=${csrf_token}#end
 	    </div>
 	 </div>
 	#else
-		  <div class="g-grid-$col #if($cols!="")$cols#end">
+		  <div class="g-grid-$col #if($cols!="")$cols#end #if($uiPasswordConfig.className)$!{uiPasswordConfig.className}#end">
 		  	<div class="g-unit-wrap">
 		  	 #set($checkStr=$horn.getCheckStr($!uiPasswordConfig.name,$!uiPasswordConfig.check))
 			  #set($groupStr=$horn.getGroupStr($!uiPasswordConfig.name,$!uiPasswordConfig.group))
 			    #if(!$uiPasswordConfig.hiddenLabel)
-				<label #if($layoutcolumn==1)class="g-grid-3 unit-label"#else class="g-grid-4 unit-label"#end>#if($checkStr.indexOf("required")>-1)<span class="m-verify-symbol">*</span>#end $!uiPasswordConfig.label</label>
+				<label #if($layoutcolumn==1)class="g-grid-3 unit-label"#else class="g-grid-4 unit-label"#end title="$!uiPasswordConfig.label">#if($checkStr.indexOf("required")>-1)<span class="m-verify-symbol">*</span>#end $!uiPasswordConfig.label</label>
 			    #end
 				<div #if($uiPasswordConfig.hiddenLabel)class="g-grid-12"#else class="g-grid-8"#end>
 					<div id="$!{uiPasswordConfig.id}" $horn.paramsCache($uiPasswordConfig) name="$uiPasswordConfig.name" class="hc_password">
@@ -2752,7 +3794,7 @@ csrf_token=${csrf_token}#end
 			#if(!$uiPasswordGroupConfig.hiddenLabel)
 		    <label #if($layoutcolumn==1)class="g-grid-3 unit-label"#else class="g-grid-4 unit-label"#end><span ref="$!uiPasswordGroupConfig.name" title="$!{uiPasswordGroupConfig.label}">$!{uiPasswordGroupConfig.label}</span></label>
 		    #end
-			<div #if($uiPasswordGroupConfig.hiddenLabel) class="g-grid-12" #else class="g-grid-8"#end>
+			<div #if($uiPasswordGroupConfig.hiddenLabel) class="g-grid-12" #else #if($layoutcolumn==1)class="g-grid-9"#else class="g-grid-8"#end #end>
 				<div name="$!{uiPasswordGroupConfig.name}" class="hc_label"  $horn.paramsCache($uiPasswordGroupConfig) 
         		#if($uiPasswordGroupConfig.alias)
         			alias="$!{uiPasswordGroupConfig.alias}"
@@ -2767,7 +3809,7 @@ csrf_token=${csrf_token}#end
 	    </div>
 	 </div>
 	#else
-  <div class="g-grid-$col #if($cols!="")$cols#end">
+  <div class="g-grid-$col #if($cols!="")$cols#end #if($uiPasswordGroupConfig.className)$!{uiPasswordGroupConfig.className}#end">
   	<div class="g-unit-wrap">
   	 #set($checkStr=$horn.getCheckStr($!uiPasswordGroupConfig.name,$!uiPasswordGroupConfig.check))
 	 #set($groupStr=$horn.getGroupStr($!uiPasswordGroupConfig.name,$!uiPasswordGroupConfig.group))
@@ -3078,6 +4120,13 @@ csrf_token=${csrf_token}#end
 #**
  * @lends radio
  *#
+#** 
+ * 修改记录:
+ * 修改日期                  修改人员                 修改说明                 
+ * -----------------------------------------------------------------------
+ *  2016-11-29       王兰                 需求#27998 【TS:201611180207-JRESPlus-财富业委会-江志伟-【需求】在查看模块下显示为code属性，期望能显示text属性。
+ * -----------------------------------------------------------------------
+*#
 #macro(radiogroup $uiRadiogroupConfig)
 #radio_group($uiRadiogroupConfig)
 #end
@@ -3122,29 +4171,64 @@ csrf_token=${csrf_token}#end
     #end
 	##查看模式
     #if($view)
+	  #set($viewItems=[])
+	  #if($dictManager && $uiRadiogroupConfig.dictName)
+    	 #set($viewItems = $dictManager.getDicts($uiRadiogroupConfig.dictName))
+      #else
+    	 #set($viewItems = $uiRadiogroupConfig.items)
+	  #end
+	  #set($keyView = "value" ) 
+      #set($titleView = "label") 
+	  #foreach($viewItem in $viewItems)
+    		#if($viewItem.code)
+    			#set($keyView = "code" ) 
+    			#set($titleView = "text")
+    		#end
+    		#break
+	  #end
+	  #set($viewVal="")
+	  #if($dictManager && $uiRadiogroupConfig.dictName)
+		#if($val&&$val!="")
+		  #set($tmpT = $dictManager.getDictEntry($uiRadiogroupConfig.dictName,$val))
+		  #set($viewVal = $tmpT.getValue()) 
+		#end 
+	  #else
+		  #foreach($viewItem in $viewItems)
+			##set($viewValue="$"+"!"+"{viewItem.value}")
+			##set($vValue = "#evaluate($viewValue)")
+			#set($viewValue="$"+"!"+"{viewItem."+"$keyView"+"}")
+			#set($vValue = "#evaluate($viewValue)")
+			#set($vLabel="$"+"!"+"{viewItem."+"$titleView"+"}")
+			#set($viewLabel = "#evaluate($vLabel)")
+			#if($vValue==$val)
+				#set($viewVal=$!{viewLabel})
+			#end
+		  #end
+	   #end
 	<div class="g-grid-$col #if($cols!="")$cols#end">
 	  	<div class="g-unit-wrap">
 			#if(!$uiRadiogroupConfig.hiddenLabel)
 		    <label #if($layoutcolumn==1)class="g-grid-3 unit-label"#else class="g-grid-4 unit-label"#end><span ref="$!uiRadiogroupConfig.name" title="$!{uiRadiogroupConfig.label}">$!{uiRadiogroupConfig.label}</span></label>
 		    #end
-			<div class="g-grid-8">
+			<div #if($layoutcolumn==1)class="g-grid-9"#else class="g-grid-8"#end>
 				<div name="$!{uiRadiogroupConfig.name}" class="hc_label"  $horn.paramsCache($uiRadiogroupConfig) 
         			#if($uiRadiogroupConfig.dictName)
         				dictName="$!{uiRadiogroupConfig.dictName}"
         				$horn.addGlobal('componentSelects_s',$!{uiRadiogroupConfig.dictName})
         			#end	
         			>
-    				#foreach($item in $uiRadiogroupConfig.items)
+    				#*#foreach($item in $uiRadiogroupConfig.items)
     					#if($val==$item.code) $!item.text
     					#elseif($val==$item.value) $!item.label #end ## 兼容性冗余
-    				#end
+    				#end*#
+					$viewVal
     			</div>
 			</div>
 	    </div>
 	 </div>
 	 
 	#else
-		<div class="g-grid-$col #if($cols!="")$cols#end">
+		<div class="g-grid-$col #if($cols!="")$cols#end #if($uiRadiogroupConfig.className)$!{uiRadiogroupConfig.className}#end">
 		  	<div class="g-unit-wrap">
 		  	 #set($checkStr=$horn.getCheckStr($uiRadiogroupConfig.name,$uiRadiogroupConfig.check))
 			 #set($groupStr=$horn.getGroupStr($uiRadiogroupConfig.name,$uiRadiogroupConfig.group))
@@ -3211,188 +4295,423 @@ csrf_token=${csrf_token}#end
 #**
  * @lends select
  *#
-#macro(select $uiSelectConfig)
+#** 
+ * 修改记录:
+ * 修改日期                  修改人员                 修改说明                 
+ * -----------------------------------------------------------------------
+ *  2016-11-29       王兰                 需求#27998 【TS:201611180207-JRESPlus-财富业委会-江志伟-【需求】在查看模块下显示为code属性，期望能显示text属性。
+ * -----------------------------------------------------------------------
+*#
+#macro(select $uiComboxConfig)
 	#set($col = 4)
 	#set($cols = "")
+	#set($viewVal="")
+	#set($multipleValue="")
+	#set($multipleText="")
+	##设置是否显示标签
+	#set($showLabel = false)
+	#if($uiComboxConfig.showLabel&&$uiComboxConfig.showLabel == "true")
+		#set($showLabel = true)
+	#end
+	#if($uiScreenConfig.showLabel&&$uiScreenConfig.showLabel == "true")
+		#set($showLabel = true)
+	#end
+	#if("$!uiComboxConfig.url"!="")
+		#if("$!uiComboxConfig.value"!="")
+			#set($tmpTexts = $horn.getDictObjByUrl("$!uiComboxConfig.value","$!uiComboxConfig.url","$showLabel","false"))
+		#else
+			#if("$!uiComboxConfig.selectAll" == "true"&&"$!uiComboxConfig.multiple" == "true")
+				#set($tmpTexts = $horn.getDictObjByUrl("$!uiComboxConfig.value","$!uiComboxConfig.url","$showLabel","true"))
+				#set($multipleValue=$tmpTexts.code)
+			#end
+		#end
+		
+		#set($viewVal=$tmpTexts)
+		#set($multipleText=$tmpTexts.text)
+	#end
     #if($layoutcolumn) 
     	#if($layoutcolumn==1)
 			#set($col = 12)
 		#elseif($layoutcolumn==2)
 			#set($col = 6)
-			#if($uiSelectConfig.cols&&$uiSelectConfig.cols=="2")
+			#if($uiComboxConfig.cols&&$uiComboxConfig.cols=="2")
 				#set($cols = "g-grid-6-row")
 			#end
 		#elseif($layoutcolumn==3)
 			#set($col = 4)
-			#if($uiSelectConfig.cols)
-				#if($uiSelectConfig.cols==3)
+			#if($uiComboxConfig.cols)
+				#if($uiComboxConfig.cols==3)
 					#set($cols = "g-grid-4-row")
-				#elseif($uiSelectConfig.cols==2)
+				#elseif($uiComboxConfig.cols==2)
 					#set($cols = "g-grid-4-8-row")
 				#end
 			#end
 		#elseif($layoutcolumn==4)
 			#set($col = 3)
-			#if($uiSelectConfig.cols)
-				#if($uiSelectConfig.cols==4)
+			#if($uiComboxConfig.cols)
+				#if($uiComboxConfig.cols==4)
 					#set($cols = "g-grid-3-row")
-				#elseif($uiSelectConfig.cols==3)
+				#elseif($uiComboxConfig.cols==3)
 					#set($cols = "g-grid-3-9-row")
-				#elseif($uiSelectConfig.cols==2)
+				#elseif($uiComboxConfig.cols==2)
 					#set($cols = "g-grid-3-6-row")
 				#end
 			#end
 		#end
     #end
-	##设置是否显示标签
-    #set($showLabel = false)
-    #if($uiSelectConfig.showLabel&&$uiSelectConfig.showLabel == "true")
-    	#set($showLabel = true)
-    #end
 	##查看模式
     #if($view)
         #set($val = "")
-        #set($val = $uiSelectConfig.value)
-        #if(!$val || $val =="" && $!{uiSelectConfig.name} )
-            #set($val =  "$horn.getValue($!uiSelectConfig.name)")
-        #end
+        #set($val = $uiComboxConfig.value)
+        #if((!$val || $val =="") && $uiComboxConfig.name )
+            #set($val =  "$horn.getValue($!uiComboxConfig.name)")
+		#end
+		#set($viewItems=[])
+    	#if($dictManager && $uiComboxConfig.dictName)
+        	#set($viewItems = $dictManager.getDicts($uiComboxConfig.dictName))
+        #else
+        	#set($viewItems = $uiComboxConfig.items)
+		#end
+		#set($keyView = "label" ) 
+        #set($titleView = "value") 
+		#foreach($viewItem in $viewItems)
+			#if($viewItem.code)
+				#set($keyView = "code" ) 
+				#set($titleView = "text")
+			#end
+			#break
+		#end
+    	#if($uiComboxConfig.labelField && $uiComboxConfig.labelField.length() > 0)
+    		#set($keyView = $uiComboxConfig.labelField ) 
+    	#end
+    	#if($uiComboxConfig.codeField && $uiComboxConfig.codeField.length() > 0)
+    		#set($keyView = $uiComboxConfig.codeField ) 
+    	#end
+    	#if($uiComboxConfig.valueField && $uiComboxConfig.valueField.length() > 0) 
+    		#set($titleView = $uiComboxConfig.valueField )
+    	#end
+    	#if($uiComboxConfig.textField && $uiComboxConfig.textField.length() > 0) 
+    		#set($titleView = $uiComboxConfig.textField )
+    	#end
+	    
+	    #if($dictManager && $uiComboxConfig.dictName)
+			#if($val&&$val!="")
+    			#foreach($tmpVal in $val.split(","))
+    				#set($tmp = $dictManager.getDictEntry($uiComboxConfig.dictName,$tmpVal))
+    				#set($dicValue = $tmp.getValue()) 
+    				#if($dicValue)
+    					#set($viewVal=$viewVal+$!tmp.getValue()+",")
+    				#end
+    			#end
+			#end
+	    #else
+    	   #foreach($tmpVal in $val.split(","))
+    		  #foreach($viewItem in $viewItems)
+				#set($viewValue="$"+"!"+"{viewItem."+"$keyView"+"}")
+    			#set($vValue = "#evaluate($viewValue)")
+				#set($vLabel="$"+"!"+"{viewItem."+"$titleView"+"}")
+    			#set($viewLabel = "#evaluate($vLabel)")
+    			#if($vValue==$tmpVal)
+    				#set($viewVal=$viewVal+$!{viewLabel}+",")
+    			#end
+    		  #end
+    	   #end 
+	    #end
+	    #if("$!viewVal"!="")
+		  #set($viewLen=$viewVal.length())
+		  #set($viewLen=$viewLen - 1)
+		  #set($viewVal = $viewVal.substring(0,$viewLen))
+		#end
+		##有设置url时，就翻译
+		#if("$!uiComboxConfig.url"!="")
+			#if("$!uiComboxConfig.value"!="")
+				#set($viewVal = $!multipleText)
+			#else
+				#set($viewVal = "")
+			#end
+		#end
 		<div class="g-grid-$col #if($cols!="")$cols#end">
 	  	<div class="g-unit-wrap">
-			#if(!$uiSelectConfig.hiddenLabel)
-		    <label #if($layoutcolumn==1)class="g-grid-3 unit-label"#else class="g-grid-4 unit-label"#end><span ref="$!uiSelectConfig.name" title="$!{uiSelectConfig.label}">$!{uiSelectConfig.label}</span></label>
+			#if(!$uiComboxConfig.hiddenLabel)
+		    <label #if($layoutcolumn==1)class="g-grid-3 unit-label"#else class="g-grid-4 unit-label"#end><span ref="$!uiComboxConfig.name" title="$!{uiComboxConfig.label}">$!{uiComboxConfig.label}</span></label>
 		    #end
-			<div #if($uiSelectConfig.hiddenLabel)class="g-grid-12" #else class="g-grid-8"#end>
-				<div name="$!{uiSelectConfig.name}" $horn.paramsCache($uiSelectConfig)  class="hc_label" #if($uiSelectConfig.multiple) mutiValue="true" #end
-                #if($uiSelectConfig.dictName)
-    				dictName="$!{uiSelectConfig.dictName}"
-    				$horn.addGlobal('componentSelects_s',$!{uiSelectConfig.dictName})
-    			#end
-    			>$!val</div>
+			<div #if($uiComboxConfig.hiddenLabel)class="g-grid-12" #else #if($layoutcolumn==1)class="g-grid-9"#else class="g-grid-8"#end #end>
+				<div name="$!{uiComboxConfig.name}" class="hc_label" #if($uiComboxConfig.multiple) mutiValue="true" #end
+                #if($uiComboxConfig.dictName)
+    				dictName="$!{uiComboxConfig.dictName}"
+    				$horn.addGlobal('componentSelects_s',$!{uiComboxConfig.dictName})
+				#end
+				 $horn.paramsCache($uiComboxConfig) 
+    			>$!viewVal</div>
 			</div>
 	    </div>
 	 </div>
 	#else
-		<div class="g-grid-$col #if($cols!="")$cols#end">
-		  	<div class="g-unit-wrap">
-		  	 #set($checkStr=$horn.getCheckStr($uiSelectConfig.name,$uiSelectConfig.check))
-			 #set($groupStr=$horn.getGroupStr($uiSelectConfig.name,$uiSelectConfig.group))
-				#if(!$uiSelectConfig.hiddenLabel)
-			    <label #if($layoutcolumn==1)class="g-grid-3 unit-label"#else class="g-grid-4 unit-label"#end title="$!uiSelectConfig.label">#if($checkStr.indexOf("required")>-1)<span class="m-verify-symbol">*</span>#end $!uiSelectConfig.label</label>
-			    #end
-				<div #if($uiSelectConfig.hiddenLabel)class="g-grid-12" #else class="g-grid-8"#end>
-					<div id="$!{uiSelectConfig.id}" $horn.paramsCache($uiSelectConfig)  class="hc_select">
+    	#set($items=[])
+		#set($pKeyField = "pLabel" ) 
+		#set($keyField = "label" ) 
+        #set($titleField = "value")
+        #if($uiComboxConfig.items)
+        	#set($items = $uiComboxConfig.items)
+        #elseif($dictManager && $uiComboxConfig.dictName)
+            #set($items = $dictManager.getDicts($uiComboxConfig.dictName))
+		#end
+		#foreach($item in $items)
+			#if($item.code)
+				#set($keyField = "code" ) 
+				#set($titleField = "text")
+			#end
+			#break
+		#end
 
-                    #if($uiSelectConfig.items)
-                    	#set($uiSelectConfigItems = $uiSelectConfig.items)
-                    #elseif($dictManager && $uiSelectConfig.dictName)
-                        #set($uiSelectConfigItems = $dictManager.getDicts($uiSelectConfig.dictName))
-            		#end
+    	##如果有传入参数，则替换掉对应的field
+    	#if($uiComboxConfig.pKeyField) 
+    		#set($pKeyField = $uiComboxConfig.pKeyField ) 
+		#end
+
+    	#if($uiComboxConfig.labelField && $uiComboxConfig.labelField.length() > 0)
+    		#set($keyField = $uiComboxConfig.labelField ) 
+    	#end
+    	#if($uiComboxConfig.codeField && $uiComboxConfig.codeField.length() > 0)
+    		#set($keyField = $uiComboxConfig.codeField ) 
+    	#end
+    	#if($uiComboxConfig.valueField && $uiComboxConfig.valueField.length() > 0) 
+    		#set($titleField = $uiComboxConfig.valueField )
+    	#end
+    	#if($uiComboxConfig.textField && $uiComboxConfig.textField.length() > 0) 
+    		#set($titleField = $uiComboxConfig.textField )
+    	#end
+    	
+        #if($uiComboxConfig.delimiter)
+            #set($delimiter=$!{uiComboxConfig.delimiter})
+        #else
+            #set($delimiter=",")
+        #end
+    	
+		<div class="g-grid-$col #if($cols!="")$cols#end #if($uiComboxConfig.className)$!{uiComboxConfig.className}#end">
+		  	<div class="g-unit-wrap">
+		  	 #set($checkStr=$horn.getCheckStr($uiComboxConfig.name,$uiComboxConfig.check))
+                #set($groupStr=$horn.getGroupStr($uiComboxConfig.name,$uiComboxConfig.group))
+            	#if(!$uiComboxConfig.hiddenLabel)
+				<label #if($layoutcolumn==1)class="g-grid-3 unit-label"#else class="g-grid-4 unit-label"#end title="$!uiComboxConfig.label">#if($checkStr.indexOf("required")>-1)<span class="m-verify-symbol">*</span>#end $!uiComboxConfig.label</label>
+            	#end
+				<div #if($uiComboxConfig.hiddenLabel)class="g-grid-12" #else class="g-grid-8"#end>
+    				<div class="hc_select" id="$!{uiComboxConfig.id}" $horn.paramsCache($uiComboxConfig)  pKeyField=$!{pKeyField} keyField=$!{keyField} titleField=$!{titleField} showLabel="$!{showLabel}">
                 	#set($curvalue="")
-                	#if($uiSelectConfig.value)
-                		#set($curvalue=$!{uiSelectConfig.value})
+                	#if($uiComboxConfig.value)
+                		#set($curvalue=$!{uiComboxConfig.value})
                 	#else
-                		#set($curvalue="$horn.getValue($!uiSelectConfig.name)")
+                		#set($curvalue="$horn.getValue($!uiComboxConfig.name)")
                 	#end
-                    #if($uiSelectConfig.delimiter)
-                        #set($delimiter=$!{uiSelectConfig.delimiter})
-                    #else
-                        #set($delimiter=",")
-                    #end
-                    #set($multipleValue="")
-                	<input type="hidden" name="$!{uiSelectConfig.name}"
-                		#if($uiSelectConfig.alias)
-                			alias="$!{uiSelectConfig.alias}"
+                	<input type="hidden" name="$!uiComboxConfig.name" 
+                		#if($uiComboxConfig.alias)
+                			alias="${uiComboxConfig.alias}"
                 		#end
-                	#if($uiSelectConfig.refname)
-                		refname="$!{uiSelectConfig.refname}"
+                	#if($uiComboxConfig.refname)
+                		refname="$uiComboxConfig.refname" 
                 	#end
                 	#if(!$curvalue.equals(""))
-                		value="$!curvalue"
+                		value="$curvalue"
                     #else
-                    	#if($uiSelectConfig.multiple != true && $uiSelectConfigItems.size()>0)
-                			#set($item = $uiSelectConfigItems.get(0))
-                            #if($uiSelectConfig.headItem)
-                                value="$uiSelectConfig.headItem.label"
+                    	#if("$!uiComboxConfig.multiple" != "true" && $items.size()>0)
+                			#set($item = $items.get(0))
+                	        #set($itemLabelCommand="$"+"!"+"{item."+"$keyField"+"}")
+                			#set($itemLabel = "#evaluate($itemLabelCommand)")
+                            #if($uiComboxConfig.headItem)
+                                #set($headItem = $uiComboxConfig.headItem)
+                                #set($headItemLabelCommand="$"+"!"+"{headItem."+"$keyField"+"}")
+                                #set($headItemLabel = "#evaluate($headItemLabelCommand)")
+                                value="$headItemLabel"
                             #else
-                                value="$item.label"
+                                value="$itemLabel"
                             #end
-                        #elseif($uiSelectConfig.multiple == true && $uiSelectConfigItems.size()>0 && $uiSelectConfig.checkAll==true)
-                            #foreach($item in $uiSelectConfigItems)
-                                #if($velocityCount == $uiSelectConfigItems.size())
-                                    #set($multipleValue = $multipleValue+$!{item.label})
-                                #else
-                                    #set($multipleValue = $multipleValue+$!{item.label}+$!{delimiter})
+                        #elseif("$!uiComboxConfig.multiple" == "true" && $items.size()>0 && ("$!uiComboxConfig.checkAll"=="true" || "$!uiComboxConfig.selectAll" == "true"))
+							#foreach($item in $items)
+                                    #set($itemLabelCommand="$"+"!"+"{item."+"$keyField"+"}")
+                                    #set($itemLabel = "#evaluate($itemLabelCommand)")
+									#set($itemTitleCommand="$"+"!"+"{item."+"$titleField"+"}")
+                        			#set($itemTitle = "#evaluate($itemTitleCommand)")
+                                    #if($velocityCount == $items.size())
+                                        #set($multipleValue = $multipleValue+$!{itemLabel})
+										#set($multipleText = $multipleText+$!{itemTitle})
+                                    #else
+                                        #set($multipleValue = $multipleValue+$!{itemLabel}+$!{delimiter})
+										#set($multipleText = $multipleText+$!{itemTitle}+$!{delimiter})
+                                    #end
                                 #end
-                           #end
                             value = "$!{multipleValue}"
-                        #end
-                	#end
-                	check="$!{checkStr}"
-                	group="$!{groupStr}"
-                	/>
-                	<input type="text"  class="u-select #if($uiSelectConfig.readonly && $uiSelectConfig.readonly== 'true') u-readonly #end" 
-                    	#if($uiSelectConfig.dictName && $horn)
-                    		#if($uiSelectConfig.multiple == true)
-                    		 	ref="$!{uiSelectConfig.dictName}_m"
-                    		 #else
-                    		 	ref="$!{uiSelectConfig.dictName}_s"
-                    			#end
                     	#end
-                        #if(${uiSelectConfig.disabled})
-                            disabled="disabled"
-                        #end
-                        #if(${uiSelectConfig.readonly})
-                            readonly="readonly"
-                        #end
-                    	#if(!$curvalue.equals(""))
-                    		#if($uiSelectConfig.multiple == true)
-                    			value="$!curvalue" 
+					#end
+					#if("$!uiComboxConfig.url"!= ""&&"$!uiComboxConfig.selectAll" == "true"&&"$!uiComboxConfig.multiple" == "true")
+							value="$!{multipleValue}"
+					#end
+                	check="$checkStr"
+                	group="$groupStr"
+                	 />
+                	<input multiple="$!{uiComboxConfig.multiple}" selectMode="$!{uiComboxConfig.multiple}" type="text" class="u-select #if($uiComboxConfig.readonly && $uiComboxConfig.readonly== 'true') u-readonly #end" 
+                    	##foreach($event in $uiComboxConfig.events)
+                    	##	$event.event = "$event.function" 
+                    	##end
+                    	#if($uiComboxConfig.dictName && $horn)
+                    		#if($uiComboxConfig.multiple == true)
+                    		 	ref="${uiComboxConfig.dictName}_m"
                     		#else
-                            	#if($uiSelectConfigItems)
-                					#foreach($item in $uiSelectConfigItems)
-                    	    			#if($item.label == $curvalue)
-                    	    				value="#if($showLabel)$item.label:#end$item.value" 
-                    	    			#end
-                    	    		#end
-                                #elseif($dictManager && $uiSelectConfig.dictName)
-                                    #set($val = $dictManager.getDictEntry($uiSelectConfig.dictName,$curvalue));
-                                    value="$curvalue:$val.getValue()"
-                            	#end
-                    		#end
-                    	#elseif($uiSelectConfig.multiple != true && $uiSelectConfigItems.size()>0)
-                    		#set($item = $uiSelectConfigItems.get(0))
-                            #if($uiSelectConfig.headItem)
-                                value="$uiSelectConfig.headItem.value"
-                            #else
-                                value="#if($showLabel)$item.label:#end$item.value"
-                            #end
-                        #elseif($uiSelectConfig.multiple == true && $uiSelectConfigItems.size()>0 && $uiSelectConfig.checkAll==true)
-                            value = "$!{multipleValue}"
-                    	#else
-                    		value="" 
+                    		 	ref="${uiComboxConfig.dictName}_s"
+							#end
+						#else
+							#if($uiComboxConfig.url && $horn)
+								#if($uiComboxConfig.multiple == true)
+									ref="${uiComboxConfig.url}_m"
+                        		#else
+                        		 	ref="${uiComboxConfig.url}_s"
+    							#end
+							#end
                     	#end
-                        delimiter="$!{delimiter}"
-						#if($uiSelectConfig.emptyText) placeholder="$!uiSelectConfig.emptyText"#end
+                    	#if(!$curvalue.equals(""))
+                    		#if($uiComboxConfig.multiple == true)
+								#if($dictManager && $uiComboxConfig.dictName)
+        							#foreach($tmpVal in $curvalue.split("$!delimiter"))
+                        				#set($tmp = $dictManager.getDictEntry($uiComboxConfig.dictName,$tmpVal));
+										#set($dicValue = $tmp.getValue()) 
+										#if($dicValue)
+											#if($showLabel)
+												#set($multipleText = $multipleText+$tmpVal+":"+$!tmp.getValue()+$!{delimiter})
+											#else
+												#set($multipleText = $multipleText+$!tmp.getValue()+$!{delimiter})
+											#end
+										#end
+									#end
+									#if("$!multipleText"!=""&&"$!uiComboxConfig.url"=="")
+    									#set($length=$multipleText.length())
+    									#set($length=$length - 1)
+    									#set($multipleText = $multipleText.substring(0,$length))
+									#end
+									value="$!multipleText"
+								#else
+									#foreach($tmpVal in $curvalue.split("$!delimiter"))
+                        				#foreach($item in $items)
+											#set($itemLabelCommand="$"+"!"+"{item."+"$keyField"+"}")
+                                			#set($itemTitleCommand="$"+"!"+"{item."+"$titleField"+"}")
+											#set($itemLabel = "#evaluate($itemLabelCommand)")
+                            				#set($itemTitle = "#evaluate($itemTitleCommand)")
+											#if($itemLabel==$tmpVal)
+												#set($multipleText = $multipleText+$!itemTitle+$!{delimiter})
+											#end
+										#end
+									#end
+									#if("$!multipleText"!=""&&"$!uiComboxConfig.url"=="")
+    									#set($length=$multipleText.length())
+    									#set($length=$length - 1)
+    									#set($multipleText = $multipleText.substring(0,$length))
+									#end
+									value="$multipleText"
+								#end
+                    			
+                    		#else
+            					#if($dictManager && $uiComboxConfig.dictName)
+            						#set($val = $dictManager.getDictEntry($uiComboxConfig.dictName,$curvalue));
+            						##14098 combox在数据为数据字典时，若是设置的value值不存在，也能显示
+            						#if("$!val"!="")
+            							value="#if($showLabel)$curvalue:#end$!val.getValue()" 
+            						#else
+            							value=""
+            						#end
+                            	#else
+                					#foreach($item in $items)
+                    	    			#if($item.label == $curvalue)
+            								#if($showLabel)
+            									value="$item.label:$item.value" 
+            								#else
+            									value="$item.value" 
+            								#end
+                    	    			#end
+            						#end
+            						
+            						
+                            		#foreach($item in $items)
+                            			#set($itemLabelCommand="$"+"!"+"{item."+"$keyField"+"}")
+                            			#set($itemTitleCommand="$"+"!"+"{item."+"$titleField"+"}")
+                        				#set($itemLabel = "#evaluate($itemLabelCommand)")
+                        				#set($itemTitle = "#evaluate($itemTitleCommand)")
+                            			#if($itemLabel == $curvalue)
+                        					##如果有设置showLabel，则显示
+                                			value="#if($showLabel)$itemLabel:#end$itemTitle"
+                        				#end
+                            		#end
+                            	#end
+            					
+            					
+            					
+                    		#end
+                    	#elseif($uiComboxConfig.multiple != true && $items.size()>0)
+                    		#set($item = $items.get(0))
+                    		##如果有设置showLabel，则显示
+                            #set($itemLabelCommand="$"+"!"+"{item."+"$keyField"+"}")
+                    		#set($itemTitleCommand="$"+"!"+"{item."+"$titleField"+"}")
+                    		#set($itemLabel = "#evaluate($itemLabelCommand)")
+                    		#set($itemTitle = "#evaluate($itemTitleCommand)")
+                    		##如果有设置showLabel，则显示
+                            #if($uiComboxConfig.headItem)
+                                #set($headItem = $uiComboxConfig.headItem)
+                                #set($headItemTitleCommand="$"+"!"+"{headItem."+"$titleField"+"}")
+                                #set($headItemTitle = "#evaluate($headItemTitleCommand)")
+                                value="$headItemTitle"
+                            #else
+                                value="#if($showLabel)$itemLabel:#end$itemTitle"
+                            #end
+                        #elseif($uiComboxConfig.multiple == true && $items.size()>0 && ($uiComboxConfig.checkAll==true || $uiComboxConfig.selectAll == true))
+							#if($showLabel)
+								##全选时 showLabel为true显示key值
+								#set($selectAllText = "") 
+								#foreach($item in $items)
+                                    #set($itemLabelCommand="$"+"!"+"{item."+"$keyField"+"}")
+                                    #set($itemLabel = "#evaluate($itemLabelCommand)")
+									#set($itemTitleCommand="$"+"!"+"{item."+"$titleField"+"}")
+                        			#set($itemTitle = "#evaluate($itemTitleCommand)")
+                                    #if($velocityCount == $items.size())
+                                        #set($multipleValue = $multipleValue+$!{itemLabel})
+										#set($selectAllText = $selectAllText+$!{itemLabel}+":"+$!{itemTitle})
+                                    #else
+                                        #set($multipleValue = $multipleValue+$!{itemLabel}+$!{delimiter})
+										#set($selectAllText = $selectAllText+$!{itemLabel}+":"+$!{itemTitle}+$!{delimiter})
+                                    #end
+                                #end
+								value="$!{selectAllText}"
+							
+							#else 
+								value="$!{multipleText}"	
+							#end
+						#end
+						#if("$!uiComboxConfig.url"!= "")
+							value="$!{multipleText}"
+						#end
+                            delimiter="$!{delimiter}" 
                 	/>
 					<i class="fa fa-caret-down u-select-down"></i>
-                		#if($uiSelectConfig.dictName && $horn)
-                    		#if($uiSelectConfig.multiple == true)
-                    		 	$horn.addGlobal("componentSelects_m",$!{uiSelectConfig.dictName})
-                    		 #else
-                    		 	$horn.addGlobal("componentSelects_s",$!{uiSelectConfig.dictName})
-                			#end
-                		#else
-                			#if($uiSelectConfigItems)
-                				$horn.addGlobal('componentSelects_static',$uiSelectConfig)
-                			#end
-                		#end	
-                	</div>
-			    </div>
+                		
+					</div>	
+            	</div>
 		    </div>
 		  </div>
 	#end
-	#set($uiSelectConfig = {})
-	#set($uiSelectConfigItems = [])
+	#if($uiComboxConfig.dictName && $horn)
+		#foreach($dicname in $uiComboxConfig.dictName.split(","))
+			#if($uiComboxConfig.multiple == true)
+    		 	$horn.addGlobal('componentSelects_m',$dicname)
+    		#else
+    		 	$horn.addGlobal('componentSelects_s',$dicname)
+			#end
+		#end
+		
+	#else
+		#if($uiComboxConfig.url)
+			$horn.addGlobal('componentSelects_url',$uiComboxConfig)
+		#end
+		#if($items)
+			$horn.addGlobal('componentSelects_static',$uiComboxConfig)
+		#end
+	#end
+	#set($uiComboxConfig = {})
 #end
 #**   
  * @author huling   
@@ -3419,6 +4738,12 @@ csrf_token=${csrf_token}#end
  * @lends select_tree
  *#
 #macro(select_tree $params)
+	#set($selectTreeId = "select_tree_id")
+	#if($params.id)
+		#set($selectTreeId = $params.id)
+	#else
+		#set($selectTreeId = $params.name)
+	#end
 	#set($col = 4)
 	#set($cols = "")
     #if($layoutcolumn) 
@@ -3468,14 +4793,14 @@ csrf_token=${csrf_token}#end
 			#if(!$params.hiddenLabel)
 		    <label #if($layoutcolumn==1)class="g-grid-3 unit-label"#else class="g-grid-4 unit-label"#end><span ref="$!params.name" title="$!{params.label}">$!{params.label}</span></label>
 		    #end
-			<div #if($params.hiddenLabel)class="g-grid-12" #else class="g-grid-8"#end>
+			<div #if($params.hiddenLabel)class="g-grid-12" #else #if($layoutcolumn==1)class="g-grid-9"#else class="g-grid-8"#end #end>
 				<div name="$!{params.name}" $horn.paramsCache($params)  class="hc_label" 
     			>$!val</div>
 			</div>
 	    </div>
 	 </div>
 	#else
-		<div class="g-grid-$col #if($cols!="")$cols#end">
+		<div class="g-grid-$col #if($cols!="")$cols#end #if($params.className)$!{params.className}#end">
 		  	<div class="g-unit-wrap">
 		  	 #set($checkStr=$horn.getCheckStr($params.name,$params.check))
 			 #set($groupStr=$horn.getGroupStr($params.name,$params.group))
@@ -3483,7 +4808,7 @@ csrf_token=${csrf_token}#end
 			    <label #if($layoutcolumn==1)class="g-grid-3 unit-label"#else class="g-grid-4 unit-label"#end title="$!params.label">#if($checkStr.indexOf("required")>-1)<span class="m-verify-symbol">*</span>#end $!params.label</label>
 			    #end
 				<div #if($params.hiddenLabel)class="g-grid-12" #else class="g-grid-8"#end>
-					<div class="hc_select-tree" id="$!{params.id}" title="$!{params.value}" $horn.paramsCache($params) >
+					<div class="hc_select-tree" id="$selectTreeId" title="$!{params.value}" $horn.paramsCache($params) >
                     	<input type="hidden" name="$params.name" 
                     	value=#if($params.value)"$!{params.value}"#else "" #end
                     	dictName="$!{params.dictName}" 
@@ -3506,12 +4831,12 @@ csrf_token=${csrf_token}#end
                                 disabled="disabled"
                             #end
                         	value=#if($params.value)"$!{params.value}"#else"$val"#end
-                        	ref="ztree_$params.name.replaceAll('\.', '_')" 
+                        	ref="ztree_$selectTreeId.replaceAll('\.', '_')" 
                     		url="$!{params.url}" 
                     	/>
 						<a href="javascript:void(0)"><i class="fa fa-close u-select-colse"></i></a>
 						##<i class="fa fa-caret-down u-select-down"></i>
-                    	$horn.addGlobal("componentSelect_trees",$params.name.replaceAll("\.", "_"))
+                    	$horn.addGlobal("componentSelect_trees",$selectTreeId.replaceAll("\.", "_"))
                     	</div>
 			    </div>
 		    </div>
@@ -3754,7 +5079,14 @@ csrf_token=${csrf_token}#end
 #**
  * @lends textfield
  *#
-
+ 
+#** 
+ * 修改记录:
+ * 修改日期                          修改人员                              修改说明                 
+ * -----------------------------------------------------------------------
+ *  2016-12-19           王兰                                 bug#36230 targetselect控件onChange事件未触发
+ * -----------------------------------------------------------------------
+*#
 
 #macro(biz_targetselect $uiSelectConfig)
 	#targetselect($uiSelectConfig)
@@ -3811,7 +5143,7 @@ csrf_token=${csrf_token}#end
 			#if(!$uiSelectConfig.hiddenLabel)
 		    <label #if($layoutcolumn==1)class="g-grid-3 unit-label"#else class="g-grid-4 unit-label"#end><span ref="$!uiSelectConfig.name" title="$!{uiSelectConfig.label}">$!{uiSelectConfig.label}</span></label>
 		    #end
-			<div #if($uiSelectConfig.hiddenLabel)class="g-grid-12" #else class="g-grid-8"#end>
+			<div #if($uiSelectConfig.hiddenLabel)class="g-grid-12" #else #if($layoutcolumn==1)class="g-grid-9"#else class="g-grid-8"#end #end>
 				<div name="$!{uiSelectConfig.name}" $horn.paramsCache($uiSelectConfig)  class="hc_label" #if($uiSelectConfig.multiple) mutiValue="true" #end
     			>$!label</div>
 			</div>
@@ -3819,7 +5151,7 @@ csrf_token=${csrf_token}#end
 	 </div>
 	 
 	#else
-		<div class="g-grid-$col #if($cols!="")$cols#end">
+		<div class="g-grid-$col #if($cols!="")$cols#end #if($uiSelectConfig.className)$!{uiSelectConfig.className}#end">
 		  	<div class="g-unit-wrap">
 		  	 #set($checkStr=$horn.getCheckStr($uiSelectConfig.name,$uiSelectConfig.check))
 			 #set($groupStr=$horn.getGroupStr($uiSelectConfig.name,$uiSelectConfig.group))
@@ -3833,11 +5165,6 @@ csrf_token=${csrf_token}#end
                 	value="$!key"
                 	check="$!{checkStr}"
                 	group="$!{groupStr}"
-                	#if($uiSelectConfig.onChange)
-                	onChange="$!{uiSelectConfig.onChange}"
-                	#else
-                	onChange=""
-                	#end
                 	/>
 					#set($target_readonly="true")
 					#if("$!{uiSelectConfig.readonly}"=="false")
@@ -3846,7 +5173,12 @@ csrf_token=${csrf_token}#end
                 	<input type="text" name="view_$!uiSelectConfig.name" id="view_$!uiSelectConfig.id" maxlength="$!{uiSelectConfig.maxlength}" value="$!label" class="u-targetselect-search-input" 
                         #if(${uiSelectConfig.disabled})
                             disabled="disabled"
-                        #end
+						#end
+						#if($uiSelectConfig.onChange)
+							onChange="$!{uiSelectConfig.onChange}"
+                    	#else
+							onChange=""
+                    	#end
                         readonly="$target_readonly"
 						#if("$!target_readonly"=="true")
                     	onclick="$!uiSelectConfig.event"
@@ -3928,7 +5260,7 @@ csrf_token=${csrf_token}#end
 			#if(!$uiTextAreaConfig.hiddenLabel)
 		    <label #if($layoutcolumn==1)class="g-grid-3 unit-label"#else class="g-grid-4 unit-label"#end><span ref="$!uiTextAreaConfig.name" title="$!{uiTextAreaConfig.label}">$!{uiTextAreaConfig.label}</span></label>
 		    #end
-			<div #if($uiTextAreaConfig.hiddenLabel) class="g-grid-12" #else class="g-grid-8"#end>
+			<div #if($uiTextAreaConfig.hiddenLabel) class="g-grid-12" #else #if($layoutcolumn==1)class="g-grid-9"#else class="g-grid-8"#end #end>
 				<div name="$!{uiTextAreaConfig.name}" class="hc_label" title="$!val" $horn.paramsCache($uiTextAreaConfig) 
                 #if($uiTextAreaConfig.dictName)
     				dictName="$!{uiTextAreaConfig.dictName}"
@@ -3939,7 +5271,7 @@ csrf_token=${csrf_token}#end
 	    </div>
 	 </div>
 	#else
-	  <div class="g-grid-$col #if($cols!="")$cols#end"">
+	  <div class="g-grid-$col #if($cols!="")$cols#end #if($uiTextAreaConfig.className)$!{uiTextAreaConfig.className}#end">
 	  	<div class="g-unit-wrap">
 			 #set($checkStr=$horn.getCheckStr($uiTextAreaConfig.name,$uiTextAreaConfig.check))
 	    	#set($groupStr=$horn.getGroupStr($uiTextAreaConfig.name,$uiTextAreaConfig.group))
@@ -4045,7 +5377,7 @@ csrf_token=${csrf_token}#end
 			#if(!$uiTextfieldConfig.hiddenLabel)
 		    <label #if($layoutcolumn==1)class="g-grid-3 unit-label"#else class="g-grid-4 unit-label"#end><span ref="$!uiTextfieldConfig.name" title="$!{uiTextfieldConfig.label}">$!{uiTextfieldConfig.label}</span></label>
 		    #end
-			<div #if($uiTextfieldConfig.hiddenLabel)class="g-grid-12" #else class="g-grid-8"#end>
+			<div #if($uiTextfieldConfig.hiddenLabel)class="g-grid-12" #else #if($layoutcolumn==1)class="g-grid-9"#else class="g-grid-8"#end #end>
 				<div name="$!{uiTextfieldConfig.name}" class="hc_label"  $horn.paramsCache($uiTextfieldConfig) 
         		#if($uiTextfieldConfig.alias)
         			alias="$!{uiTextfieldConfig.alias}"
@@ -4060,7 +5392,7 @@ csrf_token=${csrf_token}#end
 	    </div>
 	 </div>
 	#else
-		  <div class="g-grid-$col #if($cols!="")$cols#end">
+		  <div class="g-grid-$col #if($cols!="")$cols#end #if($uiTextfieldConfig.className)$!{uiTextfieldConfig.className}#end">
 		  	<div class="g-unit-wrap">
 		  	 #set($checkStr=$horn.getCheckStr($!uiTextfieldConfig.name,$!uiTextfieldConfig.check))
 			  #set($groupStr=$horn.getGroupStr($!uiTextfieldConfig.name,$!uiTextfieldConfig.group))
@@ -4094,6 +5426,145 @@ csrf_token=${csrf_token}#end
 		  </div>
 	#end
 	#set($uiTextfieldConfig = {})
+#end
+
+﻿#**   
+ * @author huling   
+ * @class
+ * @name checkbox
+ * @param cols {String} 跨列数
+ * @param name {String} 名称
+ * @param id {String} 唯一标识
+ * @param alias {String} 别名
+ * @param static {String} 静态值
+ * @param value {String} 值
+ * @param label {String} 复选框显示值
+ * @param check {String} 验证串
+ * @param group {String}所属分组名字
+ * @param checked {boolean} 是否选中
+ * @param events {Json} 事件，格示见示例
+ * @description checkbox组件，复选框组件
+ * @see The <a href="huling@hundsun.com">huling</a >.   
+ * @example \#checkbox({"label":"证券6", "name":"age","static":"6","checked":true,"events":[{"event":"onclick","function":"checkA(this.value)"}]})
+ * @since version 0.1
+ *#	
+#**
+ * @lends checkbox
+ *#
+#macro(treetable $params)
+	#set($compid = "dyncTreeTable")
+    #if($params.id&&$params.id!="")
+      #set($compid = ${params.id})
+    #else
+      #if($params.name&&$params.name!="")
+        #set($compid = ${params.name})
+      #end
+    #end  
+    #set($colItems = $params.items)             ##列数据模型对象
+    #set($selectModel = "$!params.selectModel")   ##单选 多选模式
+    #set($size =$!{colItems.size()} ) 
+	#set($size=$size+1)
+    #if($selectModel&&$selectModel=="multi")
+        #set($size = $size+1 )
+    #elseif($selectModel&&$selectModel=="single") 
+      #set($size = $size+1 )
+    #end
+	
+	 <div id='$!{params.id}' class='g-datagrid-wrap hc_treetable'  $horn.paramsCache($params)>
+		<!--*************title区域*********************-->
+            #if($params.title&&$!params.title!="")
+              <div class="u-datagrid-header">
+                <h4 class="u-datagrid-title">$!{params.title}</h4> 
+              </div>
+            #end	
+		
+		 <!--*************toolbar区域*********************-->
+   
+      <div class="u-datagrid-toolbar">
+         <ul class="u-datagrid-btn">           
+         #if($params.buttons&&$params.buttons.size()>0)         
+              #foreach($button in $params.buttons)
+                <li><a name="$!{button.name}" href="JavaScript:void(0)" class="hc-datagrid-a hc_datagrid-alink #if($button.disabled)f-disabled#end" #if($button.refmenu&&!$button.disabled)refmenu="${button.refmenu}"#end onClick="$!{button.event}" event = "$!{button.event}"><i class="fa #if($button.cls=="add")fa-plus-circle#elseif($button.cls=="edit")fa-pencil-square-o#elseif($button.cls=="del")fa-remove#elseif($button.cls=="confirm")fa-save#elseif($button.cls=="save")fa-save#elseif($button.cls=="query")fa-search#elseif($button.cls=="open")fa-folder-open-o#elseif($button.cls=="refresh")fa-refresh #else $!{button.cls} #end"></i>$!{button.label}</a></li>
+              #end
+          #end
+         </ul>
+       </div>
+	   
+	     <!--****************treetable tables主表数据区域***************************-->
+		 <div  class="u-datagrid">
+                <table id="treetable_$!{compid}" class="u-datagrid-group">
+					  <!--************************表头部位***************************-->
+					 <thead id="treetableHeader_$!{compid}">
+                        <tr>
+                        <!--***************单选多选模式************************-->
+						<th class="u-table-number"><div style="width: 40px;"></div></th>
+                        #if($selectModel&&$selectModel=="multi")
+                          <th class="u-table-check">
+                            <div style="width: 40px;">
+                              <input type="checkbox"  name="selectall"/>
+                            </div>
+                          </th>
+                          #elseif($selectModel&&$selectModel=="single")
+                          <th class="u-table-check">
+                            <div style="width: 40px;"></div>
+                          </th>
+                          #end
+                        #set($count = 1)
+                        #foreach($colitem in $colItems)
+                         <th style="#if($count==$colItems.size())WIDTH:auto;#else WIDTH:#nt(${colitem.width} 100)px;#end" name="$colitem.name" #if($colitem.dictName) dictName="$colitem.dictName" #end>
+                          <div style="TEXT-aLIGN:#if("$!{colitem.hAlign}"!="")$!{colitem.hAlign}#else center #end;WIDTH:#nt(${colitem.width} 100)px; CURSOR: default" class="u-groupgrid-cell" name="$!{colitem.name}" dictName="$!{colitem.dictName}"  buttons="$!{colitem.buttons}" renderer="$!{colitem.renderer}">$!{colitem.text}</div>
+                         </th>
+						  #set($count = $count+1)  
+                        #end          
+                       </tr>
+                      </thead>
+				      
+			    <!--**********************数据显示区域************************-->
+        		 <tbody id="treetablebody_$!{compid}">
+                    <tr>
+                    <td colspan="$size" id="noResult" style="border-right:0px;padding:15px;"><p>暂时无数据</p></td> 
+                    </tr>
+                 </tbody>
+					  					  
+				</table>
+		 </div>	
+		   <!-- *******************　　pagebar区域　********************** -->
+         #if($params.hasPage&&$params.hasPage==true)
+               <div class="u-datagrid-page" >
+            <div class="g-pagebar-wrap">
+                  <ul class="m-pagebar" id='page_$compid' isNotTotal="$!params.isNotTotal">
+                    <li>
+                      <a href="javascript:void(0)" class="first_page_btn" title="首页"><i class="fa fa-step-backward"></i></a>
+                    </li>
+                    <li>
+                      <a href="javascript:void(0)" class="pre_page_btn" title="上一页"><i class="fa fa-caret-left"></i></a>
+                    </li>
+            #if("$!params.isNotTotal"=="true")
+              <input id='toPage_$compid' class="hc-pagination-num" value="0" size="2" type="hidden" onkeyup="this.value=this.value.replace(/\D/g,'')"  onafterpaste="this.value=this.value.replace(/\D/g,'')"/>
+              <input id='pageSize_$compid' class="hc-pagination-num" style="width: 30px;" value="20" size="20" type="hidden" onkeyup="this.value=this.value.replace(/\D/g,'')"  onafterpaste="this.value=this.value.replace(/\D/g,'')"/>
+            #else
+                    <li><span>第</span></li>
+                    <li><input id='toPage_$compid' class="hc-pagination-num" value="0" size="2" type="text" onkeyup="this.value=this.value.replace(/\D/g,'')"  onafterpaste="this.value=this.value.replace(/\D/g,'')"/></li>
+                    <li><span>页</span></li>
+                    <li><span>每页</span></li>
+                    <li><input id='pageSize_$compid' class="hc-pagination-num" style="width: 30px;" value="20" size="20" type="text" onkeyup="this.value=this.value.replace(/\D/g,'')"  onafterpaste="this.value=this.value.replace(/\D/g,'')"/></li>
+                    <li><span>条</span></li>
+            #end
+                    <li><a href="javascript:void(0)" class="next_page_btn" title="下一页"><i class="fa fa-caret-right"></i></a></li>
+                    #if("$!params.isNotTotal"!="true")
+            <li><a href="javascript:void(0)" class="last_page_btn" title="尾页"><i class="fa fa-step-forward"></i></a></li>
+            #end
+                    <li><a href="javascript:void(0)" class="refresh_btn" title="刷新"><i class="fa fa-refresh"></i></a></li>
+                  </ul>
+            #if("$!params.isNotTotal"!="true")
+              <div class="m-pagebar-all">共<span id='totalPages_$compid' style="">0</span>页，<span id='pageInfo_$compid' class="hc-pagination-info">当前显示0到0，共0条记录</span></div>
+            #end
+            </div>
+          </div>
+         #end
+	 </div>
+	
+	#set($uiTreetableConfig = {})
 #end
 #**
 * -----------------------------------------------------------------------
@@ -4149,7 +5620,7 @@ csrf_token=${csrf_token}#end
 			#if(!$uiTextfieldConfig.hiddenLabel)
 		    <label #if($layoutcolumn==1)class="g-grid-3 unit-label"#else class="g-grid-4 unit-label"#end><span ref="$!uiTextfieldConfig.name" title="$!{uiTextfieldConfig.label}">$!{uiTextfieldConfig.label}</span></label>
 		    #end
-			<div #if($uiTextfieldConfig.hiddenLabel)class="g-grid-12" #else class="g-grid-8"#end>
+			<div #if($uiTextfieldConfig.hiddenLabel)class="g-grid-12" #else #if($layoutcolumn==1)class="g-grid-9"#else class="g-grid-8"#end #end>
 				<div name="$!{uiTextfieldConfig.name}" class="hc_label"  $horn.paramsCache($uiTextfieldConfig) 
         		#if($uiTextfieldConfig.alias)
         			alias="$!{uiTextfieldConfig.alias}"
@@ -4165,7 +5636,7 @@ csrf_token=${csrf_token}#end
 	 </div>
 		
 	#else
-		<div class="g-grid-$col #if($cols!="")$cols#end">
+		<div class="g-grid-$col #if($cols!="")$cols#end #if($uiTextfieldConfig.className)$!{uiTextfieldConfig.className}#end">
 		  	<div class="g-unit-wrap">
 		  	 #set($checkStr=$horn.getCheckStr($!uiTextfieldConfig.name,$!uiTextfieldConfig.check))
 			 #set($groupStr=$horn.getGroupStr($!uiTextfieldConfig.name,$!uiTextfieldConfig.group))
@@ -4280,7 +5751,7 @@ csrf_token=${csrf_token}#end
 			#if(!$uiCalendarConfig.hiddenLabel)
 		    <label #if($layoutcolumn==1)class="g-grid-3 unit-label"#else class="g-grid-4 unit-label"#end><span ref="$!uiCalendarConfig.name" title="$!{uiCalendarConfig.label}">$!{uiCalendarConfig.label}</span></label>
 		    #end
-			<div #if($uiCalendarConfig.hiddenLabel) class="g-grid-12" #else class="g-grid-8" #end>
+			<div #if($uiCalendarConfig.hiddenLabel) class="g-grid-12" #else #if($layoutcolumn==1)class="g-grid-9"#else class="g-grid-8"#end #end>
 				<div name="$!{uiCalendarConfig.name}" class="hc_label"  $horn.paramsCache($uiCalendarConfig) 
         		#if($uiCalendarConfig.dictName)
     				dictName="$!{uiCalendarConfig.dictName}"
@@ -4291,7 +5762,7 @@ csrf_token=${csrf_token}#end
 	    </div>
 	 </div>
     #else
-		<div class="g-grid-$col #if($cols!="")$cols#end">
+		<div class="g-grid-$col #if($cols!="")$cols#end #if($uiCalendarConfig.className)$!{uiCalendarConfig.className}#end">
 		  	<div class="g-unit-wrap">
 				#set($checkStr=$horn.getCheckStr($!uiCalendarConfig.name,$!uiCalendarConfig.check))
 				#set($groupStr=$horn.getGroupStr($!uiCalendarConfig.name,$!uiCalendarConfig.group))
@@ -4431,7 +5902,7 @@ csrf_token=${csrf_token}#end
 			#if(!$uiCalendarGroupConfig.hiddenLabel)
 		    <label #if($layoutcolumn==1)class="g-grid-3 unit-label"#else class="g-grid-4 unit-label"#end><span ref="$!uiCalendarGroupConfig.name" title="$!{uiCalendarGroupConfig.label}">$!{uiCalendarGroupConfig.label}</span></label>
 		    #end
-			<div #if($uiCalendarGroupConfig.hiddenLabel)class="g-grid-12" #else class="g-grid-8"#end>
+			<div #if($uiCalendarGroupConfig.hiddenLabel)class="g-grid-12" #else #if($layoutcolumn==1)class="g-grid-9"#else class="g-grid-8"#end #end>
 				<div name="$!{uiCalendarGroupConfig.name}" class="hc_label"  $horn.paramsCache($uiCalendarGroupConfig)>
 					$!val1
 					#if(($val1&&$val1!="")&&($val2&&$val2!=""))<lable class="hc_hyphen">~</lable>#end
@@ -4442,7 +5913,7 @@ csrf_token=${csrf_token}#end
 	 </div>
 		
 	#else
-		<div class="g-grid-$col #if($cols!="")$cols#end">
+		<div class="g-grid-$col #if($cols!="")$cols#end #if($uiCalendarGroupConfig.className)$!{uiCalendarGroupConfig.className}#end">
 		  	<div class="g-unit-wrap">
 		  	 #set($checkStr=$horn.getCheckStr($uiCalendarGroupConfig.name1,$uiCalendarGroupConfig.check))
 			 #set($groupStr=$horn.getGroupStr($uiCalendarGroupConfig.name,$uiCalendarGroupConfig.group))
@@ -4605,13 +6076,13 @@ csrf_token=${csrf_token}#end
 	<div class="g-grid-$col #if($cols!="")$cols#end">
 	  	<div class="g-unit-wrap">
 		    <label #if($layoutcolumn==1)class="g-grid-3 unit-label"#else class="g-grid-4 unit-label"#end><span ref="$!uiCheckboxConfig.name" title="$!{uiCheckboxConfig.label}">$!{uiCheckboxConfig.label}</span></label>
-		    <div class="g-grid-8">
+		    <div #if($layoutcolumn==1)class="g-grid-9"#else class="g-grid-8"#end>
 				<div name="$!{uiCheckboxConfig.name}" class="hc_label"  $horn.paramsCache($uiCheckboxConfig) >#if($val) √#end</div>
 			</div>
 	    </div>
 	 </div>
 	#else
-		  <div class="g-grid-$col #if($cols!="")$cols#end">
+		  <div class="g-grid-$col #if($cols!="")$cols#end #if($uiCheckboxConfig.className)$!{uiCheckboxConfig.className}#end">
 		  	<div class="g-unit-wrap">
 		  	 #set($checkStr=$horn.getCheckStr($uiCheckboxConfig.name,$uiCheckboxConfig.check))
 			 #set($groupStr=$horn.getGroupStr($uiCheckboxConfig.name,$uiCheckboxConfig.group))
@@ -4664,6 +6135,14 @@ csrf_token=${csrf_token}#end
 #**
  * @lends checkboxGroup
  *#
+#** 
+ * 修改记录:
+ * 修改日期                  修改人员                 修改说明                 
+ * -----------------------------------------------------------------------
+ *  2016-11-29       王兰                 需求#27998 【TS:201611180207-JRESPlus-财富业委会-江志伟-【需求】checkbox_group在查看模块下显示为code属性，期望能显示text属性。
+ *  2016-12-27       王兰                 bug#37060 checkbox_group静态数据查看模式支持text、code写法
+ * -----------------------------------------------------------------------
+*#
 #macro(checkboxGroup $uiCheckboxGroupConfig)
     #checkbox_group($uiCheckboxGroupConfig)
 #end
@@ -4707,18 +6186,61 @@ csrf_token=${csrf_token}#end
         #set($val =  "$horn.getValue($!uiCheckboxGroupConfig.name)")
 	#end
 	#if($view)
+	   #set($viewItems=[])
+       #if($dictManager && $uiCheckboxGroupConfig.dictName)
+        	#set($viewItems = $dictManager.getDicts($uiCheckboxGroupConfig.dictName))
+       #else
+        	#set($viewItems = $uiCheckboxGroupConfig.items)
+	   #end
+	   #set($keyView = "value" ) 
+       #set($titleView = "label") 
+	   #foreach($viewItem in $viewItems)
+			#if($viewItem.code)
+				#set($keyView = "code" ) 
+				#set($titleView = "text")
+			#end
+			#break
+	   #end
+	  #set($viewVal="")
+	  #if($dictManager && $uiCheckboxGroupConfig.dictName)
+			#foreach($tmpVal in $val.split(","))
+				#set($tmp = $dictManager.getDictEntry($uiCheckboxGroupConfig.dictName,$tmpVal))
+				#set($dicValue = $tmp.getValue()) 
+				#if($dicValue)
+					#set($viewVal=$viewVal+$!tmp.getValue()+",")
+				#end
+			#end
+	  #else
+    	  #foreach($tmpVal in $val.split(","))
+    		  #foreach($viewItem in $viewItems)
+    			##set($viewValue="$"+"!"+"{viewItem.value}")
+				#set($viewValue="$"+"!"+"{viewItem."+"$keyView"+"}")
+    			#set($vValue = "#evaluate($viewValue)")
+				#set($vLabel="$"+"!"+"{viewItem."+"$titleView"+"}")
+    			#set($viewLabel = "#evaluate($vLabel)")
+    			#if($vValue==$tmpVal)
+    				#set($viewVal=$viewVal+$!{viewLabel}+",")
+    			#end
+    		  #end
+    	  #end 
+	   #end
+	   #if("$!viewVal"!="")
+		  #set($viewLen=$viewVal.length())
+		  #set($viewLen=$viewLen - 1)
+		  #set($viewVal = $viewVal.substring(0,$viewLen))
+	   #end
 	<div class="g-grid-$col #if($cols!="")$cols#end">
 	  	<div class="g-unit-wrap">
 			#if(!$uiCheckboxGroupConfig.hiddenLabel)
 		    <label #if($layoutcolumn==1)class="g-grid-3 unit-label"#else class="g-grid-4 unit-label"#end><span ref="$!uiCheckboxGroupConfig.name" title="$!{uiCheckboxGroupConfig.label}">$!{uiCheckboxGroupConfig.label}</span></label>
 		    #end
-			<div #if($uiCheckboxGroupConfig.hiddenLabel)class="g-grid-12" #else class="g-grid-8"#end>
-				<div name="$!{uiCheckboxGroupConfig.name}" class="hc_label"  $horn.paramsCache($uiCheckboxGroupConfig) >$!val</div>
+			<div #if($uiCheckboxGroupConfig.hiddenLabel)class="g-grid-12" #else #if($layoutcolumn==1)class="g-grid-9"#else class="g-grid-8"#end #end>
+				<div name="$!{uiCheckboxGroupConfig.name}" class="hc_label"  $horn.paramsCache($uiCheckboxGroupConfig) >$viewVal</div>
 			</div>
 	    </div>
 	 </div>
 	#else
-		  <div class="g-grid-$col #if($cols!="")$cols#end">
+		  <div class="g-grid-$col #if($cols!="")$cols#end  #if($uiCheckboxGroupConfig.className)$!{uiCheckboxGroupConfig.className}#end">
 		  	<div class="g-unit-wrap">
 		  	 #set($checkStr=$horn.getCheckStr($uiCheckboxGroupConfig.name,$uiCheckboxGroupConfig.check))
 			 #set($groupStr=$horn.getGroupStr($uiCheckboxGroupConfig.name,$uiCheckboxGroupConfig.group))
@@ -4804,22 +6326,23 @@ csrf_token=${csrf_token}#end
 			#end
 		#end
 	#end
-	<div class="g-grid-$col #if($cols!="")$cols#end">
+	 #set($checkStr=$horn.getCheckStr($!uiUploadGroupConfig.name,$!uiUploadGroupConfig.check))
+	<div class="g-grid-$col #if($cols!="")$cols#end #if($uiUploadGroupConfig.className)$!{uiUploadGroupConfig.className}#end">
 	  	<div class="g-unit-wrap">
 				#if(!$uiUploadGroupConfig.hiddenLabel)
 			    <label #if($layoutcolumn==1)class="g-grid-3 unit-label"#else class="g-grid-4 unit-label"#end title="$!uiUploadGroupConfig.label">#if($checkStr.indexOf("required")>-1)<span class="m-verify-symbol">*</span>#end $!uiUploadGroupConfig.label</label>
 			    #end
-				<div #if($uiUploadGroupConfig.hiddenLabel) class="g-grid-12" #else class="g-grid-8" #end>
+				<div #if($uiUploadGroupConfig.hiddenLabel) class="g-grid-12" #else #if($layoutcolumn==1)class="g-grid-9"#else class="g-grid-8"#end #end>
 				<div id="$upload_id" $horn.paramsCache($uiUploadGroupConfig)  name="$!{uiUploadGroupConfig.name}" class="hc_upload-group" appServer="$appServer">
 					<div class="u-upload-btn">
-						<input type="hidden" name="$!{uiUploadGroupConfig.name}" id="$!{uiUploadGroupConfig.id}" />
+						<input type="hidden" name="$!{uiUploadGroupConfig.name}" id="$!{uiUploadGroupConfig.id}" value="$!{uiUploadGroupConfig.value}"/>
 				  		<input id="uploadify_$upload_id" type="file" name="uploadify_$!{uiUploadGroupConfig.name}"/>
 						#if("$!uiUploadGroupConfig.auto"=="false")
             				<button class="u-btn u-btn-primary startUpload"   id="startUpload" name="startUpload"><i class="fa fa-upload"></i> 开始上传</button> 
 							<button class="u-btn u-btn-warning stopUpload"  id="stopUpload" name="stopUpload"><i class="fa fa-pause-circle-o"></i> 暂停</button> 
 							<button class="u-btn u-btn-danger cancelUpload"><i class="fa fa-ban"></i> 取消</button>
 						#end
-						<span id="uplodCount" style=" display: inline-block;line-height: #if($uiUploadGroupConfig.height)${uiUploadGroupConfig.height}px#else 30px#end;margin-top: 4px;"></span>
+						<span id="uplodCount" class="uplodCount" style=" display: inline-block;line-height: #if($uiUploadGroupConfig.height)${uiUploadGroupConfig.height}px#else 30px#end;margin-top: 4px;"></span>
 				  	</div>
         		</div>
 			</div>
@@ -4849,14 +6372,14 @@ csrf_token=${csrf_token}#end
 	<div class="g-grid-12">
     	<div id="$upload_id" $horn.paramsCache($uiUploadPanelConfig)  class="hc_upload-panel" name="$!{uiUploadPanelConfig.name}" appServer="$appServer">
     		<div class="u-upload-btn">
-    			<input type="hidden" name="$!{uiUploadPanelConfig.name}"/>
+    			<input type="hidden" name="$!{uiUploadPanelConfig.name}" value="$!{uiUploadPanelConfig.value}"/>
     	  		<input id="uploadify_$upload_id" type="file" name="uploadify_$!{uiUploadPanelConfig.name}"/>
     			#if("$!uiUploadPanelConfig.auto"=="false")
     				<button class="u-btn u-btn-primary startUpload"   id="startUpload" name="startUpload"><i class="fa fa-upload"></i> 开始上传</button> 
     				<button class="u-btn u-btn-warning stopUpload"  id="stopUpload" name="stopUpload"><i class="fa fa-pause-circle-o"></i> 暂停</button> 
     				<button class="u-btn u-btn-danger cancelUpload"><i class="fa fa-ban"></i> 取消</button>
 				#end
-				<span id="uplodCount" style=" display: inline-block;line-height: #if($uiUploadPanelConfig.height)${uiUploadPanelConfig.height}px#else 30px#end;margin-top: 4px;"></span>
+				<span id="uplodCount" class="uplodCount" style=" display: inline-block;line-height: #if($uiUploadPanelConfig.height)${uiUploadPanelConfig.height}px#else 30px#end;margin-top: 4px;"></span>
     	  	</div>
         </div>
 	</div>
@@ -4927,7 +6450,8 @@ csrf_token=${csrf_token}#end
 		#if($uiWindowConfig.buttons)
 			#foreach($button in $uiWindowConfig.buttons)
 				<button type="button"
-                name="$!{button.name}"
+                name="${button.name}" 
+				id="${button.id}" 
 				class="u-btn#if($!button.className) $!{button.className}#else u-btn-default#end"
 				onclick="$!{button.event}"  #if($!{button.disabled}) disabled="$!{button.disabled}" #end>$!{button.label}</button>
 			#end
@@ -4956,7 +6480,8 @@ csrf_token=${csrf_token}#end
 		#if($uiWindowConfig.buttons)
 			#foreach($button in $uiWindowConfig.buttons)
 				<button type="button"
-                name="$!{button.name}"
+                name="${button.name}" 
+				id="${button.id}" 
 				class="u-btn #if($!button.className)$!{button.className}#end"
 				onclick="$!{button.event}">$!{button.label}</button>
 			#end
@@ -5005,12 +6530,37 @@ csrf_token=${csrf_token}#end
  * -----------------------------------------------------------------------
  *  2015-10-26   刘龙                                   #14098 combox在数据为数据字典时，若是设置的value值不存在，也能显示
  *  2016-3-23    刘龙                                  bug#17190 多选框combox设置value值为后续additem添加的值，显示后输入框设置值，调用addItems(item)方法，原先选中的值会被value值覆盖
+ *  2016-11-29   王兰                                 需求#27998 【TS:201611180207-JRESPlus-财富业委会-江志伟-【需求】combox在查看模块下显示为code属性，期望能显示text属性。
  * -----------------------------------------------------------------------
 *#
 
 #macro(combox $uiComboxConfig)
 	#set($col = 4)
 	#set($cols = "")
+	#set($viewVal="")
+	#set($multipleValue="")
+	#set($multipleText="")
+	##设置是否显示标签
+	#set($showLabel = false)
+	#if($uiComboxConfig.showLabel&&$uiComboxConfig.showLabel == "true")
+		#set($showLabel = true)
+	#end
+	#if($uiScreenConfig.showLabel&&$uiScreenConfig.showLabel == "true")
+		#set($showLabel = true)
+	#end
+	#if("$!uiComboxConfig.url"!="")
+		#if("$!uiComboxConfig.value"!="")
+			#set($tmpTexts = $horn.getDictObjByUrl("$!uiComboxConfig.value","$!uiComboxConfig.url","$showLabel","false"))
+		#else
+			#if("$!uiComboxConfig.selectAll" == "true"&&"$!uiComboxConfig.multiple" == "true")
+				#set($tmpTexts = $horn.getDictObjByUrl("$!uiComboxConfig.value","$!uiComboxConfig.url","$showLabel","true"))
+				#set($multipleValue=$tmpTexts.code)
+			#end
+		#end
+		
+		#set($viewVal=$tmpTexts)
+		#set($multipleText=$tmpTexts.text)
+	#end
     #if($layoutcolumn) 
     	#if($layoutcolumn==1)
 			#set($col = 12)
@@ -5047,20 +6597,84 @@ csrf_token=${csrf_token}#end
         #set($val = $uiComboxConfig.value)
         #if((!$val || $val =="") && $uiComboxConfig.name )
             #set($val =  "$horn.getValue($!uiComboxConfig.name)")
-        #end
+		#end
+		#set($viewItems=[])
+    	#if($dictManager && $uiComboxConfig.dictName)
+        	#set($viewItems = $dictManager.getDicts($uiComboxConfig.dictName))
+        #else
+        	#set($viewItems = $uiComboxConfig.items)
+		#end
+		#set($keyView = "label" ) 
+        #set($titleView = "value") 
+		#foreach($viewItem in $viewItems)
+			#if($viewItem.code)
+				#set($keyView = "code" ) 
+				#set($titleView = "text")
+			#end
+			#break
+		#end
+    	#if($uiComboxConfig.labelField && $uiComboxConfig.labelField.length() > 0)
+    		#set($keyView = $uiComboxConfig.labelField ) 
+    	#end
+    	#if($uiComboxConfig.codeField && $uiComboxConfig.codeField.length() > 0)
+    		#set($keyView = $uiComboxConfig.codeField ) 
+    	#end
+    	#if($uiComboxConfig.valueField && $uiComboxConfig.valueField.length() > 0) 
+    		#set($titleView = $uiComboxConfig.valueField )
+    	#end
+    	#if($uiComboxConfig.textField && $uiComboxConfig.textField.length() > 0) 
+    		#set($titleView = $uiComboxConfig.textField )
+    	#end
+	    
+	    #if($dictManager && $uiComboxConfig.dictName)
+			#if($val&&$val!="")
+    			#foreach($tmpVal in $val.split(","))
+    				#set($tmp = $dictManager.getDictEntry($uiComboxConfig.dictName,$tmpVal))
+    				#set($dicValue = $tmp.getValue()) 
+    				#if($dicValue)
+    					#set($viewVal=$viewVal+$!tmp.getValue()+",")
+    				#end
+    			#end
+			#end
+	    #else
+    	   #foreach($tmpVal in $val.split(","))
+    		  #foreach($viewItem in $viewItems)
+				#set($viewValue="$"+"!"+"{viewItem."+"$keyView"+"}")
+    			#set($vValue = "#evaluate($viewValue)")
+				#set($vLabel="$"+"!"+"{viewItem."+"$titleView"+"}")
+    			#set($viewLabel = "#evaluate($vLabel)")
+    			#if($vValue==$tmpVal)
+    				#set($viewVal=$viewVal+$!{viewLabel}+",")
+    			#end
+    		  #end
+    	   #end 
+	    #end
+	    #if("$!viewVal"!="")
+		  #set($viewLen=$viewVal.length())
+		  #set($viewLen=$viewLen - 1)
+		  #set($viewVal = $viewVal.substring(0,$viewLen))
+		#end
+		##有设置url时，就翻译
+		#if("$!uiComboxConfig.url"!="")
+			#if("$!uiComboxConfig.value"!="")
+				#set($viewVal = $!multipleText)
+			#else
+				#set($viewVal = "")
+			#end
+		#end
 		<div class="g-grid-$col #if($cols!="")$cols#end">
 	  	<div class="g-unit-wrap">
 			#if(!$uiComboxConfig.hiddenLabel)
 		    <label #if($layoutcolumn==1)class="g-grid-3 unit-label"#else class="g-grid-4 unit-label"#end><span ref="$!uiComboxConfig.name" title="$!{uiComboxConfig.label}">$!{uiComboxConfig.label}</span></label>
 		    #end
-			<div #if($uiComboxConfig.hiddenLabel)class="g-grid-12" #else class="g-grid-8"#end>
+			<div #if($uiComboxConfig.hiddenLabel)class="g-grid-12" #else #if($layoutcolumn==1)class="g-grid-9"#else class="g-grid-8"#end #end>
 				<div name="$!{uiComboxConfig.name}" class="hc_label" #if($uiComboxConfig.multiple) mutiValue="true" #end
                 #if($uiComboxConfig.dictName)
     				dictName="$!{uiComboxConfig.dictName}"
     				$horn.addGlobal('componentSelects_s',$!{uiComboxConfig.dictName})
 				#end
 				 $horn.paramsCache($uiComboxConfig) 
-    			>$!val</div>
+    			>$!viewVal</div>
 			</div>
 	    </div>
 	 </div>
@@ -5100,23 +6714,13 @@ csrf_token=${csrf_token}#end
     		#set($titleField = $uiComboxConfig.textField )
     	#end
     	
-    	##设置是否显示标签
-    	#set($showLabel = false)
-    	#if($uiComboxConfig.showLabel&&$uiComboxConfig.showLabel == "true")
-    		#set($showLabel = true)
-		#end
-		#if($uiScreenConfig.showLabel&&$uiScreenConfig.showLabel == "true")
-    		#set($showLabel = true)
-		#end
-        #set($multipleValue="")
-		#set($multipleText="")
         #if($uiComboxConfig.delimiter)
             #set($delimiter=$!{uiComboxConfig.delimiter})
         #else
             #set($delimiter=",")
         #end
     	
-		<div class="g-grid-$col #if($cols!="")$cols#end">
+		<div class="g-grid-$col #if($cols!="")$cols#end #if($uiComboxConfig.className)$!{uiComboxConfig.className}#end">
 		  	<div class="g-unit-wrap">
 		  	 #set($checkStr=$horn.getCheckStr($uiComboxConfig.name,$uiComboxConfig.check))
                 #set($groupStr=$horn.getGroupStr($uiComboxConfig.name,$uiComboxConfig.group))
@@ -5169,7 +6773,10 @@ csrf_token=${csrf_token}#end
                                 #end
                             value = "$!{multipleValue}"
                     	#end
-                	#end
+					#end
+					#if("$!uiComboxConfig.url"!= ""&&"$!uiComboxConfig.selectAll" == "true"&&"$!uiComboxConfig.multiple" == "true")
+							value="$!{multipleValue}"
+					#end
                 	check="$checkStr"
                 	group="$groupStr"
                 	 />
@@ -5182,7 +6789,15 @@ csrf_token=${csrf_token}#end
                     		 	ref="${uiComboxConfig.dictName}_m"
                     		#else
                     		 	ref="${uiComboxConfig.dictName}_s"
-                    		#end
+							#end
+						#else
+							#if($uiComboxConfig.url && $horn)
+								#if($uiComboxConfig.multiple == true)
+									ref="${uiComboxConfig.url}_m"
+                        		#else
+                        		 	ref="${uiComboxConfig.url}_s"
+    							#end
+							#end
                     	#end
                     	#if(!$curvalue.equals(""))
                     		#if($uiComboxConfig.multiple == true)
@@ -5198,7 +6813,7 @@ csrf_token=${csrf_token}#end
 											#end
 										#end
 									#end
-									#if("$!multipleText"!="")
+									#if("$!multipleText"!=""&&"$!uiComboxConfig.url"=="")
     									#set($length=$multipleText.length())
     									#set($length=$length - 1)
     									#set($multipleText = $multipleText.substring(0,$length))
@@ -5216,7 +6831,7 @@ csrf_token=${csrf_token}#end
 											#end
 										#end
 									#end
-									#if("$!multipleText"!="")
+									#if("$!multipleText"!=""&&"$!uiComboxConfig.url"=="")
     									#set($length=$multipleText.length())
     									#set($length=$length - 1)
     									#set($multipleText = $multipleText.substring(0,$length))
@@ -5293,11 +6908,15 @@ csrf_token=${csrf_token}#end
 										#set($selectAllText = $selectAllText+$!{itemLabel}+":"+$!{itemTitle}+$!{delimiter})
                                     #end
                                 #end
-								value="$!{selectAllText}"	
+								value="$!{selectAllText}"
+							
 							#else 
 								value="$!{multipleText}"	
 							#end
-                    	#end
+						#end
+						#if("$!uiComboxConfig.url"!= "")
+							value="$!{multipleText}"
+						#end
                             delimiter="$!{delimiter}" 
                 	/>
 					<i class="fa fa-caret-down u-select-down"></i>
@@ -5317,7 +6936,9 @@ csrf_token=${csrf_token}#end
 		#end
 		
 	#else
-		
+		#if($uiComboxConfig.url)
+			$horn.addGlobal('componentSelects_url',$uiComboxConfig)
+		#end
 		#if($items)
 			$horn.addGlobal('componentSelects_static',$uiComboxConfig)
 		#end
@@ -5351,9 +6972,9 @@ csrf_token=${csrf_token}#end
     	#if("$!params.toolbar"=="true")
     	<div id="div.ztreeBtn_$!{params.name}"  name="div.ztreeBtn_$!{params.name}" class="ztree_toolbar u-ztree-toolbar">
 			<ul class="u-ztree-btn">
-			     	<li><a href="javascript:void(0)" id="expand_$!{params.name}" name="expand_$!{params.name}" ><i class="fa fa-expand"></i>展开</a></li>
-			     	<li><a href="javascript:void(0)" id="unexpand_$!{params.name}" name="unexpand_$!{params.name}"><i class="fa fa-compress"></i>收缩</a></li>
-			     	<li><a href="javascript:void(0)" id="refresh_$!{params.name}" name="refresh_$!{params.name}"><i class="fa fa-refresh"></i>刷新</a></li>
+			     	<li><a href="javascript:void(0)" id="expand_$!{params.name}" name="expand_$!{params.name}" ><i class="fa fa-expand"></i>#if("$!params.language"=="en_US"||"$!language"=="en_US")expand#else 展开 #end</a></li>
+			     	<li><a href="javascript:void(0)" id="unexpand_$!{params.name}" name="unexpand_$!{params.name}"><i class="fa fa-compress"></i>#if("$!params.language"=="en_US"||"$!language"=="en_US")unExpand#else 收缩 #end</a></li>
+			     	<li><a href="javascript:void(0)" id="refresh_$!{params.name}" name="refresh_$!{params.name}"><i class="fa fa-refresh"></i>#if("$!params.language"=="en_US"||"$!language"=="en_US")refresh#else 刷新 #end</a></li>
 		     </ul>
         </div>
     	#end
@@ -5391,3 +7012,103 @@ csrf_token=${csrf_token}#end
 		</div>
     </div>
 #end
+
+
+
+
+
+#macro(mieadZtree $params)
+	<div class="g-ztree-wrap">
+	   	#if("$!params.toolbar"=="true")
+    	<div id="div.ztreeBtn_$!{params.name}"  name="div.ztreeBtn_$!{params.name}" class="ztree_toolbar u-ztree-toolbar">
+			<ul class="u-ztree-btn">
+				 #if($params.buttons)
+    				#foreach($btn in $params.buttons)
+    			     	<li><a href="javascript:void(0)" id="$btn.id" name="$btn.name"><i class="fa $!btn.ico"></i>#if("$!params.language"=="en_US"||"$!language"=="en_US")expand#else $btn.name #end</a></li>
+    				#end
+				#end
+			</ul>
+        </div>
+    	#end
+	<div class="u-ztree"  name="$!{params.name}">
+		<div class="h_ztree" name="$!{params.name}" style="overflow: auto;">
+			<div  id="$!{params.id}"  class="ztree"></div>
+        </div>
+    </div>
+    </div>
+  <script type="text/javascript">
+	var mieadsetting = {    
+            data: {    
+                simpleData: {    
+                    enable: true  
+                }    
+            }    
+            ,async: {  
+			   #if($params.async)
+                 enable: $!{params.async},   
+				#else
+				    enable: false, 
+				#end
+				#if($params.url)
+                 url:"$!{params.url}",   
+				#end
+				#if($params.autoParam)
+                 autoParam:$!{params.autoParam},
+				#end
+				#if($params.otherParam)
+                 otherParam:$!{params.otherParam}, 
+				#end
+               type:"get",//默认post  
+            }  
+			,view:{
+			   #if($params.showLine)
+				showLine:$params.showLine,
+				#else
+				 showLine:false,
+				#end
+			}
+            ,callback:{  
+				#if($params.beforeAsync)
+                  beforeAsync: $params.beforeAsync,      // 异步加载事件之前得到相应信息    
+                #end
+	            #if($params.asyncSuccess)
+                  asyncSuccess: $params.asyncSuccess,//异步加载成功的fun    
+				#end  
+				#if($params.zTreeOnAsyncError)
+                  asyncError: $params.zTreeOnAsyncError,   //加载错误的fun  
+				#end  
+				#if($params.onClick)
+                   onClick:$params.onClick, //捕获单击节点之前的事件回调函数  
+				#end 
+				#if($params.beforeClick)
+                   beforeClick:$params.beforeClick //捕获单击节点之前的事件回调函数  
+				#end  
+            }
+			,check:{
+				#if($params.enableCheck)
+    				enable:true,
+    				chkStyle:"radio"
+				#end  
+			}
+        };   
+		
+		function treeRefresh(){
+			var treeObj = $.fn.zTree.getZTreeObj("$!{params.id}");
+			treeObj.refresh();
+		}
+		
+	  $(function(){
+	     var zNodes=[]; 
+		  $.fn.zTree.init($("#$!{params.id}"), mieadsetting, zNodes);    
+		   #if($params.buttons)
+    			#foreach($btn in $params.buttons)
+    				 $("#$!{btn.id}").click(function(){
+            		  	 $!btn.click;
+            		  });
+    			#end
+			#end
+	  });
+    </script>
+#end
+
+

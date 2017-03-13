@@ -55,6 +55,22 @@ public class AdClient implements Serializable{
 	/**状态  0停用 1运行中*/
 	@StatusCn(value={},dictId=DictEnum.ADCLIENTSTATUS_KEY)
 	private String status;
+	private Long groupId;
+	@DateToStr
+	private Date effectTime;
+	
+	public Date getEffectTime() {
+		return effectTime;
+	}
+	public void setEffectTime(Date effectTime) {
+		this.effectTime = effectTime;
+	}
+	public Long getGroupId() {
+		return groupId;
+	}
+	public void setGroupId(Long groupId) {
+		this.groupId = groupId;
+	}
 	public Long getId() {
 		return id;
 	}

@@ -7,6 +7,23 @@ public interface DAO<T>{
 	public static final String ORDERTYPE_DESC="desc";
 	public static final String ORDERTYPE_ASC="asc";
 	/**
+	 * 分页查询，并根据字段进行排序
+	 * @param t
+	 * @param pageIndex
+	 * @param rows
+	 * @param orderType
+	 * @param orderColumn
+	 * @return
+	 */
+	AdPager<T> queryPageInOrder(T t,int pageIndex,int rows,OrderType orderType,String orderColumn);
+	/**
+	 * 查询某个字段为空
+	 * @param t
+	 * @param proNames
+	 * @return
+	 */
+	Collection<T> queryIsEmpty(String... proNames);
+	/**
 	 * 分布查询
 	 * @param t
 	 * @param pageIndex

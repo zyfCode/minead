@@ -31,5 +31,7 @@ public interface AdClientService extends MadService {
 	void updateIp(AdClientIp adClientIp);
 	InitTaskConnectResponse initConnect(InitTaskConnectRequest connectRequest,String currentIp);
 	TaskResonse hearInfo(TaskRequest bean,String currentIp);
+	
+	void resetGroup(Long id);
 	 
 }

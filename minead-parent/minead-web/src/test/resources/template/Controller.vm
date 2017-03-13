@@ -1,0 +1,44 @@
+
+/**
+ * 说明:
+ */
+@Controller
+@RequestMapping("/${contollerMapping}")
+public class ${domain}Controller {
+	@Autowired
+	private ${domain}Service service;
+	
+	
+	@RequestMapping("/delete${suffix}")
+	@ResponseBody
+	public Object delete${suffix}  (${domain} record){
+		service.delete(record.getId());
+		return new AdResponse();
+	}
+	@RequestMapping("/add${suffix}")
+	@ResponseBody
+	public Object add${suffix} (${domain}Valid record){
+		${domain} w = new ${domain}();
+		AdCommonsUtil.copyProperties(w, record);
+		service.insert(w);
+		return new AdResponse();
+	}
+	
+	@RequestMapping("/update${suffix}")
+	@ResponseBody
+	public Object update${suffix}(${domain}Valid record){
+		${domain} w = new ${domain}();
+		AdCommonsUtil.copyProperties(w, record);
+		service.update(w);
+		return new AdResponse();
+	}
+	@RequestMapping("/list${suffix}.json")
+	@ResponseBody
+	public Object listTask${suffix}(${domain} record,Integer pageNo,Integer pageSize){
+		if(record!=null){
+			AdCommonsUtil.proStrEmpytToNull(record);
+		}
+		AdPager<${domain}Vo> queryPager = service.queryPager(record, pageNo, pageSize);
+		return queryPager;
+	}
+}

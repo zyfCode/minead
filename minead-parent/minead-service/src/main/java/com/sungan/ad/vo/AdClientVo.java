@@ -30,7 +30,35 @@ public class AdClientVo implements Serializable{
 	private String status;
 	private String sysOs;
 	private String statusCn;
+	private Long groupId;
+	private String groupName;
+	private Date effectTime;
+	private String effectTimeStr;
 	
+	public String getGroupName() {
+		return groupName;
+	}
+	public void setGroupName(String groupName) {
+		this.groupName = groupName;
+	}
+	public String getEffectTimeStr() {
+		return effectTimeStr;
+	}
+	public void setEffectTimeStr(String effectTimeStr) {
+		this.effectTimeStr = effectTimeStr;
+	}
+	public Date getEffectTime() {
+		return effectTime;
+	}
+	public void setEffectTime(Date effectTime) {
+		this.effectTime = effectTime;
+	}
+	public Long getGroupId() {
+		return groupId;
+	}
+	public void setGroupId(Long groupId) {
+		this.groupId = groupId;
+	}
 	@Override
 	public String toString() {
 		return "AdClientVo [id=" + id + ", name=" + name + ", mac=" + mac + ", currentIp=" + currentIp + ", preIp="

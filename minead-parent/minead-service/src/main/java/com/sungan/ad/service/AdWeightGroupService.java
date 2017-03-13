@@ -17,4 +17,9 @@ public interface AdWeightGroupService extends  MadService{
 	void update(AdWeightGroup task);
 	 List<AdWeightGroupVo> queryList(AdWeightGroup condition);
 	AdPager<AdWeightGroupVo> queryPager(AdWeightGroup condition, int pageIndex, int rows);
+	/**
+	 * 查询根节点
+	 * @return
+	 */
+	 List<AdWeightGroupVo> queryRoot();
 }

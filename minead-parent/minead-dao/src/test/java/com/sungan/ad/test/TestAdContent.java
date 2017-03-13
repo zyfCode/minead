@@ -24,8 +24,10 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import com.sungan.ad.cmmon.test.BaseTest;
 import com.sungan.ad.dao.base.AdClientDAO;
 import com.sungan.ad.dao.base.AdDAO;
+import com.sungan.ad.dao.base.AdWeightGroupDAO;
 import com.sungan.ad.domain.AdClient;
 import com.sungan.ad.domain.AdContent;
+import com.sungan.ad.domain.AdWeightGroup;
 
 /**
  * 说明:
@@ -53,14 +55,27 @@ public class TestAdContent extends BaseTest{
 	@Autowired
 	protected HibernateTemplate template;
 	
+	@Autowired
+	private AdWeightGroupDAO adWeightGroupDAO;
+	
+	@Test
+	public void testGroup(){
+//		AdWeightGroup group = new AdWeightGroup();
+//		group.setGroupName("hello");
+//		adWeightGroupDAO.insert(group);
+		AdWeightGroup find = adWeightGroupDAO.find(1L);
+		System.out.println(find);
+	}
+	
+	
 	@Test
 	public void testAdClientValid() {
 //		Validator validator = Validation.buildDefaultValidatorFactory()  
 //                .getValidator(); 
-		ValidatorFactory buildDefaultValidatorFactory = Validation.buildDefaultValidatorFactory();
-		Validator validator = buildDefaultValidatorFactory.getValidator();
-		Set<ConstraintViolation<TestValiBean>> validate = validator.validate(new TestValiBean());
-		System.out.println(validate);
+//		ValidatorFactory buildDefaultValidatorFactory = Validation.buildDefaultValidatorFactory();
+//		Validator validator = buildDefaultValidatorFactory.getValidator();
+//		Set<ConstraintViolation<TestValiBean>> validate = validator.validate(new TestValiBean());
+//		System.out.println(validate);
 	}
 	@Test
 	public void testAdClientIp() {
@@ -119,6 +134,16 @@ public class TestAdContent extends BaseTest{
 
 	public void setAdDAO(AdDAO adDAO) {
 		this.adDAO = adDAO;
+	}
+
+
+	public AdWeightGroupDAO getAdWeightGroupDAO() {
+		return adWeightGroupDAO;
+	}
+
+
+	public void setAdWeightGroupDAO(AdWeightGroupDAO adWeightGroupDAO) {
+		this.adWeightGroupDAO = adWeightGroupDAO;
 	}
 	
 	

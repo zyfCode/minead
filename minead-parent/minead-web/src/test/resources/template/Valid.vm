@@ -1,0 +1,6 @@
+package ${package}.controller.validBean;
+/**
+ * 说明:
+ */
+public class ${domain}Valid  extends ${domain}{
+}

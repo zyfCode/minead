@@ -1,0 +1,147 @@
+${vcKey}@screen({"title":"客户端查询"})  
+    ${vcKey}@form({"name":"${contollerMapping}searchForm"})  
+        ${vcKey}@panel({"title":"查询条件"})  
+			#foreach( $something in $beanPro )
+           ${vcKey}textfield({"label":"$something ", "name":"$something ","value":"","defValue":""})  
+		   	#end
+            ${vcKey}button_group({"buttons":[  
+                {"label":"查询","event":"queryData()","className":"u-btn-primary"}  
+            ]})  
+        ${vcKey}end  
+    ${vcKey}end  
+    ${vcKey}datagrid({  
+        "id":"${contollerMapping}Table",  
+        "name":"${contollerMapping}Table",  
+        "bindFormName":"${contollerMapping}searchForm",  
+        "title":"查询列表",    
+        "autoLoad":true,  
+        "url":"//${contollerMapping}//list${suffix}.json",  
+		   "buttons":[{"label":"新增","cls":"add","event":"add()"} ],
+        "items":[ 
+#foreach( $something in $beanPro )            {"name":"$something",  
+            "text":"$something",  
+            "hAlign":"center",  
+            "tAlign":"center"  
+            },
+
+#end
+
+			{  
+                "name":"operation",  
+                "text":"操作",  
+                "hAlign":"center",  
+                "tAlign":"center",  
+                "hidden":false,  
+                "width":"200",  
+                "buttons":[{"label":"修改","event":"edit"},{"label":"删除","event":"del"}]
+			}
+        ],  
+        "numbercolumn":"true",  
+        "pageConfig":{"pageSize":10,"pageNo":1},  
+        "rowSelect":"false",  
+        "hasPage":"true",  
+        "events":[{"event":"rowClick","function":"queryTableClick"},  
+                 {"event":"rowDblclick","function":"queryTableDbClick"}]  
+       })  
+            
+    ${vcKey}@window({"title":"编辑窗口", "name":"${contollerMapping}Edit", "width":"750", "height":"250",  
+            "buttons":[  
+                {"label":"提交","event":"saveData()","className":"u-btn-primary"},  
+                {"label":"重置","event":"resetDataForm()"}  
+            ]})  
+        ${vcKey}@form({"name":"${contollerMapping}EditForm","url":""})  
+            ${vcKey}@panel({})  
+			#foreach( $something in $beanPro )  
+                ${vcKey}textfield({"label":"$something", "name":"$something","value":"","defValue":"","check":"required"})  
+			  #end
+			  ${vcKey}end  
+        ${vcKey}end  
+    ${vcKey}end  
+	
+	
+	    ${vcKey}@window({"title":"添加", "name":"${contollerMapping}Add", "width":"750", "height":"250",  
+            "buttons":[  
+                {"label":"提交","event":"add()","className":"u-btn-primary"},  
+                {"label":"重置","event":"resetDataForm()"}  
+            ]})  
+        ${vcKey}@form({"name":"${contollerMapping}AddForm","url":""})  
+            ${vcKey}@panel({})  
+               #foreach( $something in $beanPro )  
+                ${vcKey}textfield({"label":"$something", "name":"$something","value":"","defValue":"","check":"required"})  
+			  #end
+            ${vcKey}end  
+        ${vcKey}end  
+    ${vcKey}end  
+${vcKey}end  
+  
+  
+${vcKey}jscode()  
+    var action = "";  
+  
+      
+    function add(rowData){  
+        Horn.getComp("${contollerMapping}AddForm").reset();  
+        Horn.getComp("${contollerMapping}Add").show();  
+    }  
+      
+    function edit(rowData){  
+        rowDatarowData = rowData || Horn.getComp('${contollerMapping}Table').getSelecteds().length && (Horn.getComp('${contollerMapping}Table').getSelecteds())[0];  
+        Horn.getComp("${contollerMapping}EditForm").setValues(rowData.rowdata);  
+        Horn.getComp("${contollerMapping}Edit").show();  
+    }  
+      
+    function del(rowData){  
+	  Horn.Msg.confirm("确认","这是一条确认信息",function(){  
+		 	 rowDatarowData = rowData || Horn.getComp('${contollerMapping}Table').getSelecteds().length && (Horn.getComp('${contollerMapping}Table').getSelecteds())[0];  
+               var id =  rowData.rowdata.id;  
+        	   	$.post("${imageServer}/${contollerMapping}/delete${suffix}",{"id":id},function(backData){
+            		if(backData){
+            			if(backData.success){
+            				 Horn.getComp("${contollerMapping}Table").load();  
+            				   Horn.Tip.info("删除成功");  
+            			 }else{
+            				Horn.Tip.warn(backData.errorMesg); 
+            			 }
+            		 }
+            	},"json")
+        },function(){  
+            log("确认框的取消执行了")  
+        });
+    }  
+	
+	function add(){
+		Horn.getComp("${contollerMapping}Add").hide();  
+		var data = $("form[name='${contollerMapping}AddForm']").serializeJSON();
+    	$.post("${imageServer}/${contollerMapping}/add${suffix}",data,function(backData){
+    		if(backData){
+    			if(backData.success){
+    				 Horn.getComp("${contollerMapping}Table").load();  
+    				 Horn.Tip.success("添加成功"); 
+    			 }else{
+    				Horn.Tip.warn(backData.errorMesg); 
+    			 }
+    		 }
+    	},"json")
+	}
+	
+    function saveData() {  
+		Horn.getComp("${contollerMapping}Edit").hide();  
+    		//JSON.stringify($("form[name='${contollerMapping}EditForm']").serializeJSON());
+    	var data = $("form[name='${contollerMapping}EditForm']").serializeJSON();
+    	$.post("${imageServer}/${contollerMapping}/update${suffix}",data,function(backData){
+    		if(backData){
+    			if(backData.success){
+    				 Horn.getComp("${contollerMapping}Table").load();  
+    				 Horn.Tip.success("更新成功"); 
+    			 }else{
+    				Horn.Tip.warn(backData.errorMesg); 
+    			 }
+    		 }
+    	},"json")
+    }  
+      
+      
+    function queryData() {  
+   		 Horn.getComp("${contollerMapping}Table").load();  
+    }  
+${vcKey}end  

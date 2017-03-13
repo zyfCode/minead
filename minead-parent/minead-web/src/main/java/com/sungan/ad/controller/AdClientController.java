@@ -5,6 +5,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -20,10 +23,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.hundsun.jresplus.common.util.StringUtil;
 import com.sungan.ad.commons.AdCommonsUtil;
 import com.sungan.ad.commons.AdConstants;
+import com.sungan.ad.commons.AdResponse;
+import com.sungan.ad.controller.validBean.AdClientValid;
 import com.sungan.ad.dao.AdPager;
 import com.sungan.ad.domain.AdClient;
+import com.sungan.ad.exception.AdRuntimeException;
 import com.sungan.ad.expand.common.bean.InitTaskConnectRequest;
 import com.sungan.ad.expand.common.bean.InitTaskConnectResponse;
 import com.sungan.ad.expand.common.bean.TaskRequest;
@@ -45,6 +52,19 @@ public class AdClientController {
 	@Autowired
 	private AdClientService adClientService;
 	
+	@RequestMapping("/resetGroup")
+	@ResponseBody
+	public Object  resetGroup(Long id){
+		adClientService.resetGroup(id);
+		return new AdResponse();
+	}
+	
+	@RequestMapping("/deleteadclient")
+	@ResponseBody
+	public Object deleteadclient  (AdClient record){
+		adClientService.delete(record.getId());
+		return new AdResponse();
+	}
 	@RequestMapping("/list.json")
 	@ResponseBody
 	public AdPager<AdClientVo>  listClient(AdClient condition,Integer pageSize,Integer pageNo ){
@@ -67,7 +87,14 @@ public class AdClientController {
 		TaskResonse hearInfo = adClientService.hearInfo(bean,remoteIpAddress);
 		request.setAttribute(AdConstants.JSONRESPONSE,hearInfo);
 	}
-	
+	@RequestMapping("/addadclient")
+	@ResponseBody
+	public Object addadclient (AdClientValid record){
+		AdClient w = new AdClient();
+		AdCommonsUtil.copyProperties(w, record);
+		adClientService.insert(w);
+		return new AdResponse();
+	}
 	
 	@RequestMapping("/apploader")
 	@ResponseBody
@@ -99,6 +126,23 @@ public class AdClientController {
 				break;
 			}
 		}
+	}
+	@RequestMapping("/updateadclient")
+	@ResponseBody
+	public Object updateadclient(AdClientValid record,String effectTimeStr){
+		AdClient w = new AdClient();
+		AdCommonsUtil.copyProperties(w, record);
+		if(StringUtil.isNotBlank(effectTimeStr)){
+			try {
+				SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+				Date parse = format.parse(effectTimeStr);
+				w.setEffectTime(parse);
+			} catch (ParseException e) {
+				throw new AdRuntimeException("日期解析异常!");
+			}
+		}
+		adClientService.update(w);
+		return new AdResponse();
 	}
 	
 	@RequestMapping("/initconnector")

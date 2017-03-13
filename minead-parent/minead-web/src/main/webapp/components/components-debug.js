@@ -2,6 +2,7 @@
  * 修改日期                        修改人员        修改说明
  * -----------------------------------------------------------------------
  * 2014-10-11		wangyb	STORY #10009 【TS:201410110004-JRESPlus-海外发展部-胡琦-根据patch20140930_2(jresui1.0.6)】 ,在空参的时候初始化参数
+ * 2016-10-27       王兰        需求#26828 [研发中心/内部需求]当textfield配置event事件，但是没有配置function时，会报错
  * -----------------------------------------------------------------------
  */
 /**
@@ -280,11 +281,14 @@ var Horn = Horn || {
         		 var index = key.indexOf(str1);
         		 var endindex=key.lastIndexOf(str2);
         		 if((key.length == endindex + str2.length)&&(index == 0)){
-        			 var elitem=cache[key][0].el.data("comp_el_id");
-        			 var name=cache[key][0].name;
-        			 delete cache["_el_comp_cache"][elitem];
-        			 delete cache["_id_comp_cache"][name];
-        			 delete cache[key];
+        			 if(cache[key]){
+        				 var elitem=cache[key][0].el.data("comp_el_id");
+            			 var name=cache[key][0].name;
+            			 delete cache["_el_comp_cache"][elitem];
+            			 delete cache["_id_comp_cache"][name];
+            			 delete cache[key];
+        			 }
+        			
         		 }
         	}
         	
@@ -679,9 +683,12 @@ var Horn = Horn || {
     					eventTarget.bind(eventName.substring(2), params, function(e){
     						//防止指针死循环
     						var _params = [];
-    						$.each(params, function(i, p){
-    							_params.push(p);
-    						});
+    						//需求#26828 [研发中心/内部需求]当textfield配置event事件，但是没有配置function时，会报错
+    						if(params){
+	    						$.each(params, function(i, p){
+	    							_params.push(p);
+	    						});
+    						}
     						//e.comp 上注册horn对象   9520 
     						var hornObj = _this;
     						e.comp = hornObj;
@@ -2013,6 +2020,7 @@ Date.prototype.format=function(fmt) {
  * 2016-9-18            刘蒙              Bug	#25530 validate 正浮点数校验规则decmal1不能校验正整数
  * 2016-9-23    刘蒙            BUG  #27602 浮点数不能输入整数，但其它比如正浮点数、负浮点数可以输入整数，规则不统一
  * 2016-9-27    刘蒙            BUG  #27596 数字验证规则num，输入整数后再添加一个英文输入的句号，没有错误提示
+ * 2017-01-05   周智星        验证提示信息新增支持国际化功能
  * -------------------------------------------------------------
  */
 /**
@@ -2214,6 +2222,171 @@ Horn.Validate = {
 	        else{
 	            _this.removeError.call(_this, comp);
 	        }
+    },
+    regexEFn : function(name){
+    	var regexECN = {
+            intege : "^-?[1-9]\\d*$|^0$", // 整数
+            intege1 : "^[1-9]\\d*$", // 正整数
+            intege2 : "^-[1-9]\\d*$", // 负整数
+          //  num : "^([+-]?)\\d*\\.?\\d*$", // 数字
+          //  #27596 数字验证规则num，输入整数后再添加一个英文输入的句号，没有错误提示
+            num:"^\\d+$",//数字
+            //num1 : "^[1-9]\\d*|0$", // 非负整数   （正整数 + 0）
+            //num2 : "^-[1-9]\\d*|0$", //非正整数    （ 负整数 + 0）
+            //#26274 textfield添加校验check为num1（非负整数）和num2（非正整数），先输入数字再输入字母时，仍然可以验证通过
+            num1 : "^[1-9]\\d*$|^0$", // 非负整数   （正整数 + 0）
+            num2 : "^-[1-9]\\d*$|^0$", //非正整数    （ 负整数 + 0）
+           // decmal : "^([+-]?)\\d*\\.\\d+$", // 浮点数
+            //#27602 浮点数不能输入整数，但其它比如正浮点数、负浮点数可以输入整数，规则不统一,浮点数包括整数
+            decmal  : "^(-?\\d+)(\\.\\d+)?$",// 浮点数
+          // decmal1 : "^[1-9]\\d*.\\d*|0.\\d*[1-9]\\d*$", // 正浮点数
+            decmal1 :"^(([0-9]+\\.[0-9]*[1-9][0-9]*)|([0-9]*[1-9][0-9]*\\.[0-9]+)|([0-9]*[1-9][0-9]*))$",// 正浮点数         Bug	#25530 validate 正浮点数校验规则decmal1不能校验正整数
+            decmal2 : "^-([1-9]\\d*.\\d*|0.\\d*[1-9]\\d*)$", // 负浮点数
+            decmal3 : "^-?([1-9]\\d*.\\d*|0.\\d*[1-9]\\d*|0?.0+|0)$", // 浮点数
+            //#24700 非负浮点数校验若是输入-0.4，未出现校验信息
+            decmal4 : "^\\d+(\\.\\d+)?$", // 非负浮点数（正浮点数  + 0）
+          //  decmal4 : "^[1-9]\\d*.\\d*|0.\\d*[1-9]\\d*|0?.0+|0$",
+            // 非负浮点数（正浮点数
+            // + 0）
+            decmal5 : "^(-([1-9]\\d*.\\d*|0.\\d*[1-9]\\d*))|0?.0+|0$", // 非正浮点数（负浮点数
+            // + 0）
+
+            email : "^(\\w+((-\\w+)|(\\.\\w+))*\\@[A-Za-z0-9]+((\\.|-)[A-Za-z0-9]+)*\\.[A-Za-z0-9]+){0,1}$", // 邮件
+            color : "^[a-fA-F0-9]{6}$", // 颜色
+            url : "^http[s]?:\\/\\/([\\w-]+\\.)+[\\w-]+([\\w-./?%&=]*)?$", // url
+            chinese : "^[\\u4E00-\\u9FA5\\uF900-\\uFA2D]+$", // 仅中文
+            ascii : "^[\\x00-\\xFF]+$", // 仅ACSII字符
+            zipcode : "^\\d{6}$", // 邮编
+            mobile : "^(13|15|18|17)[0-9]{9}$", // 手机
+            ip4 : "^(25[0-5]|2[0-4]\\d|[0-1]\\d{2}|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|[0-1]\\d{2}|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|[0-1]\\d{2}|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|[0-1]\\d{2}|[1-9]?\\d)$", // ip地址
+            notempty : "^\\S+$", // 非空
+            picture : "(.*)\\.(jpg|bmp|gif|ico|pcx|jpeg|tif|png|raw|tga)$", // 图片
+            rar : "(.*)\\.(rar|zip|7zip|tgz)$", // 压缩文件
+            date : "^\\d{4}\\d{1,2}\\d{1,2}$", // 日期
+            qq : "[1-9][0-9]{4,11}", // QQ号码
+            tel : "^(([0\\+]\\d{2,3}-)?(0\\d{2,3})-)?(\\d{7,8})(-(\\d{3,}))?$", // 电话号码的函数(包括验证国内区号,国际区号,分机号)
+            username : "^\\w+$", // 用来用户注册。匹配由数字、26个英文字母或者下划线组成的字符串
+            letter : "^[A-Za-z]+$", // 字母
+            letter_u : "^[A-Z]+$", // 大写字母
+            letter_l : "^[a-z]+$", // 小写字母
+            required : "^\\s*\\S[\\S\\s]*$", // 非空    BUG #7327 
+            Message : "输入格式不正确",
+            integeMessage : "输入的不是整数格式",
+            intege1Message : "输入的不是正整数格式",
+            intege2Message : "输入的不是负整数格式",
+            requiredMessage : "当前输入不能为空",
+            emailMessage : "邮件地址不正确",
+            zipcodeMessage : "邮编输入格式不正确",
+            dateMessage : "日期格式不正确",
+            qqMessage : "QQ号码格式不正确",
+            telMessage : "电话号码格式不正确",
+            mobileMessage : "移动电话格式不正确",
+            decmalMessage : "只能输入浮点数格式",
+            decmal1Message : "只能输入正浮点数格式",
+            decmal2Message : "只能输入负浮点数格式",
+            decmal3Message : "只能输入浮点数格式",
+            decmal4Message : "只能输入非负浮点数格式",
+            decmal5Message : "只能输入非正浮点数格式",
+            colorMessage : "只能输入颜色格式",
+            urlMessage : "只能输入url格式",
+            chineseMessage : "只能输入中文格式",
+            asciiMessage : "只能输入ACSII字符格式",
+            ip4Message : "只能输入ip4地址格式",
+            pictureMessage : "只能输入图片格式",
+            rarMessage : "只能输入压缩文件格式",
+
+            numMessage : "只能输入数字格式",
+            num1Message : "只能输入非负整数数字格式",
+            num2Message : "只能输入非正整数数字格式",
+            letterMessage : "只能输入字母格式",
+            letter_uMessage : "只能输入大写字母格式",
+            letter_lMessage : "只能输入小写字母格式",
+            usernameMessage :"只能输入由数字、26个英文字母或者下划线组成的字符串"
+        };
+    	var regexEEN = {
+                intege : "^-?[1-9]\\d*$|^0$", // 整数
+                intege1 : "^[1-9]\\d*$", // 正整数
+                intege2 : "^-[1-9]\\d*$", // 负整数
+              //  num : "^([+-]?)\\d*\\.?\\d*$", // 数字
+              //  #27596 数字验证规则num，输入整数后再添加一个英文输入的句号，没有错误提示
+                num:"^\\d+$",//数字
+                //num1 : "^[1-9]\\d*|0$", // 非负整数   （正整数 + 0）
+                //num2 : "^-[1-9]\\d*|0$", //非正整数    （ 负整数 + 0）
+                //#26274 textfield添加校验check为num1（非负整数）和num2（非正整数），先输入数字再输入字母时，仍然可以验证通过
+                num1 : "^[1-9]\\d*$|^0$", // 非负整数   （正整数 + 0）
+                num2 : "^-[1-9]\\d*$|^0$", //非正整数    （ 负整数 + 0）
+               // decmal : "^([+-]?)\\d*\\.\\d+$", // 浮点数
+                //#27602 浮点数不能输入整数，但其它比如正浮点数、负浮点数可以输入整数，规则不统一,浮点数包括整数
+                decmal  : "^(-?\\d+)(\\.\\d+)?$",// 浮点数
+              // decmal1 : "^[1-9]\\d*.\\d*|0.\\d*[1-9]\\d*$", // 正浮点数
+                decmal1 :"^(([0-9]+\\.[0-9]*[1-9][0-9]*)|([0-9]*[1-9][0-9]*\\.[0-9]+)|([0-9]*[1-9][0-9]*))$",// 正浮点数         Bug	#25530 validate 正浮点数校验规则decmal1不能校验正整数
+                decmal2 : "^-([1-9]\\d*.\\d*|0.\\d*[1-9]\\d*)$", // 负浮点数
+                decmal3 : "^-?([1-9]\\d*.\\d*|0.\\d*[1-9]\\d*|0?.0+|0)$", // 浮点数
+                //#24700 非负浮点数校验若是输入-0.4，未出现校验信息
+                decmal4 : "^\\d+(\\.\\d+)?$", // 非负浮点数（正浮点数  + 0）
+              //  decmal4 : "^[1-9]\\d*.\\d*|0.\\d*[1-9]\\d*|0?.0+|0$",
+                // 非负浮点数（正浮点数
+                // + 0）
+                decmal5 : "^(-([1-9]\\d*.\\d*|0.\\d*[1-9]\\d*))|0?.0+|0$", // 非正浮点数（负浮点数
+                // + 0）
+
+                email : "^(\\w+((-\\w+)|(\\.\\w+))*\\@[A-Za-z0-9]+((\\.|-)[A-Za-z0-9]+)*\\.[A-Za-z0-9]+){0,1}$", // 邮件
+                color : "^[a-fA-F0-9]{6}$", // 颜色
+                url : "^http[s]?:\\/\\/([\\w-]+\\.)+[\\w-]+([\\w-./?%&=]*)?$", // url
+                chinese : "^[\\u4E00-\\u9FA5\\uF900-\\uFA2D]+$", // 仅中文
+                ascii : "^[\\x00-\\xFF]+$", // 仅ACSII字符
+                zipcode : "^\\d{6}$", // 邮编
+                mobile : "^(13|15|18|17)[0-9]{9}$", // 手机
+                ip4 : "^(25[0-5]|2[0-4]\\d|[0-1]\\d{2}|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|[0-1]\\d{2}|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|[0-1]\\d{2}|[1-9]?\\d)\\.(25[0-5]|2[0-4]\\d|[0-1]\\d{2}|[1-9]?\\d)$", // ip地址
+                notempty : "^\\S+$", // 非空
+                picture : "(.*)\\.(jpg|bmp|gif|ico|pcx|jpeg|tif|png|raw|tga)$", // 图片
+                rar : "(.*)\\.(rar|zip|7zip|tgz)$", // 压缩文件
+                date : "^\\d{4}\\d{1,2}\\d{1,2}$", // 日期
+                qq : "[1-9][0-9]{4,11}", // QQ号码
+                tel : "^(([0\\+]\\d{2,3}-)?(0\\d{2,3})-)?(\\d{7,8})(-(\\d{3,}))?$", // 电话号码的函数(包括验证国内区号,国际区号,分机号)
+                username : "^\\w+$", // 用来用户注册。匹配由数字、26个英文字母或者下划线组成的字符串
+                letter : "^[A-Za-z]+$", // 字母
+                letter_u : "^[A-Z]+$", // 大写字母
+                letter_l : "^[a-z]+$", // 小写字母
+                required : "^\\s*\\S[\\S\\s]*$", // 非空    BUG #7327 
+
+                Message : "Format is not correct",
+                integeMessage : "Not integer format",
+                intege1Message : "Not a positive integer format",
+                intege2Message : "Not negative integer format",
+                requiredMessage : "Not empty",
+                emailMessage : "Mail is not correct",
+                zipcodeMessage : "ZIP format error",
+                dateMessage : "Date format error",
+                qqMessage : "QQ number format error",
+                telMessage : "Telephone format error",
+                mobileMessage : "Mobile format error",
+                decmalMessage : "Enter floating point",
+                decmal1Message : "Only enter positive floating-point",
+                decmal2Message : "Negative float can only be entered",
+                decmal3Message : "Can only enter floating point",
+                decmal4Message : "Enter the non negative floating point number",
+                decmal5Message : "Enter non positive floating point",
+                colorMessage : "Enter the color format",
+                urlMessage : "Enter the URL",
+                chineseMessage : "Enter Chinese format",
+                asciiMessage : "Enter ACSII character format",
+                ip4Message : "Enter the IP4 address format",
+                pictureMessage : "Enter the picture format",
+                rarMessage : "Input file format",
+                numMessage : "Enter the digital format",
+                num1Message : "Enter only non negative integer numeric",
+                num2Message : "Enter non positive integer numbers",
+                letterMessage : "Only input letter format",
+                letter_uMessage : "Capital letters only",
+                letter_lMessage : "Input lowercase letters",
+                usernameMessage :"You can only enter a string of numbers, 26 English letters, or an underscore"
+            };
+    	if(Horn.Validate.language&&Horn.Validate.language=="en_US"){
+    		return regexEEN[name];
+    	}else{
+    		return regexECN[name];
+    	}
     },
     /**
      * 正则校验规则 @ intege 校验规则名称 @ Message 默认返回消息 @ 校验规则+Message 校验规则对应的返回值<br>
@@ -2703,11 +2876,11 @@ Horn.Validate = {
                 continue ;
             }
             var msg = '';
-            if (this.regexEnum[name]) {// 正则表达式进行校验
-                isValid = (new RegExp(this.regexEnum[name],
+            if (this.regexEFn(name)) {// 正则表达式进行校验
+                isValid = (new RegExp(this.regexEFn(name),
                     item['regexparam'])).test(value);
-                msg = item['message'] || this.regexEnum[name + 'Message']
-                    || this.regexEnum['Message'];
+                msg = item['message'] || this.regexEFn(name + 'Message')
+                    || this.regexEFn('Message');
             } else if (this.funcEnum[name]) {// 校验方法进行校验
                 isValid = this.funcEnum[name].apply(display, item.params);
                 msg = item['message'] || this.funcEnum[name + 'Message']
@@ -2969,17 +3142,24 @@ Horn.ButtonPanel = Horn.extend(Horn.Base,{
      * @name Horn.ButtonPanel#setEnable
      * @param {string} name 按纽的名字
      * @param {boolean} enabled 如果为true设置为可用，设置为false，设置不可用,此参数不传入时默认为true;
+     * @param {boolean}isUseId 是否使用id,默认false
      * @return {void}
      * @example
-     * Horn.getComp("buttonPaneName").setEnable("btnName",false);
+     * ##button_panel和button_panel_ex用法一致
+     * #button_group({"name":"buttonPaneName","buttons":[{"label":"添加","className":"u-btn-success","name":"btnName","id":"btnId"},{"label":"删除选中项","className":"u-btn-warning"}]})
+     * #jscode()
+     * 		Horn.getComp("buttonPaneName").setEnable("btnName",false);##根据name
+     * 		Horn.getComp("buttonPaneName").setEnable("btnId",false,true);##根据id
+     * #end
      */
-    setEnable:function(name,enabled){
+    setEnable:function(name,enabled,isUseId){
     	//BUG #6643 [button_panel]setEnable设置一个不存在的name
+    	var tmpUseId = isUseId+"";
     	if(typeof enabled !='boolean'){
     		Horn.Tip.info("enabled属性只能是布尔型！");
     		return;
     	}
-        var button = this.el.find("button[name="+name+"]");
+        var button = tmpUseId=="true"?this.el.find("button[id="+name+"]"):this.el.find("button[name="+name+"]");
         if(button.length==0){
         	Horn.Tip.info(name+",不存在！");
         	return;
@@ -2991,7 +3171,58 @@ Horn.ButtonPanel = Horn.extend(Horn.Base,{
             button.addClass("disabled");
             button.attr("disabled", "disabled");
         }
-    }
+    },
+	/**
+	 * 显示按钮组件的某个按钮(注！1.按钮的name属性必须填写 2.版本必须2.0.8或以上版本）
+	 * 
+	 * @name Horn.ButtonPanel#showButton
+	 * @param {String}name
+	 *            按钮名称
+	 * @param {boolean}isUseId 是否使用id,默认false
+	 * @function
+	 * @return void
+	 * @example
+	 * ##button_panel和button_panel_ex用法一致
+	 * #button_group({"name":"buttonPaneName","buttons":[{"label":"添加","className":"u-btn-success","name":"btnName","id":"btnId"},{"label":"删除选中项","className":"u-btn-warning"}]})
+     * #jscode()
+     * 		Horn.getComp("buttonPaneName").showButton("btnName");##根据name
+     * 		Horn.getComp("buttonPaneName").showButton("btnId",true);##根据id
+     * #end
+	 */
+	showButton : function(name,isUseId) {
+    	var tmpUseId = isUseId+"";
+		this.el.children("button").each(function(index,element){
+			var btnName = tmpUseId=="true"?$(this).attr("id"):$(this).attr("name");
+			if(btnName==name){
+				$(this).show();
+			}
+		});
+	},/**
+	 * 隐藏按钮组件的某个按钮(注！1.按钮的name属性必须填写 2.版本必须2.0.8或以上版本)
+	 * 
+	 * @name Horn.ButtonPanel#hideButton
+	 * @param {String}name
+	 *            按钮名称
+	 * @param {boolean}isUseId 是否使用id,默认false
+	 * @function
+	 * @return void
+	 * @example 
+	 * ##button_panel和button_panel_ex用法一致
+	 * #button_group({"name":"buttonPaneName","buttons":[{"label":"添加","className":"u-btn-success","name":"btnName","id":"btnId"},{"label":"删除选中项","className":"u-btn-warning"}]})
+     * #jscode()
+     * 		Horn.getComp("buttonPaneName").hideButton("btnName");##根据name
+     * 		Horn.getComp("buttonPaneName").hideButton("btnId",true);##根据id
+     * #end
+	 */
+	hideButton : function(name,isUseId) {
+		var tmpUseId = isUseId+"";
+		this.el.children("button").each(function(index,element){
+			var btnName = tmpUseId=="true"?$(this).attr("id"):$(this).attr("name");
+			if(btnName==name){
+				$(this).hide();
+			}
+		});
+	}
 });
 Horn.regUI("div.h_btndiv",Horn.ButtonPanel) ;
 Horn.regUI("div.hc_button-group",Horn.ButtonPanel) ;
@@ -3053,6 +3284,14 @@ Horn.regUI("div.hc_button-group",Horn.ButtonPanel) ;
  * 2016-9-19    王兰          提供单行刷新数据updateRow()方法  需求#24674 【TS:201608240391-JRESPlus-经纪业委会（经纪）-施秀飞-【需求描述】<br>2.datagrid增删改支持只单行刷新
  * 2016-9-20    王兰          提供按住shift键，可以选中多行
  * 2016-9-26    王兰          bug#27978 需求24674--datagrid调用updateRow(rowData,rowId)后，再调用getselects获取选中数据，内容没改变
+ * 2016-11-4    王亚男        需求#27094 datagrid中loaddata后表格下方没有边框线
+ * 2016-11-30   周智星        新增autoPageSize属性，根据表格高度自动计算pageSize大小
+ * 2016-12-01   周智星        需求#28550 【TS:201611300664-JRESPlus-内部客户-胡文淑-UI的datagrid控件需要增加一个行高属性
+ * 2016-12-12   周智星        API上放开getRowData方法
+ * 2016-12-21   王兰          江志伟提出，排除key值不是数字的情况，兼容用户自己写的类似Array.prototype.Remove=function(val){}方法
+ * 2016-12-23   刘蒙         需求#29660 【TS:201612220314-JRESPlus-资管业委会（资管）-王永良-【需求描述】dataGrid中，目前使用items加载数据能够获取选中行的提交值】
+ * 2016-12-24   王兰         bug#36910 需求28178--datagrid控件frozenHead设置为true是，列设置少点，然后拖动列，再调用loaddata方法加载数据，列头与列错位
+ * 2017-01-03   周智星        29920 需求36300-在设置trHeight后，autoPageSize属性计算出的结果不正确，该属性只能计算默认行高下的条数
  *-----------------------------------------------------------------------
  */
 /**
@@ -3123,6 +3362,16 @@ Horn.regUI("div.hc_button-group",Horn.ButtonPanel) ;
 	 * @type number
 	 * @default 20px
 	 * @example 无
+	 */
+
+ 	/**
+	 * @description tr行高度(注！改功能版本必须2.0.8或以上版本)
+	 * @property trHeight
+	 * @name Horn.DataGrid#<b>trHeight</b>
+	 * @type number
+	 * @default ""
+	 * @example 
+	 * 无
 	 */
 
 	/**
@@ -3229,7 +3478,7 @@ Horn.regUI("div.hc_button-group",Horn.ButtonPanel) ;
 	 * 无
 	 */
 	 	/**
-	 * @description datagrid的titleButton显示。
+	 * @description datagrid的titleButton显示。（注！如果初始时没有按钮，之后需通过addButton方法动态添加按钮，请刚开始将buttons属性设置为[{}]格式）。
 	 * @property buttons
 	 * @name Horn.DataGrid#<b>buttons</b>
 	 * @type object
@@ -3276,8 +3525,17 @@ Horn.regUI("div.hc_button-group",Horn.ButtonPanel) ;
 	 * @example
 	 * "bindFormName":"formName"
 	 */
+    /**
+	 * @description 在使用配置items属性列数据模型对象时使用了items静态数据字典时，将该属性设置为true，则调用getSelecteds方法时能够获取选中行的静态数据字典的提交值,默认是false返回显示值。2.0.8及以上版本支持此属性。
+	 * @property useDictCode
+	 * @name Horn.DataGrid#<b>useDictCode</b>
+	 * @type boolean
+	 * @default false
+	 * @example
+	 * "useDictCode":true
+	 */
 	/**
-	 * @description 排序方式，前台排序或者后台排序，默认是前台排序。
+	 * @description 排序方式，前台排序或者后台排序，默认是前台排序。当设置为true(后台排序)时，点击排序按钮会向后台传递两个参数分别是“sortItem”(当前排序的列名)和“sortMode”(升/降序,值：'ASC'或'DESC')，用户可以根据这两个参数值进行数据库查询返回排序后的数据。
 	 * @property isBackSort
 	 * @name Horn.DataGrid#<b>isBackSort</b>
 	 * @type boolean
@@ -3406,9 +3664,18 @@ Horn.regUI("div.hc_button-group",Horn.ButtonPanel) ;
 
 /**
  * @description 表格的高度是否自动计算高度，默认为false。为true时，表格的高度根据当前页面的高度重新计算出其高度，表格的高度会随着浏览器的变化而变化(类似于ext UI的表格功能)。</br>
- * (注意！为true时,height属性失效。表格的高度=页面高度-表格所在位置高度-分页栏高度在弹窗window组件使用时，内容加载如果不是iframe，就不要使用改功能)
+ * (注意！为true时,height属性不要设置。表格的高度=页面高度-表格所在位置高度-分页栏高度在弹窗window组件使用时，内容加载如果不是iframe，就不要使用改功能)
  * @property autoHeight
  * @name Horn.DataGrid#<b>autoHeight</b>
+ * @type Boolean
+ * @default false
+ * @example
+ * 无
+ */
+/**
+ * @description 是否根据表格的高度自动计算pageSize的大小，默认为false。为true时(注！只有autoHeight为true时生效，如果计算出来的条数小于10条，就默认10,当设置了trHeight,并且大小大于33时，就以trHeight来计算，否则默认33来计算。此功能必须是2.0.8或以上版本)。</br>
+ * @property autoPageSize
+ * @name Horn.DataGrid#<b>autoPageSize</b>
  * @type Boolean
  * @default false
  * @example
@@ -3441,6 +3708,41 @@ Horn.regUI("div.hc_button-group",Horn.ButtonPanel) ;
  * @example
  * 无
  */
+/**
+ * @description 总条数是否使用下拉式（默认为false,注!版本必须是2.0.8或以上版本）。</br>
+ * @property useSelectPageSize
+ * @name Horn.DataGrid#<b>useSelectPageSize</b>
+ * @type Boolean
+ * @default false
+ * @example
+ * 无
+ */
+/**
+ * @description 总条数下拉项（注!版本必须是2.0.8或以上版本,仅限于useSelectPageSize为true有效）。</br>
+ * @property pageSizeList
+ * @name Horn.DataGrid#<b>pageSizeList</b>
+ * @type Object
+ * @default [10,15,20,30,50,100]
+ * @example
+ * 格式说明：
+ * 格式必须是数组，如：
+ * "pageSizeList":[10,15,20,30,50,100]
+ */
+/**
+  * 国际化语言 (注！必须是2.0.9或以上版本)
+  * 目前只支持中文和因为，值分别为zh_CN和en_US,默认zh_CN
+  * @name Horn.DataGrid#language
+  * @type String
+  * @default "zh_CN"
+  * @example
+  * 注！如果想全局页面国际化，就在default.vm里写上：
+  * 
+  * #jscode()
+  * Horn.Validate.language = "en_US";
+  * #end 
+  *  在xx.properties文件里配置
+  * horn.ui.language=en_US
+  */
 var optGridId = null;
 Horn.DataGrid = Horn.extend(Horn.Base,{
 	COMPONENT_CLASS : "DataGrid",
@@ -3465,7 +3767,7 @@ Horn.DataGrid = Horn.extend(Horn.Base,{
 	td_number : '<td style="width:40px;"><div style="TEXT-aLIGN: center;width:40px;" class="h_numbercolumn">{count}</div></td>',
 	td_check :'<td style="width:36px;"><div class="hc-datagrid-cell-check" style="TEXT-aLIGN: center;width:36px;"><input type="{CHECK_TYPE}"  id="{CHECKBOX_ID}"></div></td>',
 	td : '<td style="display:{XDATAGRID_TD_HIDDEN};WIDTH:{XDATAGRID_TD_WIDTH}"><div  style="TEXT-ALIGN:{XDATAGRID_TD_ALIGN};WIDTH:{XDATAGRID_DIV_WIDTH};overflow: visible;{WORD_IS_WRAP};{WORD_NOT_WRAP};{FROZEN_CSS};">{XDATAGRID_TD_VAL}</div></td>',
-	tr : '<tr id="{TR_ID}"  class="{TR_CLASS}">',
+	tr : '<tr id="{TR_ID}"  class="{TR_CLASS}" style="height:{TR_HEIGHT}px;">',
 	tr_end : '</tr>',
 	row_class : 'u-table-bg',
 	pageinfo : {totalPagesText:'页，每页{pagesize}条,共{pages}页',displayMsg:'当前显示{from}到{to}，共{total}条记录'},
@@ -3473,6 +3775,7 @@ Horn.DataGrid = Horn.extend(Horn.Base,{
 	reqPageSize:10,
 	delimiter:",",
 	selecteds : [],
+	useDictCode:false,
 	lastSelect : null,
 	allCheckboxId : "allcb_datagrid_id",
 	numberColWidth : 40,
@@ -3532,6 +3835,11 @@ Horn.DataGrid = Horn.extend(Horn.Base,{
 				this.id = this.params.name;
 			}
 		}
+		//需求#29660 【TS:201612220314-JRESPlus-资管业委会（资管）-王永良-【需求描述】dataGrid中，目前使用items加载数据能够获取选中行的提交值】
+		if(this.params.useDictCode&&this.params.useDictCode!=""){
+			this.useDictCode=this.params.useDictCode;
+		}
+		
 		//分页对象
 		if(this.hasPage&&this.hasPage==true){
 			this.createPagebar();
@@ -4108,6 +4416,7 @@ Horn.DataGrid = Horn.extend(Horn.Base,{
 		
 		if(data!=null){
 			this.data = data;
+			this.resultData=data;
 			//正确的取得前端分页的数据storgedData
 			this.storgedData=data.rows?data.rows:data;
 			this.reqPage(this.reqPageNo,this.reqPageSize);
@@ -4130,11 +4439,17 @@ Horn.DataGrid = Horn.extend(Horn.Base,{
 //            _this.initHignLightEvent();
 //            _this.columnRender();
             _this.el.find("#data_"+_this.id).css("height","");
+            _this.el.find("#data_"+_this.id).find("table").css("border-bottom","1px solid #e2e7eb");
+            if(_this.frozenObj){
+            	$("#freez_body_"+_this.id).css("border-bottom","1px solid #e2e7eb");
+            }
             this.pageBtnDisabled(false);
 		}
 		
 		this.reCalRowHeight();
 		 this.resetTdContent();
+		 //bug#36910 需求28178--datagrid控件frozenHead设置为true是，列设置少点，然后拖动列，再调用loaddata方法加载数据，列头与列错位
+		 this.headerLastWidth();
 	},
 	
 	/**
@@ -4234,9 +4549,17 @@ Horn.DataGrid = Horn.extend(Horn.Base,{
 	
 	doSort:function(){
 		var _this=this;
+		var data;
 		this.setSortStatus();
 		this.sortName=this.sortItem.attr("name");
-		var data=this.data;
+		if(this.resultData){
+			 data=this.resultData['rows'];
+		}else{
+			data=[];
+		}		
+		if(!data||data.length==0){
+			return;
+		}
 		if(this.isBackSort){
 			this.load();
 		}else{
@@ -4288,6 +4611,8 @@ Horn.DataGrid = Horn.extend(Horn.Base,{
   	        	 _this.resultData['rows']=data;
 	             loadsuccessFn.apply(_this,[_this.el,_this.resultData]);
   		   }
+            //#28178 【TS:201611240040-JRESPlus-资管业委会（资管）-张翔-【BUG】.datagrid固定表头定高度，列少的时候不出现横拉滚动条，拉宽之后点击拉宽列的排序会出现错位
+            _this.headerLastWidth();
 		}
 	},
 	
@@ -4339,6 +4664,9 @@ Horn.DataGrid = Horn.extend(Horn.Base,{
 			//[经纪业务事业部/胡志武][TS:201409230012]-JRESPlus-ui--DataGrid在ie8浏览器上通过DataGrid获取数据通过getSelecteds (
 			if(key == "indexOf")
 				continue;
+			
+			//江志伟提出，排除key值不是数字的情况，兼容用户自己写的类似Array.prototype.Remove=function(val){}方法
+			if(isNaN(key)) continue;
 			
     		var val = this.selecteds[key];
     		if(val){
@@ -4588,7 +4916,25 @@ Horn.DataGrid = Horn.extend(Horn.Base,{
 		
 	},
 	/**
-	 * @ignore
+	 * @description 获取某行记录数据（适用通过renderer属性渲染操作按钮时用）
+	 * @name Horn.DataGrid#getRowData
+	 * @param {number} rowidx  行号<br>
+	 * @return Object
+	 * @function
+	 * @example
+	 * #datagrid({"id":"dataTable","name":"dataTable","url":"/demo/datagrid/getDatas.json",
+	 *	"items":[{"name":"investDetailCode","text":"投资明细代码","renderer":"investDetailCodeRender"}],})
+	 *#jscode()
+	 *
+	 *    function investDetailCodeRender(data){
+	 *	       return '<a style="color:red;" onclick="codeClick('+data.rowidx+')">'+data.val+'</a>';
+	 *	    }
+	 *	    function codeClick(rowidx){
+	 *			//根据rowidx获取某行的记录数据
+	 *			console.info(Horn.getComp('dataTable').getRowData(rowidx));
+	 *		}
+	 *
+	 *#end
 	 */
 	getRowData :function(rowidx){
 		/*
@@ -4670,6 +5016,36 @@ Horn.DataGrid = Horn.extend(Horn.Base,{
 		}
 		return doRequest;
 	},
+	/**
+	 * @ignore
+	 * 根据表格的高度自动计算出条数
+	 */
+	autoPageSizeFn : function(data){
+		var autoHeight = this.params.autoHeight+"";
+        if(this.params.autoHeight&&autoHeight=="true"){
+        	var autoPageSize = this.params.autoPageSize+"";
+        	if(this.params.autoPageSize&&autoPageSize=="true"){
+	     	   var dataBody = this.el.children(".hc-datagrid-body");
+	     	   var page = this.el.children(".u-datagrid-page");
+	     	   var screenheight = $(window).height();
+	           var pageHeight = page.outerHeight(true);
+	           var y = dataBody.offset().top;
+	           var h = screenheight-y-pageHeight;
+	           //29920 需求36300-在设置trHeight后，autoPageSize属性计算出的结果不正确，该属性只能计算默认行高下的条数
+	           var tmpH = 33;
+	           var trHeight = this.params.trHeight;
+	           if(trHeight&&trHeight!=""&&trHeight>tmpH){
+	        	   tmpH = this.params.trHeight;
+	           }
+	           var cn = h/tmpH;
+	           var totalCn = parseInt(cn)+1;
+	           if(totalCn>10){
+		           data.pageSize = totalCn;
+		           this.reqPageSize = totalCn;
+	           }
+        	}
+        }
+	},
 	doAjax : function(url,data){
 		   var _this = this;
 		   var url = url?url:_this.url;
@@ -4679,69 +5055,79 @@ Horn.DataGrid = Horn.extend(Horn.Base,{
 		   var tbody = this.dataTable.children("tbody"),
 		   f_tbody = this.frozenTable.children("tbody"),
 		   colLength = this.ths.length;
+		   var msg1 = "请求失败";
+		   var msg2 = "错误信息";
+		   var msg3 = "暂无数据";
+		   if((_this.params.language&&_this.params.language=="en_US")||(Horn.Validate.language&&Horn.Validate.language=="en_US")){
+			   msg1 = "request was aborted";
+			   msg2 = "error message";
+			   msg3 = "no data";
+		   }
 		   
+		   this.autoPageSizeFn(data);
 	       $.ajax(
 	    		   url,
 	    	  {
 	           async : true,
-               beforeSend : function(xhr) {
-          		   if(_this.frozenObj){
-            		   _this.frozenTable.children("tbody").html("");
-        		   }
-            	   
-          		   _this.dataTable.children("tbody").html("");
-                   tbody.html("<tr><td style=\"border-right:0px;padding:15px;\" colspan='"
-                       + colLength
-                       + "'><img src='"+context_path+"/components/datagrid/img/hc_onLoad.gif'></img></td></tr>");
-                   tbody.parent().css("width","100%");
-                   tbody.parent().css("text-align","center");
-                   tbody.parent().css("padding","15px");  
-               },
-               type : "POST",
-               data : Horn.Util.obj2Arr(data) ,
-               dataType : "json",
-               error : function(xhr, textStatus, errorThrown) {
-                   var status = xhr.status;
-                   tbody.parent().css("width","");
-        		   tbody.parent().css("text-align","");
-        		   tbody.parent().css("padding","");
-                   if(_this.frozenObj){
-        			   _this.frozenTable.children("tbody").html("");
-        			   f_tbody.html(
-                               "<tr><td style=\"border-right:0px;padding:15px;\" colSpan='" + colLength
-                               + "'><p>请求失败</p><p>错误状态："
-                               + status + "；错误信息："
-                               + textStatus
-                               + "</p></td></tr>");
-        		   }
-                   tbody.html(
-                       "<tr><td style=\"border-right:0px;padding:15px;\" colSpan='" + colLength
-                           + "'><p>请求失败</p><p>错误状态："
-                           + status + "；错误信息："
-                           + textStatus
-                           + "</p></td></tr>");
-               },
-               success : function(resultData, textStatus, jqXHR) {
-        		   tbody.html("");
-        		   tbody.parent().css("width","");
-        		   tbody.parent().css("text-align","");
-        		   tbody.parent().css("padding","");
-            	   if(!resultData||$.isEmptyObject(resultData)){
-            		   if(_this.frozenObj){
-            			   _this.frozenTable.css("border-bottom","0 solid #e2e7eb");  
-            			   _this.frozenTable.children("tbody").html("");
-            			   f_tbody.html("<tr><td style=\"border-right:0px;padding:15px;\" colSpan='"
-                                   + colLength
-                                   + "'><p>暂时无数据</p></td></tr>");
-            		   }
-            		   _this.clearSort();
-            		     _this.dataTable.css("border-bottom","0 solid #e2e7eb");  
-                		 _this.dataTable.children("tbody").html("");
-                         tbody.html("<tr><td style=\"border-right:0px;padding:15px;\" colSpan='"
-                             + colLength
-                             + "'><p>暂时无数据</p></td></tr>");
-            		   
-            		   
+            beforeSend : function(xhr) {
+       		   if(_this.frozenObj){
+         		   _this.frozenTable.children("tbody").html("");
+     		   }
+         	   
+       		   _this.dataTable.children("tbody").html("");
+                tbody.html("<tr><td style=\"border-right:0px;padding:15px;\" colspan='"
+                    + colLength
+                    + "'><img src='"+context_path+"/components/datagrid/img/hc_onLoad.gif'></img></td></tr>");
+                tbody.parent().css("width","100%");
+                tbody.parent().css("text-align","center");
+                tbody.parent().css("padding","15px");  
+            },
+            type : "POST",
+            data : Horn.Util.obj2Arr(data) ,
+            dataType : "json",
+            error : function(xhr, textStatus, errorThrown) {
+                var status = xhr.status;
+                tbody.parent().css("width","");
+     		   tbody.parent().css("text-align","");
+     		   tbody.parent().css("padding","");
+                if(_this.frozenObj){
+     			   _this.frozenTable.children("tbody").html("");
+     			   f_tbody.html(
+                            "<tr><td style=\"border-right:0px;padding:15px;\" colSpan='" + colLength
+                            + "'><p>"+msg1+"</p><p>"+msg2+"："
+                            + status + "；"+msg2+"："
+                            + textStatus
+                            + "</p></td></tr>");
+     		   }
+                tbody.html(
+                    "<tr><td style=\"border-right:0px;padding:15px;\" colSpan='" + colLength
+                        + "'><p>"+msg1+"</p><p>"+msg2+"："
+                        + status + "；"+msg2+"："
+                        + textStatus
+                        + "</p></td></tr>");
+            },
+            success : function(resultData, textStatus, jqXHR) {
+     		   tbody.html("");
+     		   tbody.parent().css("width","");
+     		   tbody.parent().css("text-align","");
+     		   tbody.parent().css("padding","");
+         	   if(!resultData||$.isEmptyObject(resultData)){
+         		   _this.data = null;
+         		   if(_this.frozenObj){
+         			   _this.frozenTable.css("border-bottom","0 solid #e2e7eb");  
+         			   _this.frozenTable.children("tbody").html("");
+         			   f_tbody.html("<tr><td style=\"border-right:0px;padding:15px;\" colSpan='"
+                                + colLength
+                                + "'><p>"+msg3+"</p></td></tr>");
+         		   }
+         		   _this.clearSort();
+         		     _this.dataTable.css("border-bottom","0 solid #e2e7eb");  
+             		 _this.dataTable.children("tbody").html("");
+                      tbody.html("<tr><td style=\"border-right:0px;padding:15px;\" colSpan='"
+                          + colLength
+                          + "'><p>"+msg3+"</p></td></tr>");
+         		   
+         		   
 	    			  if(_this.loaderror){
 	    	  			   var  loaderrorObj = Horn.Util.getFunObj(_this.loaderror),
 	    	  			    loaderrorFn;
@@ -4752,50 +5138,51 @@ Horn.DataGrid = Horn.extend(Horn.Base,{
 	    	  	        	 loaderrorFn.apply(_this,[_this.el,resultData]);
 	    	  	             return;
 	    	  		   }   
-            		   
-            	   }else{
-            		   var redirect_url = "";
-            		   var _target = "";
-            		   if(resultData){
-            				var data = resultData["rows"];
-            				redirect_url = resultData["redirectUrl"];
-            				_target = resultData["target"];
-            				_this.resultData=resultData;
-            				if(data==null||data=="null"){
-           					 if(redirect_url&&redirect_url!=""){
-                 				   if(_target=="top"){
-                 					   top.location.href =redirect_url;
-                 				   }else if(_target=="parent"){
-                 					   parent.location.href =redirect_url;
-                 				   }else{
-                 					   window.location.href =redirect_url;
-                 				   }
-                 				   return;
-                 			   }
-            				}
-            				this.result = data?data:resultData;
-            		   }
-            		   if(this.result&&(this.result.length==0||$.isEmptyObject(this.result))){
-            			   
-            			   if(_this.frozenObj){
-            				   _this.frozenTable.css("border-bottom","0 solid #e2e7eb");   
-                			   _this.frozenTable.children("tbody").html("");
-                			   f_tbody.html("<tr><td style=\"border-right:0px;padding:15px;\" colSpan='"
-                                       + colLength
-                                       + "'><p>暂时无数据</p></td></tr>");
-                			   _this.headerLastWidth();
-                		   }
-            			    _this.dataTable.css("border-bottom","0 solid #e2e7eb");       
+         		   
+         	   }else{
+         		   var redirect_url = "";
+         		   var _target = "";
+         		   if(resultData){
+         				var data = resultData["rows"];
+         				redirect_url = resultData["redirectUrl"];
+         				_target = resultData["target"];
+         				_this.resultData=resultData;
+         				if(data==null||data=="null"){
+        					 if(redirect_url&&redirect_url!=""){
+              				   if(_target=="top"){
+              					   top.location.href =redirect_url;
+              				   }else if(_target=="parent"){
+              					   parent.location.href =redirect_url;
+              				   }else{
+              					   window.location.href =redirect_url;
+              				   }
+              				   return;
+              			   }
+         				}
+         				this.result = data?data:resultData;
+         		   }
+         		   //需求#28552 【TS:201611300672-JRESPlus-资管业委会（资管）-王永良-【需求描述】目前datagrid组件中，对于返回为{}和undefined的并不判断。但是查询无数据的情况会有很多种，空，无定义等等，故都应加入判断
+         		   if(!data||$.isEmptyObject(data)||data==""||data.length==0){
+         			   _this.data = null;
+         			   if(_this.frozenObj){
+         				   _this.frozenTable.css("border-bottom","0 solid #e2e7eb");   
+             			   _this.frozenTable.children("tbody").html("");
+             			   f_tbody.html("<tr><td style=\"border-right:0px;padding:15px;\" colSpan='"
+                                    + colLength
+                                    + "'><p>"+msg3+"</p></td></tr>");
+             			   _this.headerLastWidth();
+             		   }
+         			    _this.dataTable.css("border-bottom","0 solid #e2e7eb");       
 	                        _this.dataTable.children("tbody").html("");
 	                        tbody.html("<tr><td style=\"border-right:0px;padding:15px;\" colSpan='"
 	                             + colLength
-	                             + "'><p>暂时无数据</p></td></tr>");
+	                             + "'><p>"+msg3+"</p></td></tr>");
 	                        
 	                        //pagebar
 	                        _this.initPagebar(resultData);
-           		        }else{
-           		        	//去除border-bottom:0 solid #e2e7eb样式
-           		        	_this.dataTable.attr("style","");  
+        		        }else{
+        		        	//去除border-bottom:0 solid #e2e7eb样式
+        		        	_this.dataTable.attr("style","");  
 	            		   //10808
 	            		   _this.data = resultData.rows;
 	            		   _this.params.data = resultData.rows;
@@ -4828,25 +5215,25 @@ Horn.DataGrid = Horn.extend(Horn.Base,{
 
 	                       _this.resetTdContent();
 	                       _this.headerLastWidth();
-           		       }
+        		       }
 
-            	   }
-            	   
-            	   try{
-            		   if(_this.loadsuccess){
-            			   var  loadsuccessObj = Horn.Util.getFunObj(_this.loadsuccess),
-            			   loadsuccessFn;
-            	           if($.type(loadsuccessObj.fn) == "function"){
-            	        	   loadsuccessFn = loadsuccessObj.fn ;
-            	           }
-            	           if(loadsuccessFn)
-            	             loadsuccessFn.apply(_this,[_this.el,resultData]);
-            		   }
-            	   }catch(e){
-            		   Horn.debug(e);
-            	   }
-            	   
-               }
+         	   }
+         	   
+         	   try{
+         		   if(_this.loadsuccess){
+         			   var  loadsuccessObj = Horn.Util.getFunObj(_this.loadsuccess),
+         			   loadsuccessFn;
+         	           if($.type(loadsuccessObj.fn) == "function"){
+         	        	   loadsuccessFn = loadsuccessObj.fn ;
+         	           }
+         	           if(loadsuccessFn)
+         	             loadsuccessFn.apply(_this,[_this.el,resultData]);
+         		   }
+         	   }catch(e){
+         		   Horn.debug(e);
+         	   }
+         	   
+            }
 	       });
 	      _this.autoDataHeight();
 	},
@@ -4875,6 +5262,10 @@ Horn.DataGrid = Horn.extend(Horn.Base,{
 				   if(resultData!=null){
 					   	$("#toPage_"+this.id).attr("disabled",false);
 						$("#pageSize_"+this.id).attr("disabled",false);
+				   }
+				   var data = resultData["rows"];
+				   if(!data||$.isEmptyObject(data)||data==""||data.length==0){
+					   total = 0;
 				   }
 				   this.pagebar.setTotalCount(total);
 				   this.pagebar.calPage_(this.reqPageNo,this.reqPageSize,total);
@@ -4972,7 +5363,10 @@ Horn.DataGrid = Horn.extend(Horn.Base,{
 				      this.createFrozenTableTr(itemData,cnt,f_htmlArr);
 				   var tmptr = this.tr.replace("{TR_ID}", "tr_"+this.id+"_"+cnt);
 		    	   tmptr = tmptr.replace("{TR_CLASS}", (cnt%2==0)?this.row_class:"");
-				   htmlArr.push(tmptr);
+		    	   if(this.params.trHeight&&this.params.trHeight!=""){
+					   tmptr = tmptr.replace("{TR_HEIGHT}", this.params.trHeight);
+				   }
+		    	   htmlArr.push(tmptr);
 				   if(this.numbercolumn && this.numbercolumn==true){
 					 var tmptd = this.td_number.replace("{count}",cnt).replace("{numberColumnWidth}",this.numberColWidth);
 					 htmlArr.push(tmptd);
@@ -5055,8 +5449,12 @@ Horn.DataGrid = Horn.extend(Horn.Base,{
 						   if(wordwrap=="true"){
 				    			if(_this.params.frozen&&_this.params.frozen!=""){
 				    				if(_this.getStrlen(value)>40){
-					    				value = "<textarea   readonly style=\"height: 20px;width: 100%;border: 0;background: transparent;line-height: 15px;outline: none;\" class=\"div-textarea\">"+value+"</textarea>";
-						    			tmptd = tmptd.replace("{FROZEN_CSS}","height:20px;line-height;20px;padding:0");
+				    					var tmpH = 20;
+				    					if(_this.params.trHeight&&_this.params.trHeight!=""){
+				    						tmpH = _this.params.trHeight;
+				    					}
+					    				value = "<textarea   readonly style=\"height: "+tmpH+"px;width: 100%;border: 0;background: transparent;line-height: 15px;outline: none;\" class=\"div-textarea\">"+value+"</textarea>";
+						    			tmptd = tmptd.replace("{FROZEN_CSS}","height:"+tmpH+"px;line-height;"+tmpH+"px;padding:0");
 				    				}
 				    			}
 			    			}
@@ -5273,7 +5671,15 @@ Horn.DataGrid = Horn.extend(Horn.Base,{
 		var head_trs = this.head_dataTable.children('tbody').children('tr');
 		var _this = this;
 		if((_this.params.frozen&&_this.params.frozen!="")||this.params.frozenHead){
-	    	head_trs.each(function(tridx,trdom){
+			//冻结列或冻结表头时，先拖拽，再调用load方法时，表格错乱问题.20161110 add by 周智星
+			_this.header.children("tbody").children("tr").children("td").each(function(tridx,trdom){
+				var oldW = $(this).attr("oldWidth");
+				if(oldW){
+					oldW = $.trim(oldW);
+					$(this).css("width",oldW);
+				}
+			});
+			head_trs.each(function(tridx,trdom){
 	    		var tr = $(trdom);
 	    		var tds = tr.find('td');
 	    		for(var tdidx = 0 ; tdidx<tds.length ; tdidx++){
@@ -5320,6 +5726,9 @@ Horn.DataGrid = Horn.extend(Horn.Base,{
 		}
 	   var tmptr = this.tr.replace("{TR_ID}", "tr_"+this.id+"_"+cnt);
 	   tmptr = tmptr.replace("{TR_CLASS}", (cnt%2==0)?this.row_class:"");
+	   if(this.params.trHeight&&this.params.trHeight!=""){
+		   tmptr = tmptr.replace("{TR_HEIGHT}", this.params.trHeight);
+	   }
 	   htmlArr.push(tmptr);
 	   if(this.numbercolumn && this.numbercolumn==true){
 			 var tmptd = this.td_number.replace("{count}",cnt).replace("{numberColumnWidth}",this.numberColWidth);
@@ -5413,7 +5822,14 @@ Horn.DataGrid = Horn.extend(Horn.Base,{
 				var _dicts = items[i]['items'];
 				for(var j=0;j<_dicts.length;j++){
 					if(_dicts[j]['value'] == rowData[colName]){
-						rowData[colName] = _dicts[j]['label'];
+						var datavalue=_dicts[j]['label'];
+						//需求#29660 【TS:201612220314-JRESPlus-资管业委会（资管）-王永良-【需求描述】dataGrid中，目前使用items加载数据能够获取选中行的提交值】
+						if(this.useDictCode.toString()=='true'){
+							rowData[colName] = _dicts[j]['value'];
+						}else{
+							rowData[colName] = _dicts[j]['label'];
+						}
+						return datavalue;
 					}
 				}
 			}
@@ -5867,7 +6283,7 @@ Horn.DataGrid = Horn.extend(Horn.Base,{
 		return this.title;
 	},
 	/**
-	 * @description 动态添加标题按钮
+	 * @description 动态添加标题按钮（注！如果初始时没有按钮，之后需通过addButton方法动态添加按钮，请刚开始将buttons属性设置为[{}]格式）。
 	 * @name Horn.DataGrid#addButton
 	 * @param {object} obj button的参数对象，具体的参数有：label 按钮的标签（必填否则无法添加）；name 按钮的name，作为标识按钮；cls 按钮的图标样式(默认提供的图标样式有：新增[fa-plus-circle]，修改[fa-pencil-square-o]，删除[fa-remove]，保存[fa-save],查询[fa-search],刷新[fa-refresh],文件夹[fa-folder-open-o])，默认无图标；event 按钮点击的事件处理函数
 	 * @return 
@@ -5945,7 +6361,11 @@ Horn._Pagebar = function(config,_gridid,_grid){
 			pages : 0,
 			 //起始条数
 			startRow:0,
+			//是否有总条数
 			isNotTotal:false,
+			//是否使用下拉式的总条数框
+			selectPageSize:false,
+			language :null,
 			/**
 			 * @ignore
 			 */
@@ -5964,6 +6384,7 @@ Horn._Pagebar = function(config,_gridid,_grid){
 					this.startRow = parseInt(config["startRow"]);
 					this.pages = 0;
 				}
+				this.language = _grid.params.language;
 				this.gridId = _gridid;
 				this.grid = _grid;
 				this.grid.reqPageSize = this.pageSize;
@@ -5972,6 +6393,10 @@ Horn._Pagebar = function(config,_gridid,_grid){
 				var notTotal = this.el.attr("isNotTotal");
 				if(notTotal=="true"){
 					this.isNotTotal = true;
+				}
+				var isSelectPageSize = this.el.attr("selectPageSize");
+				if(isSelectPageSize=="true"){
+					this.selectPageSize = true;
 				}
 			},
 			/**
@@ -6096,9 +6521,12 @@ Horn._Pagebar = function(config,_gridid,_grid){
 				$("#toPage_"+thatgrid.id).on('blur',function(){
 					_pageBar.callToPage($(this));
 				});
-				
+				if(this.selectPageSize){
+					$("#pageSize_"+thatgrid.id).find("option[text='"+this.grid.reqPageSize+"']").attr("selected",true);
+				}
+				var event = this.selectPageSize?"change":"blur";
 				//需求18070 【TS:201603240534-JRESPlus-财富管理事业部-江志伟-【项目名称】恒生信托综合管理平台（TCMP）<br>【产品及】
-				$("#pageSize_"+thatgrid.id).on('blur',function(){
+				$("#pageSize_"+thatgrid.id).on(event,function(){
 					_pageBar.callToPageSize($(this));
 				});
 				
@@ -6249,7 +6677,11 @@ Horn._Pagebar = function(config,_gridid,_grid){
 						endNo = this.pageSize*this.currentPage;
 					}
 				}
-				info = "显示"+startNo+"到"+endNo+"条,共"+this.pageCount+"条记录";
+				if((this.language&&this.language=="en_US")||(Horn.Validate.language&&Horn.Validate.language=="en_US")){
+					info = "Displaying "+startNo+" to "+endNo+" of "+this.pageCount+" items";
+				}else{
+					info = "显示"+startNo+"到"+endNo+"条,共"+this.pageCount+"条记录";
+				}
 				return info;
 			},
 			/**
@@ -6279,6 +6711,264 @@ String.prototype.getWidth = function(fontSize){
 
     return span.offsetWidth;
 }
+/*
+ * 修改日期                        修改人员        修改说明
+ * -------------------------------------------------------------------------------------
+ * 
+ * -------------------------------------------------------------------------------------
+ */
+/**
+ * @name Horn.DocView
+ * @class
+ * 文档在线预览组件是基于第三方插件flexpager基础上进行封装，支持.txt,.doc,.docx,.xls,.xlsx,.pdf,.ppt,.pptx格式
+ * 
+ */
+
+/**@lends Horn.DocView# */
+
+/**
+ * 组件唯一标识<br/>
+ * @name Horn.DocView#<b>id</b>
+ * @type String
+ * @default
+ * @example
+ * #@screen({})
+ * 		#docview({"name":"testDocViewName","id":"testDocViewId","url":"$appServer/docView","officeHome":"D:/tools/OpenOffice4","swfToolsHome":"D:/tools/SWFTools","filePath":"/file/","fileName":"jresplus-ui-2.0安装部署手册.doc","width":900,"height":500})
+ * #end
+ */
+/**
+ * 组件名<br/>
+ * @name Horn.DocView#<b>name</b>
+ * @type String
+ * @default
+ * @example
+ * #@screen({})
+ * 	#docview({"name":"testDocViewName","id":"testDocViewId","url":"$appServer/docView","officeHome":"D:/tools/OpenOffice4","swfToolsHome":"D:/tools/SWFTools","filePath":"/file/","fileName":"jresplus-ui-2.0安装部署手册.doc","width":900,"height":500})	
+ * #end
+ */
+/**
+ * 第三方插件类型(media和flex两种类型，其中media是jquery插件，flex是flexpager插件需要浏览器安装flashplayer插件才可以预览，ie8或以上的浏览器一般都默认安装了)<br/>
+ * @name Horn.DocView#<b>type</b>
+ * @type String
+ * @default "media"
+ * @example
+ * #@screen({})
+ * 	#docview({"name":"testDocViewName","id":"testDocViewId","type":"flex","url":"$appServer/docView","officeHome":"D:/tools/OpenOffice4","swfToolsHome":"D:/tools/SWFTools","filePath":"/file/","fileName":"jresplus-ui-2.0安装部署手册.doc","width":900,"height":500})	
+ * #end
+ */
+/**
+ * openOffice的安装的根目录地址<br/>
+ * @name Horn.DocView#<b>officeHome</b>
+ * @type String
+ * @default
+ * @example
+ * #@screen({})
+ * 		#docview({"name":"testDocViewName","id":"testDocViewId","url":"$appServer/docView","officeHome":"D:/tools/OpenOffice4","swfToolsHome":"D:/tools/SWFTools","filePath":"/file/","fileName":"jresplus-ui-2.0安装部署手册.doc","width":900,"height":500})
+ * #end
+ */
+
+/**
+ * swf文件生成工具的根目录地址<br/>
+ * @name Horn.DocView#<b>swfToolsHome</b>
+ * @type String
+ * @default
+ * @example
+ * #@screen({})
+ * 		#docview({"name":"testDocViewName","id":"testDocViewId","url":"$appServer/docView","officeHome":"D:/tools/OpenOffice4","swfToolsHome":"D:/tools/SWFTools","filePath":"/file/","fileName":"jresplus-ui-2.0安装部署手册.doc","width":900,"height":500})
+ * #end
+ */
+/**
+ * 预览文档后台url地址<br/>
+ * @name Horn.DocView#<b>url</b>
+ * @type String
+ * @default
+ * @example
+ * #@screen({})
+ * 		#docview({"name":"testDocViewName","id":"testDocViewId","url":"$appServer/docView","officeHome":"D:/tools/OpenOffice4","swfToolsHome":"D:/tools/SWFTools","filePath":"/file/","fileName":"jresplus-ui-2.0安装部署手册.doc","width":900,"height":500})
+ * #end
+ */
+
+/**
+ * 显示文档局域高度<br/>
+ * @name Horn.DocView#<b>height</b>
+ * @type String
+ * @default 500
+ */
+
+/**
+ * 显示文档局域宽度<br/>
+ * @name Horn.DocView#<b>width</b>
+ * @type String
+ * @default 800
+ */
+
+
+Horn.DocView = Horn.extend(Horn.Base, {
+	COMPONENT_CLASS : "DocView",
+	id:"docViewId",
+	height : 500,
+	width : 800,
+	url: null,
+	filePath: null,
+	fileName: null,
+	officeHome : null,
+	swfToolsHome :null,
+	appServer : null,
+	type:"media",
+	SUBFFIX : ".txt,.doc,.docx,.xls,.xlsx,.pdf,.ppt,.pptx",
+	init : function(dom) {
+		Horn.DocView.superclass.init.apply(this, arguments);
+		var _this = this;
+		this.url = this.params.url?this.params.url:null;
+		this.officeHome = this.params.officeHome?this.params.officeHome:null;
+		this.swfToolsHome = this.params.swfToolsHome?this.params.swfToolsHome:null;
+		this.filePath = this.params.filePath?this.params.filePath:null;
+		this.fileName = this.params.fileName?this.params.fileName:null;
+		this.id = this.params.id?this.params.id:this.id;
+		this.width = this.params.width?this.params.width:this.width;
+		this.height = this.params.height?this.params.height:this.height;
+		this.type = this.params.type?this.params.type:this.type;
+		this.appServer = this.el.attr("appServer");
+		if(this.url==null){
+			Horn.Msg.alert("提示","url必须配置，请检查");
+			return;
+		}
+		if(this.officeHome==null){
+			Horn.Msg.alert("提示","officeHome必须配置，请检查");
+			return;
+		}
+		if(this.swfToolsHome==null){
+			Horn.Msg.alert("提示","swfToolsHome必须配置，请检查");
+			return;
+		}
+		
+		
+		
+
+		if(_this.fileName!=null){
+			var fileSubFixx = _this.fileName.substring(_this.fileName.lastIndexOf("."));
+			if(fileSubFixx){
+				fileSubFixx = fileSubFixx.toLowerCase();
+			}
+			if(_this.SUBFFIX.indexOf(fileSubFixx)==-1){
+				Horn.Msg.alert("提示","只支持文档格式如："+_this.SUBFFIX);
+				return;
+			}
+			var icon = $("div.doc_header_mod").children("h2").children("em");
+			if(fileSubFixx==".doc"||fileSubFixx==".docx"){
+				icon.addClass("fa fa-file-word-o word")
+			}else if(fileSubFixx==".xls"||fileSubFixx==".xlsx"){
+				icon.addClass("fa fa-file-excel-o xls")
+			}else if(fileSubFixx==".ppt"||fileSubFixx==".pptx"){
+				icon.addClass("fa fa-file-powerpoint-o ppt")
+			}else if(fileSubFixx==".txt"){
+				icon.addClass("fa fa-file-archive-o txt")
+			}else if(fileSubFixx==".pdf"){
+				icon.addClass("fa fa-file-pdf-o pdf")
+			}else{
+			}
+			var params = "filePath="+_this.filePath+"&fileName="+encodeURI(encodeURIComponent(_this.fileName))+"&officeHome="+_this.officeHome+"&swfToolsHome="+_this.swfToolsHome+"&width="+this.width+"&height="+this.height+"&type="+this.type;
+			var tmpUrl = _this.url+"?"+params;
+			Horn.Msg.load("正在载入文档，请稍后...");
+			$("#view_"+_this.id).attr("src",tmpUrl);
+			$("#view_"+_this.id).load(function(){   
+	        	Horn.Msg.unload();
+			});
+		}
+	
+		
+	},
+	/**
+	    * @description 动态加载文档
+	    * @function
+	    * @name Horn.DocView#<b>load</b>
+	    * @param {string} fileName   文件名（带后缀）必填<br>
+	    * @param {string} url   文档预览servlet地址<br>
+	    * @param {string} filePath   文件所在路径（相对路径或绝对路径,可选，默认获取属性里的配置）<br>
+	    * @param {string} officeHome openoffice的根目录路径（可选，默认获取属性里的配置）<br>
+	    * @param {string} swfToolsHome   swf生成工具的根目录路径（可选，默认获取属性里的配置）<br>
+	    * @return void
+	    * @example
+	    * #jscode()
+	    * 	function show(fileName){
+		*		Horn.getComp("testDocViewName").load(fileName);
+		*	}
+	    * #end
+	    */
+	load :function(fileName,url,filePath,officeHome,swfToolsHome){
+		var _this = this;
+		if(fileName&&fileName!=""){
+			var fileSubFixx = fileName.substring(fileName.lastIndexOf("."));
+			if(fileSubFixx){
+				fileSubFixx = fileSubFixx.toLowerCase();
+			}
+			if(_this.SUBFFIX.indexOf(fileSubFixx)==-1){
+				Horn.Msg.alert("提示","只支持文档格式如："+_this.SUBFFIX);
+				return;
+			}
+			var icon = $("div.doc_header_mod").children("h2").children("em");
+			var title = $("div.doc_header_mod").children("h2").children("span");
+			icon.removeClass();
+			if(fileSubFixx==".doc"||fileSubFixx==".docx"){
+				icon.addClass("fa fa-file-word-o word")
+			}else if(fileSubFixx==".xls"||fileSubFixx==".xlsx"){
+				icon.addClass("fa fa-file-excel-o xls")
+			}else if(fileSubFixx==".ppt"||fileSubFixx==".pptx"){
+				icon.addClass("fa fa-file-powerpoint-o ppt")
+			}else if(fileSubFixx==".txt"){
+				icon.addClass("fa fa-file-archive-o txt")
+			}else if(fileSubFixx==".pdf"){
+				icon.addClass("fa fa-file-pdf-o pdf")
+			}else{
+			}
+			title.html(fileName);
+		}else{
+			Horn.Msg.alert("提示","fileName必须配置");
+			return;
+		}
+		
+		if(!url){
+			if(this.url){
+				url = this.url;
+			}else{
+				Horn.Msg.alert("提示","url必须配置");
+				return;
+			}
+		}
+		if(!filePath){
+			if(this.filePath){
+				filePath = this.filePath;
+			}else{
+				Horn.Msg.alert("提示","filePath文件的所在路径必填");
+				return;
+			}
+		}
+		if(!officeHome){
+			if(this.officeHome){
+				officeHome = this.officeHome;
+			}else{
+				Horn.Msg.alert("提示","officeHome根目录必须配置");
+				return;
+			}
+		}
+		if(!swfToolsHome){
+			if(this.swfToolsHome){
+				swfToolsHome = this.swfToolsHome;
+			}else{
+				Horn.Msg.alert("提示","swfToolsHome根目录必须配置");
+				return;
+			}
+		}
+		var params = "filePath="+filePath+"&fileName="+encodeURI(encodeURIComponent(fileName))+"&officeHome="+officeHome+"&swfToolsHome="+swfToolsHome+"&width="+this.width+"&height="+this.height+"&type="+this.type;
+		var tmpUrl =url+"?"+params;
+		Horn.Msg.load("正在载入文档，请稍后...");
+		$("#view_"+_this.id).attr("src",tmpUrl);
+		$("#view_"+_this.id).load(function(){   
+        	Horn.Msg.unload();
+		});
+	}
+});
+Horn.regUI("div.hc_docview", Horn.DocView);
 /**
  * 版本：
  * 系统名称: JRESPLUS
@@ -6512,6 +7202,17 @@ function registeSelfHtml(html){
 	Horn.getUIReady()(el, true);	
 }	
 
+function uuid(){
+	var guid = "", n;
+    for (var i = 1; i <= 32; i++) {
+        n = Math.floor(Math.random() * 16.0).toString(16);
+        guid += n;
+        if ((i == 8) || (i == 12) || (i == 16) || (i == 20))
+            guid += "-";
+    }
+    return guid;
+}
+
 Horn.EditGrid = Horn.extend(Horn.Base,{
     COMPONENT_CLASS : "EditGrid",
     id:"dyncEditGrid",
@@ -6570,7 +7271,7 @@ init : function(dom){
   _this.initEvent(); 
  //初始化表格事件
  _this.initTableEvent();
- if(_this.params.url!=""){
+ if(_this.params.url!=""&&_this.params.url!=undefined){
    
    _this.load(_this.params.url);
  }
@@ -6843,22 +7544,26 @@ initEvent:function(){
     }
     },
 
-    load : function(data,params){
-    params = params ||{};
-    //需求#14698 【TS:201511060012-JRESPlus-资产管理事业部-张翔-问题1：选中datagrid中某条数据,然后调load方法，原来选中的内容还在
-    this.selecteds = null;
-    //解决将其他加载方式切换为load的时候导致的请求pageNo多一的问题
-    //初始load应该从第一页开始获取
-    if(this.loadFlag  && this.loadFlag != "autoLoad"){
-      this.reqPageNo = 1;
-    }
-    this.loadFlag="autoLoad";
-    if($.type(params)=="array"){
-            params = Horn.Util.arr2Obj(params) ;
-        }
+    /**
+     * @description 请求数据。 url不传，则请求url使用组件默认的url属性
+     * @function
+     * @name Horn.EditGrid#load
+     * @param {string} url        请求数据的路径
+     * @param {object} params     请求提交的参数<br>
+     * @return void
+     */
 
-    this.execute(data,params);
-  },
+    load: function(url, params) {
+      var _this=this;
+      params = params || {};
+      this.selecteds = null;
+      if ($.type(params) == "array") {
+        params = Horn.Util.arr2Obj(params);
+      }
+      _this.editingCell = [];
+      _this.destroyUI();
+      this.execute(url, params);
+    },
     /**
       * @description 加载数据到表格中
       * @function
@@ -6928,13 +7633,13 @@ initEvent:function(){
                dataType : "json",
                error : function(xhr, textStatus, errorThrown) {
                    var status = xhr.status;
-               _this.tbody.empty().html( "<tr><td style=\"border-right:0px;padding:15px;\" colSpan='"
+               _this.tbody.empty().html( "<tr id='noResult'><td style=\"border-right:0px;padding:15px;\" colSpan='"
                            + colLength
                            + "'><p>暂时无数据</p><p>错误状态："+status+";错误信息："+textStatus+"</p></td></tr>");   
                },
                success : function(resultData, textStatus, jqXHR) {  
                  if(!resultData||$.isEmptyObject(resultData)){
-                     _this.tbody.empty().html( "<tr><td style=\"border-right:0px;padding:15px;\" colSpan='"
+                     _this.tbody.empty().html( "<tr id='noResult'><td style=\"border-right:0px;padding:15px;\" colSpan='"
                                  + colLength
                                  + "'><p>暂时无数据</p></td></tr>");        
               if(_this.loaderror){
@@ -6954,7 +7659,7 @@ initEvent:function(){
                     this.result = data?data:resultData;
                    }
                    if(this.result&&(this.result.length==0||$.isEmptyObject(this.result))){
-                     _this.tbody.empty().html( "<tr><td style=\"border-right:0px;padding:15px;\" colSpan='"
+                     _this.tbody.empty().html( "<tr id='noResult'><td style=\"border-right:0px;padding:15px;\" colSpan='"
                                    + colLength
                                    + "'><p>暂时无数据</p></td></tr>");
                       }else{
@@ -7009,13 +7714,14 @@ initEvent:function(){
             item.children('div').text(i+1);
           }else{
             var key=item.attr('factorcode');
-            item.attr({'id':'td_'+key+i+index,
-                     'compid':"field"+key+i+index+'ID'
+            var Guid=uuid();
+            item.attr({'id':'td_'+key+i+Guid+index,
+                     'compid':"field"+key+i+Guid+index+'ID'
               });
             //var compid="field"+factor.factorcode+(this.compaddedsize)+"ID";
             var itemStr=item.html();
               //替换compid
-            var compid="field"+key+i+index+'ID';
+            var compid="field"+key+i+Guid+index+'ID';
             var fieldtype=item.attr('fieldtype');
             
             item.html(itemStr.replace(new RegExp(("field"+key+"0ID"),"g"),compid));
@@ -7075,20 +7781,25 @@ initEvent:function(){
 	    }
 	    var item=this.params.columns[index];
 	    var itemlist=item['items'];
-	    var keyArr=key.toString().split(",");
-	    var result=[];
-	    for(var j=0;j<keyArr.length;j++){
-	    	var label=keyArr[j];
-	    	for(var i=0;i<itemlist.length;i++){
-	    	      if(itemlist[i]['code'] == label){
-	    	        result.push(itemlist[i]['text']);
-	    	        
-	    	      }
-	    	    }
+	    if(key){
+	    	  var keyArr=key.toString().split(",");
+	  	    var result=[];
+	  	    for(var j=0;j<keyArr.length;j++){
+	  	    	var label=keyArr[j];
+	  	    	for(var i=0;i<itemlist.length;i++){
+	  	    	      if(itemlist[i]['code'] == label){
+	  	    	        result.push(itemlist[i]['text']);
+	  	    	        
+	  	    	      }
+	  	    	    }
+	  	    }
+	  	    var value=result.join(",");
+	  	    td.children("div.showvalue").text(value);
+	  	    td.children("div.showvalue").attr('key',key);
+	    }else{
+	    	td.children("div.showvalue").text("");
 	    }
-	    var value=result.join(",");
-	    td.children("div.showvalue").text(value);
-	    td.children("div.showvalue").attr('key',key);
+	  
 	  },
   /**
    * 缓存当前编辑数据
@@ -7325,6 +8036,7 @@ initEvent:function(){
           $("#"+this.gridtableid+" tr:eq("+rowindex+")").remove();
           _this.deleteData(rowindex);
       }
+      _this.reSetRowNumber();
     },
     /**
      *删除行
@@ -7392,35 +8104,14 @@ initEvent:function(){
     /**
      * 重置表格行号
      */
-    reSetRowNumber:function(){
-      for(var i=0;i<this.pagesize;i++){
-          if(this.firstvisible){
-            //第一列的tr
-            $("#"+this.firsttableid+" tr:eq("+(i+1)+")").attr("rownum",i+1);
-            
-            //第一列的操作 增加列
-            $("#"+this.firsttableid+" tr:eq("+(i+1)+") a[type=addrow]").attr("rownum",i+1);
-            
-            //第一列的操作 删除列
-            $("#"+this.firsttableid+" tr:eq("+(i+1)+") a[type=deleterow]").attr("rownum",i+1);
-            
-            //序号列
-            $("#"+this.firsttableid+" tr:eq("+(i+1)+") span[type=rownum]").attr("rownum",i+1);
-            $("#"+this.firsttableid+" tr:eq("+(i+1)+") span[type=rownum]").text(i+1);
-          }
-          
-          //数据列
-          var oldrownum=$("#"+this.gridtableid+" tr:eq("+(i+1)+")").attr("rownum");
-          $("#"+this.gridtableid+" tr:eq("+(i+1)+")").attr("rownum",i+1);
-          $("#"+this.gridtableid+" tr:eq("+(i+1)+") td").attr("rownum",i+1);
-          
-          //将之前选中过的行 重新设置行号
-          if(this.isRowSelected(oldrownum-1)){
-            delete this.selectedIndex[oldrownum-1];
-            this.selectedIndex[i]=i;
-          }
-      }     
-    },
+    reSetRowNumber: function() {
+        var _this=this,
+            count=_this.trs.length;
+        for (var i = 0; i < count; i++) {
+            $("#" + _this.gridtableid + " tr:eq(" + i + ")").attr("rownum", i);
+            $("#" + _this.gridtableid+ " tr:eq(" + i + ") td").attr("rownum", i);
+        }
+      },
     addRow:function(data){
       var _this=this;
       if(_this.maxRowSize && _this.maxRowSize > 0 && _this.pagesize >= _this.maxRowSize){
@@ -7438,7 +8129,8 @@ initEvent:function(){
       var compindex="0";
         for(var i=0;i<_this.params["columns"].length;i++){
           var factor=_this.params["columns"][i];
-          var compid="field"+factor.factorcode+rownum+i+"ID";
+          var Guid=uuid();
+          var compid="field"+factor.factorcode+rownum+Guid+i+"ID";
           //替换compid
           tabletrhtml=tabletrhtml.replace(new RegExp(("field"+factor.factorcode+compindex+"ID"),"g"),compid);
         
@@ -7711,6 +8403,9 @@ Horn.regUI("div.xeditgrid",Horn.EditGrid) ;
  * 2016-8-31   刘蒙          需求#24920 【TS:201608290111-JRESPlus-内部客户-胡文淑-2.请开放所有输入组件的keyUP事件之类的事件，便于我们做】
  * 2016-9-8    王兰          需求#25358 textfield控件，在配置url属性后，查询图标 建议只在获取焦点检索时显示，焦点移出后，不显示图标
  * 2016-9-26      王兰	    bug#28048 多个textfield组件同时配置url、isSearch，输入查询条件使用tab切换输入框，下拉显示框重叠
+ * 2016-11-15  王兰          需求#26842 [研发中心/内部需求]组件提供getLabel和setLabel方法
+ * 2016-12-1   王兰          需求#28668 【TS:201612010206-财富业委会-江志伟-【缺陷】textarea控制限制字符长度后，可以通过鼠标右键粘贴超过限制长度的内容。
+ * 2016-12-13  王兰          bug#35960 需求25584-password控件，通过setvalue设置值后，密文还是会显示(cls的值存在很多空格引起判断进去)
  * -----------------------------------------------------------------------
  */
 /**
@@ -7935,18 +8630,16 @@ Horn.regUI("div.xeditgrid",Horn.EditGrid) ;
  */
 
 /**
- * 设置label内容
+ * 设置label内容<font color=red>(注：该版本号要求必须为2.0.7或以上版本)</font>
  * @function
  * @name Horn.Field#setLabel
  * @param {String} label 标签内容
- * @ignore
  */
 /**
- * 获取label内容
+ * 获取label内容<font color=red>(注：该版本号要求必须为2.0.7或以上版本)</font>
  * @function
  * @name Horn.Field#getLabel
  * @return 标签内容
- * @ignore
  */
 
 /**
@@ -8263,7 +8956,7 @@ Horn.Field = Horn.extend(Horn.Base,{
 		var isTypefiled=$(this).parent("div.typefield"); 
 		if(max>0){ 
 		//bug 17218 typefield控件设置value值，maxlength截取后，输入框为分隔符未计入位数，但是焦点移入后移出，分隔符又被计入位数
-			if(isTypefiled){//typefield组件分隔符不计入字符计数
+			if(isTypefiled&&isTypefiled.length>0){//typefield组件分隔符不计入字符计数
 				if($(this).attr("inputType")== "cardNo"){//卡号的空格分隔符是2个
 					if(_field.getStrlen(area.val())>(max+2)){ //金额的空格分隔符是1个
 						area.val(_field.getSubstring(area.val(),max+2)); //截断textarea的文本重新赋值 
@@ -8301,6 +8994,23 @@ Horn.Field = Horn.extend(Horn.Base,{
                 	blurFn.apply(_field,params);
          }
 		
+	});
+	//鼠标粘贴事件
+	this.field.bind('paste',function(e){
+		//需求#28668 【TS:201612010206-财富业委会-江志伟-【缺陷】textarea控制限制字符长度后，可以通过鼠标右键粘贴超过限制长度的内容。
+		var area = $(this); 
+		setTimeout(function() { 
+			var text = $(area).val(); 
+			var max=parseInt(_field.params.maxlength,10); //获取maxlength的值 
+			var isTypefiled=$(this).parent("div.typefield"); 
+			if(max>0){
+				if(!isTypefiled||isTypefiled.length==0){
+					if(_field.getStrlen(area.val())>max){ //textarea的文本长度大于maxlength 
+						area.val(_field.getSubstring(area.val(), max)); //截断textarea的文本重新赋值 
+					}
+				}
+			}
+		}, 100); 
 	});
 	
 	//启用模糊查询时，放大镜图标控制显隐  需求#25358
@@ -8758,7 +9468,8 @@ Horn.Field = Horn.extend(Horn.Base,{
      */
     setLabel : function(label){
     	var li = this.el.parent().parent();
-        var lab = $("label", li);
+        //var lab = $("label", li);
+    	var lab =li.find("label:first");
         var red = $("span.m-verify-symbol", lab);
         lab.attr("title",label);
         if (!red.length) {
@@ -8776,8 +9487,13 @@ Horn.Field = Horn.extend(Horn.Base,{
      */
     getLabel : function(){
     	var li = this.el.parent().parent();
-        var span = $("label", li);
-        return span.attr("title");
+        //var span = $("label", li);
+        var span = li.find("label:first");
+        var title = span.attr("title");
+        if(title==undefined){
+        	title="";
+        }
+        return title;
     },
     /**
      * 设置为必填项，同时增加红色的 *
@@ -8838,6 +9554,9 @@ Horn.Field = Horn.extend(Horn.Base,{
     		//this.setNotRequired();
     		this.setEnable(false);
             this.disabled = true;
+            //setdisabled消除验证信息
+            this.removeError();
+            this.field.removeClass('m-verify-success');
     	}
     },
     /**
@@ -8975,6 +9694,10 @@ Horn.Field = Horn.extend(Horn.Base,{
 			_field.field.val(title);
 		}
 		var cls = _field.el.attr("class");
+		//bug#35960 需求25584-password控件，通过setvalue设置值后，密文还是会显示(cls的值存在很多空格引起判断进去)
+		if(cls!=null&&cls!=""){
+			cls = cls.replace(/(^\s*)|(\s*$)/g,'');
+		}
 		if(cls!="hc_password" && cls!="hc_passwordgroup"){
 		_field.field.attr("title",title);
 		}
@@ -10629,6 +11352,8 @@ Horn.regUI("div.h_formgridtitle",Horn.FormGrid) ;
  * 2014-11-10		wangyubao	STORY #10261 [财富管理事业部/陈为][TS:201411060329]-JRESPlus-ui-Grid组件的复选框列选择的时候会影响所在行的其他列中的复选】
  * 2015-02-05     zhangsu   BUG #9192 Grid全选，去掉最后一个钩，再选上，全选框没有显示选中状态
  * 2016-3-2       刘龙                        需求17590 【TS:201603020064-JRESPlus-财富管理事业部-陈为-【产品及版本信息】jresplus-ui-web 1.0.2】
+ * 2016-11-10     王兰     需求#27510 【TS:201611090194-JRESPlus-财富业委会-江志伟-【需求】grid无数据时，暂时无数据这一行可以选中，且Horn.getComp("gridName").getSelecteds()有数据。期望grid和datagrid一样，在无数据时，暂时无数据这一行不可选中。
+ * 2017-01-03     周智星    把$(".hc-datagrid-cell")改成this.el.find(".hc-datagrid-cell")
  * ----------------------------------------------------------------------- 
  */
 
@@ -10964,7 +11689,7 @@ Horn.Grid = Horn.extend(Horn.Base,{
 		
 		var drag = this.params.isDrag+"";
 		if(drag!="false"){
-			$(".hc-datagrid-cell").resizable({
+			this.el.find(".hc-datagrid-cell").resizable({
 				autoHide : true,
 				minHeight : 35,
 				maxHeight : 35,
@@ -11078,7 +11803,11 @@ Horn.Grid = Horn.extend(Horn.Base,{
     		    var _tr = $(tr),
     		    checkbox = _this.mutiSelect?_tr.find("input:checkbox.h_querytable_select"):_tr.find("input:radio.h_querytable_select")//BUG #6574
     		;
-    		    
+    		//需求#27510 【TS:201611090194-JRESPlus-财富业委会-江志伟-【需求】grid无数据时，暂时无数据这一行可以选中，且Horn.getComp("gridName").getSelecteds()有数据。期望grid和datagrid一样，在无数据时，暂时无数据这一行不可选中。
+		    var line = _tr.attr("line");
+    		if(!line||line==undefined){
+    			return;
+    		}    
     		//STORY #10837 【TS:201501280088-JRESPlus-财富管理事业部-陈凯-对一个grid先全选，然后去掉最后一个勾，然后再想选最后一个】
     		_tr.bind('click',function(e) {    //BUG #6599
     			if($.isEmptyObject(_this.selecteds)){
@@ -11699,6 +12428,8 @@ Horn.regUI("div.h_formtable",Horn.Grid) ;
  * 修改日期       修改人员        修改说明
  * ----------------------------------------------------------------------- 
  * 2016-09-11    liumeng      新组件开发
+ * 2016-11-16    liumeng      #27690 【TS:201611110050-JRESPlus-资管业委会（资管）-张翔-【需求描述】希望控件支持：分组显示，且分组下的列数据可编辑，类似下面2个控件的功能合并
+ * 2016-12-21    liumeng      #36410bug 新增isDrag属性，且selectModel设置为multi，拖动列头时分组的图标会错行
  *-----------------------------------------------------------------------
  */
 
@@ -11740,6 +12471,13 @@ Horn.regUI("div.h_formtable",Horn.Grid) ;
 	 * @example
 	 * 无
 	 */
+   /**
+	 * @description 组件是否自动加载url指向的数据集的控制开关。当autoLoad为true时会自动ajax请求url，并加载请求到的数据。
+	 * @property autoLoad
+	 * @name Horn.GroupGrid#<b>autoLoad</b>
+	 * @type boolean
+	 * @default true
+	 */
 	/**
 	 * @description 组件启用单选/多选选择框,当值为single时为单选列表，仅能够选择一条数据；当其值为multi时为多选列表，可同时选择多条数据。
 	 * @property selectModel
@@ -11749,6 +12487,14 @@ Horn.regUI("div.h_formtable",Horn.Grid) ;
 	 * @example
 	 * "selectModel":"single",单选列表
 	 * "selectModel":"multi",多选列表
+	 */
+    /**
+	 * @description 组件单元是否双击可编辑，默认false,不可编辑 (2.0.7版本及以上支持此属性)
+	 * @property editable
+	 * @name Horn.GroupGrid#<b>editable</b>
+	 * @type boolean
+	 * @default 无
+	 * @example
 	 */
 	/**
 	 * @description 列表初始化数据。加载的静态数据,json类型的object数组，可以使用内置的分页栏
@@ -11787,11 +12533,16 @@ Horn.regUI("div.h_formtable",Horn.Grid) ;
 		<tr><td>name</td>	<td>sring</td>		<td>列字段名</td>	<td>--</td>	</tr>
 		<tr><td>text</td>		<td>string	</td>	<td>列标题</td>	<td>--</td>	</tr>
 		<tr><td>width</td>	<td>number</td>	<td>列宽	px</td>	<td>--</td>	</tr>
+		<tr><td>hidden</td>	<td>boolean</td>	<td>是否隐藏列</td>	<td>--</td>	</tr>
+		<tr><td>renderer</td>	<td>func</td>	<td>列渲染函数,函数参数:Object,例如{val : String ,rowdata : Object,alldata : Array,table : this,tdidx : num,tr : jquery,td : jquery}}，其中rowdata代表行数据，alldata代表所有行的数据，table代表当前组件的对象，tdidx代表单元格的索引，tr代表行的jquery对象，td代表单元格的jquery的对象。注，分组可编辑模式下暂不支持此属性！</td>	<td>--</td>	</tr>
+		<tr><td>fieldtype</td>	<td>string</td>	<td>如果配置了editabl为true,则此项必填，单元格组件编辑类型，0是只读文本，不可编辑 ，1是普通文本，2是数字类型，3是金额，4是日期类型，5是静态下拉框，6是数据字典类型下拉框，</td>	<td>--</td>	</tr>
+		<tr><td>dictName</td>	<td>string</td>	<td>下拉列表翻译的字典条目名称，如果配置了editabl为true,是数据字典型下拉框，则此属性必填</td>	<td>--</td>	</tr>
 	</table>
 
 			使用方法："items":[{
 			"name":"name6",
 			"text":"字段6",
+			"hidden":false,
 			"width":100
 			}]	
 	 */
@@ -11837,14 +12588,43 @@ Horn.regUI("div.h_formtable",Horn.Grid) ;
 	/**
 	 * @description 初始化时组是否全部展开显示，默认是true，全部展开。
 	 * @property isExpand
-	 * @name Horn.GroupGrid#<b>rowSelect</b>
+	 * @name Horn.GroupGrid#<b>isExpand</b>
 	 * @type boolean
 	 * @default false
 	 * @example
-	 * "rowSelect":true可以开启行选中
+	 * "isExpand":true
+	 */
+
+     /**
+	 * @description 冻结表格标题，默认false。
+	 * @property frozenHead
+	 * @name Horn.GroupGrid#<b>frozenHead</b>
+	 * @type boolean
+	 * @default false
+	 * @example
+	 * 
+	 */
+
+     /**
+	 * @description 表格列是否可以拖拽(默认为false)。</br>
+	 * @property isDrag
+	 * @name Horn.GroupGrid#<b>isDrag</b>
+	 * @type Boolean
+	 * @default false
+	 * @example
+	 * 无
+	 */
+	/**
+	 * @description 配置表格的高度的属性，默认是自适应宽高(不建议设置高度)。
+	 * @property height
+	 * @name Horn.GroupGrid#<b>height</b>
+	 * @type number
+	 * @default 无
+	 * @example
+	 * "height":300
 	 */
     /**
-	 * @description titleButton显示。
+	 * @description titleButton显示（注！如果初始时没有按钮，之后需通过addButton方法动态添加按钮，请刚开始将buttons属性设置为[{}]格式）。
 	 * @property buttons
 	 * @name Horn.GroupGrid#<b>buttons</b>
 	 * @type object
@@ -11915,7 +12695,19 @@ Horn.regUI("div.h_formtable",Horn.Grid) ;
 	 * @example  无
 	 * 
 	 */
+/**
+	 * 表格行单击事件<br/>
+	 * @name Horn.GroupGrid#<b>rowclick</b>
+	 * @param {Object} rowdata    返回的当前行数据
+	 * @event
+	 * @example  无
+	 * 
+	 */
 	
+function registeSelfui(html){
+	var el = $(html);
+	Horn.getUIReady()(el, true);	
+}		
 Horn.GroupGrid=Horn.extend(Horn.Base,{
 	 COMPONENT_CLASS : "GroupGrid",
 	    id:"dyncGroupGrid",
@@ -11929,6 +12721,8 @@ Horn.GroupGrid=Horn.extend(Horn.Base,{
 		emptyMsg:"",
 		rowSelect:false,
 		hasPage:false,
+		isDrag:false,
+		frozenHead: false,
 		toolbar:null,
 		isExpand:true,
 		pagebar:null,
@@ -11936,8 +12730,7 @@ Horn.GroupGrid=Horn.extend(Horn.Base,{
 		reqPageNo:1,
 		reqPageSize:10,
 		
-	init:function(){
-		
+	init:function(){		
 		 Horn.GroupGrid.superclass.init.apply(this,arguments);
 		 this.name = this.params["name"]||this.name;
 		 var _this=this;
@@ -11954,28 +12747,85 @@ Horn.GroupGrid=Horn.extend(Horn.Base,{
 	        });
 		 if(_this.params.isExpand!=undefined){
 			 _this.isExpand=_this.params.isExpand;
-		 }
+		 }	
+		 if(this.params["autoLoad"]!=undefined && this.params["autoLoad"].toString()=="false"){
+				this.autoLoad = this.params["autoLoad"];
+		}
 		 _this.initElement();
-		 _this.initEvent();
+		// _this.initEvent();
 		 _this.processReqConf()
 		 if(!_this.params.pageConfig){
 				_this.pageConfig = {};
 			}
-		 if(_this.params.url&&_this.params.url!=""){
+		 var drag = _this.params.isDrag+"";
+		 if(drag=="true"){
+		        //#25278 datagrid控件中，若是screen与window中同时有datagrid，拖动其中一个datagrid，只有列头能拖动，列内容无法拖动
+		        _this.el.find(".u-groupgrid-cell").resizable({
+		            autoHide : true,
+		            minHeight : 35,
+		            maxHeight : 35,
+		            resize : function(event, ui) {
+		              var width = ui.size.width;
+		              var td = $(ui.element[0]).parent().parent().find("td");
+		              $(ui.element[0]).parent().css("width", width);
+		              var index = td.index($(ui.element[0]).parent());
+		              var trs = $("#grouptable_"+_this.id).find('tr');
+		              trs.each(function(idx, trdom) {
+		                var tr = $(trdom);
+		                // #36410bug 新增isDrag属性，且selectModel设置为multi，拖动列头时分组的图标会错行
+		                 if(!tr.hasClass('u-groupgrid-grouphead')){
+			                $(tr.children("td").get(index)).css("width", width);
+			                $(tr.children("td").get(index)).children("div")
+			                    .css("width", width);
+		                 }
+		              });
+		            }
+		        });
+		      }
+		 if(_this.params.editable){
+			 _this.savebtn=_this.el.find('#saveBTN_'+_this.id);
+				_this.refreshbtn=_this.el.find('#refreshBTN_'+_this.id);
+				$(_this.savebtn).on('click',function(){
+			          _this.saveData();
+			            if(_this.save){
+			             var saveEditObj = Horn.Util.getFunObj(_this.save),
+			            saveEditFn;
+			                 if($.type(saveEditObj.fn) == "function"){
+			                  saveEditFn = saveEditObj.fn ;
+			                 }
+			                 if(saveEditFn)
+			                  saveEditFn.apply(_this,[_this.data]);
+			           }
+			        })
+			       $(_this.refreshbtn).on('click',function(){
+				      _this.reload();
+				    })
+		 }
+		 if(_this.params.url&&_this.params.url!=""&&_this.autoLoad){
 			 _this.load(_this.params.url);
 			 return;
 		 }
 		 if(_this.params.data&&_this.params.data.length>0){
 			 _this.data=_this.params.data;
+			 _this.loadFlag = "staticData";
 			 _this.selecteds=$.extend(true, [], _this.data);
 			 for(var i=0;i<_this.selecteds.length;i++){
 				 _this.selecteds[i].items=[];
 			 }
-			 _this.loadData(_this.data);
+			 if(_this.params.editable){
+				 _this.editingCell=[];
+				 _this.cacheData=[];
+				 $.extend(true, _this.cacheData, _this.data);
+				 _this.creatEditTable(_this.data);
+			 }else{
+				 _this.loadGroupTable(_this.data);
+			 }
 			 _this.storgedData = _this.data["data"]?_this.data["data"]:_this.data;
 			 _this.reqPage(_this.reqPageNo,_this.reqPageSize);
 		 }
-		
+		 if(!_this.autoLoad){
+			 _this.pageBtnDisabled(true);
+		 }
 	},
 	/**
 	 * @ignore
@@ -11993,6 +12843,10 @@ Horn.GroupGrid=Horn.extend(Horn.Base,{
 	    }
 		_this.table=_this.el.find('#grouptable_'+this.id); 
 		_this.header=_this.table.find('thead>tr');
+		if (_this.params.frozenHead) {
+		      var headtable = _this.el.find('#head_' + _this.id);
+		      _this.header = headtable.find('tbody>tr');
+		    }
 		_this.tbody=_this.table.find('#grouptbody_'+this.id);
 	},
 	/**
@@ -12012,6 +12866,12 @@ Horn.GroupGrid=Horn.extend(Horn.Base,{
 		}else{
 			_this.expandAll(false);
 		}
+		if(_this.params.editable){
+			_this.table.find('tbody').unbind('dblclick');
+			_this.table.find('tbody').bind('dblclick',function(e){
+		        _this.editCell(e);
+		      });  
+		}
 	},
 	
 	initHeighlightEvent:function(){
@@ -12020,7 +12880,12 @@ Horn.GroupGrid=Horn.extend(Horn.Base,{
 	      trs.each(function(index,trdom){
 	        var tr = $(trdom);
 		        if(_this.params.rowSelect&&!tr.hasClass('u-groupgrid-grouphead')){
-		        	tr.on("click",function(){
+		        	tr.on("click",function(e){
+		        		var target=$(e.target);
+		        		var idx=target.index();
+						if(target.attr('type')=="checkbox"||target.attr('type')=="radio"){
+							return;
+						}
 		        		if(_this.params.selectModel=="multi"){
 		        			if(tr.hasClass('selected')){
 		        				_this.isRowSelect(false,tr,index);
@@ -12030,17 +12895,34 @@ Horn.GroupGrid=Horn.extend(Horn.Base,{
 		        			 _this.setGroupcheckStatus(tr);
 		        		}else{
 		        			if(tr.hasClass('selected')){		                     
-			                      if(_this.lastselect.index==index){
+			                      if(_this.lastselect.index==idx){
 			                    	  _this.lastselect={};
 			                      }
-			                      _this.isRowSelect(false,tr,index);
+			                      _this.isRowSelect(false,tr,idx);
 			                    }else{
-			                       if(_this.lastselect&&_this.lastselect.index!=index){
+			                       if(_this.lastselect&&_this.lastselect.index!=idx){
 				                    	  _this.isRowSelect(false,_this.lastselect.tr,_this.lastselect.index);
 				                      }
-			                       _this.isRowSelect(true,tr,index);
+			                       _this.isRowSelect(true,tr,idx);
 			                    }
 		        		}
+		        		 if(_this.rowclick){
+		        	         var  rowclickObj = Horn.Util.getFunObj(_this.rowclick),
+		        	         rowclickFn;
+		        	         var params=rowclickObj.params,
+	        	         	 group=$(this).attr('groupindex'),
+	        	         	 index=$(this).attr('itemindex');
+			        	         if(group&&index){
+			        	        	 var rowdata=_this.data[group].items[index];
+				        	         params.push(rowdata);
+			        	         }
+		        	             if($.type(rowclickObj.fn) == "function"){
+		        	            	 rowclickFn = rowclickObj.fn ;
+		        	             }
+		        	             if(rowclickFn)
+		        	            	 rowclickFn.apply(_this,params);
+		        	             return;
+		        	       }   
 		        	})
 		        }
 	        });
@@ -12091,7 +12973,9 @@ Horn.GroupGrid=Horn.extend(Horn.Base,{
 	initMulSelectEvent:function(){
 		var _this=this;
 		var trs=_this.table.find('tbody>tr');
-		 _this.el.find('.h_groupgrid_select_all').change(function(){
+		var  selectall=_this.el.find('.h_groupgrid_select_all'),
+		  allcheck=_this.table.find('tr').length-1;
+		selectall.change(function(){
 	          if(this.checked){
 	            _this.selectAll();
 	          }else{
@@ -12101,8 +12985,9 @@ Horn.GroupGrid=Horn.extend(Horn.Base,{
 		 trs.each(function(index,dom){
 			 var tr = $(dom);
 	          var  input = tr.find('input[type="checkbox"]');
+	          
 	          var name=input.attr('name');
-	          if(name.indexOf('groupcheck')<0){
+	          if(name&&name.indexOf('groupcheck')<0){
 	        	  input.change(function(){
 	                  if(this.checked){
 	                    _this.isRowSelect(true,tr,index);
@@ -12119,10 +13004,12 @@ Horn.GroupGrid=Horn.extend(Horn.Base,{
 	        				  var item=$(item);
 	        				  _this.isRowSelect(true,item,index);
 	        			  })
-	        			    
+	        			  if(_this.table.find('input[name!="selectall"]:checked').length==allcheck){
+	        					selectall.prop("checked", true);
+	        				}
 		                   // _this.isRowSelect(true,tr,index);
 		                  }else{
-		                	  
+		                	  selectall.prop("checked", false);
 		                	  childrens.each(function(index,item){
 		        				  var item=$(item);
 		        				  _this.isRowSelect(false,item,index);
@@ -12146,15 +13033,15 @@ Horn.GroupGrid=Horn.extend(Horn.Base,{
 			 var tr = $(dom);
 	          var  input = tr.find('input[type="radio"]');
 	          input.change(function(){
-                 if(this.checked){
-               	  if(_this.lastselect&&_this.lastselect.index!=index){
-                   	  _this.isRowSelect(false,_this.lastselect.tr,_this.lastselect.index);
-                     }
-                   _this.isRowSelect(true,tr,index);
-                 }else{
-                   _this.isRowSelect(false,tr,index);
-                 }
-               });
+               if(this.checked){
+             	  if(_this.lastselect&&_this.lastselect.index!=index){
+                 	  _this.isRowSelect(false,_this.lastselect.tr,_this.lastselect.index);
+                   }
+                 _this.isRowSelect(true,tr,index);
+               }else{
+                 _this.isRowSelect(false,tr,index);
+               }
+             });
 		})
 		
 	},
@@ -12222,6 +13109,85 @@ Horn.GroupGrid=Horn.extend(Horn.Base,{
 		}
 		
 	},
+	
+	  editCell:function(e){
+	      var _this=this;
+	      var target=$(e.target).closest('td');
+	      if(_this.params.numbercolumn&&target.index()==0){
+	        return;
+	      }
+	      var value=target.find('.showvalue').text();
+	    var compid=target.attr('compid');	    
+	    var fieldtype=target.attr('fieldtype');
+	    if(fieldtype==='0'){
+	    	return;	    	
+	    }
+	    var compVal=Horn.getComp(compid).getValue();
+	    if(value!=""&&compVal==""){
+	      if(fieldtype=='6'||fieldtype=="5"){
+	        var key=target.find('.showvalue').attr('key');
+	        Horn.getComp(compid).setValue(key);
+	      }else{
+	        Horn.getComp(compid).setValue(value);
+	      }
+	    }
+	      
+	    if(_this.editingCell.length==0){
+	      _this.editingCell=target;
+	      
+	      target.find('.content').show();
+	      //  var compid=target.attr('compid');
+	        //Horn.getComp(compid).focus();
+	      target.find('.showvalue').hide();
+	    }
+	    if(_this.editingCell.attr('id')==target.attr('id')){
+	      return;
+	    }else{
+	      _this.changeCelldata(_this.editingCell);
+	      
+	      target.find('.content').show();
+	    //  var compid=target.attr('compid');
+	      //Horn.getComp(compid).focus();
+	      target.find('.showvalue').hide();
+	      _this.editingCell=target;
+	    }
+	    },
+	    
+	    /**
+	     * 缓存当前编辑数据
+	     * @ignore
+	     */
+	    changeCelldata:function(item){
+	      var _this=this;
+	      if(item.length==0){
+	        return;
+	      }
+	      
+	      item.find('.content').hide();
+	      var compid=item.attr('compid');
+	      var key=item.attr('factorcode');
+	      var comp=Horn.getComp(compid);
+	      if(comp==undefined){
+	        return;
+	      }
+	      var value=Horn.getComp(compid).getValue(true);
+	      var type=item.attr('fieldtype');
+	      item.find('.showvalue').text(value).show();
+	      var index=parseInt(item.attr('rownum'));
+	      var group=parseInt(item.attr('group'));
+	      if(type=='5'||type=='6'){
+	       var data=Horn.getComp(compid).getValue();
+	       item.find('.showvalue').attr('key',data);
+	         _this.cacheData[group].items[index][key]=data;
+	      }else{
+	    	  _this.cacheData[group].items[index][key]=value;
+	      }
+	      
+	    },
+	
+	    destroyUI:function(){
+	        Horn.destroy('field','ID$_');
+	      },
 	/**
 	 * @description 选中所有行数据，只针对多选模式，单选模式下无效
 	 * @name Horn.GroupGrid#selectAll
@@ -12231,14 +13197,14 @@ Horn.GroupGrid=Horn.extend(Horn.Base,{
 	selectAll:function(){
 		var _this = this;
 		var trs=_this.table.find('tbody>tr');
-   	trs.each(function(index,dom){
-   		 var tr = $(dom);
-   		_this.isRowSelect(true,tr,index);	   
-   	});
-   	var headCheck = _this.header.find(".h_groupgrid_select_all");
-   	if(headCheck.length>0){
-   		headCheck.prop("checked", true);
-   	}
+ 	trs.each(function(index,dom){
+ 		 var tr = $(dom);
+ 		_this.isRowSelect(true,tr,index);	   
+ 	});
+ 	var headCheck = _this.header.find(".h_groupgrid_select_all");
+ 	if(headCheck.length>0){
+ 		headCheck.prop("checked", true);
+ 	}
 	},
 	/**
 	 * @description 取消选中所有行数据，只针对多选模式，单选模式下无效
@@ -12249,14 +13215,14 @@ Horn.GroupGrid=Horn.extend(Horn.Base,{
 	unSelectAll:function(){
 		var _this = this;
 		var trs=_this.table.find('tbody>tr');
-   	trs.each(function(index,dom){
-   		 var tr = $(dom);
-   		_this.isRowSelect(false,tr,index);	   
-   	});
-   	var headCheck = _this.header.find(".h_groupgrid_select_all");
-   	if(headCheck.length>0){
-   		headCheck.prop("checked", false);
-   	}
+ 	trs.each(function(index,dom){
+ 		 var tr = $(dom);
+ 		_this.isRowSelect(false,tr,index);	   
+ 	});
+ 	var headCheck = _this.header.find(".h_groupgrid_select_all");
+ 	if(headCheck.length>0){
+ 		headCheck.prop("checked", false);
+ 	}
 		
 	},
 	
@@ -12311,7 +13277,7 @@ Horn.GroupGrid=Horn.extend(Horn.Base,{
 	},
 	
 	
-    load : function(data,params){
+  load : function(data,params){
 	    params = params ||{};
 	    this.loadFlag="autoLoad";
 	    if($.type(params)=="array"){
@@ -12319,7 +13285,10 @@ Horn.GroupGrid=Horn.extend(Horn.Base,{
 	        }
 	    this.reqPageNo = params["pageNo"] || this.reqPageNo;
 		this.reqPageSize = params["pageSize"] || this.reqPageSize;
-		
+		if(this.loadFlag  && this.loadFlag != "autoLoad"){
+			this.reqPageNo = 1;
+		}
+		this.loadFlag="autoLoad";
 		if(this.hasPage){
 			params["pageNo"] = this.reqPageNo;
 			params["pageSize"] = this.reqPageSize;
@@ -12363,11 +13332,20 @@ Horn.GroupGrid=Horn.extend(Horn.Base,{
 	         $.ajax(url,
 	          {
 	             async : true,
+	             beforeSend : function(xhr) {
+	            	   _this.table.find('tbody').remove();
+	            	   _this.table.append("<tbody><tr><td style=\"border-right:0px;padding:15px;\" colspan='"
+	                       + colLength
+	                       + "'><img src='"+context_path+"/components/datagrid/img/hc_onLoad.gif'></img></td></tr></tbody");
+	            	   _this.table.addClass('u-groupgrid-loading');
+	            	  
+	               },
 	               type : "POST",
 	               data : Horn.Util.obj2Arr(data) ,
 	               dataType : "json",
 	               error : function(xhr, textStatus, errorThrown) {
 	                   var status = xhr.status;
+	                   _this.table.removeClass('u-groupgrid-loading');
 	                  _this.loadErrorCallback(textStatus);
 	               },
 	               success : function(resultData, textStatus, jqXHR) {  
@@ -12391,53 +13369,52 @@ Horn.GroupGrid=Horn.extend(Horn.Base,{
 	         });
 	       // _this.autoDataHeight();
 	  },
-  /**
-   * 加载数据失败回调函数
-   * @ignore
-   */
-   loadErrorCallback:function(textStatus){
-    var _this=this;
-    var colLength =_this.header.children().length;
-      _this.tbody.empty().html( "<tr><td style=\"border-right:0px;padding:15px;\" colSpan='"
-                           + colLength
-                           + "'><p>暂时无数据</p><p>错误状态："+status+";错误信息："+textStatus+"</p></td></tr>");
+/**
+ * 加载数据失败回调函数
+ * @ignore
+ */
+ loadErrorCallback:function(textStatus){
+  var _this=this;
+  var colLength =_this.header.children().length;
+    _this.table.find('tbody').remove();
+    _this.table.append( "<tbody><tr><td style=\"border-right:0px;padding:15px;\" colSpan='"
+                         + colLength
+                         + "'><p>暂时无数据</p><p>错误状态："+status+";错误信息："+textStatus+"</p></td></tr></tbody>");
 
-   },
+ },
 
 /**
-   * 加载数据成功回调函数
-   * @ignore
-   */
-   loadSuccessCallback:function(resultData,tbodyTemplateStr){
-    var _this=this;
-    if(!resultData||$.isEmptyObject(resultData)){
-     _this.tbody.empty().html(tbodyTemplateStr);        
-       if(_this.loaderror){
-         var  loaderrorObj = Horn.Util.getFunObj(_this.loaderror),
-         loaderrorFn;
-             if($.type(loaderrorObj.fn) == "function"){
-               loaderrorFn = loaderrorObj.fn ;
-             }
-             if(loaderrorFn)
-               loaderrorFn.apply(_this,[_this.el,resultData]);
-             return;
-       }   
-   }else{
-      var data = resultData["data"];
-      _this.initPagebar(resultData);
-        if(data&&(data.length==0||$.isEmptyObject(data))){
-         _this.tbody.empty().html(tbodyTemplateStr);
-       }else{
-             _this.data = resultData.data;
-             _this.selecteds=$.extend(true, [], _this.data);
-			 for(var i=0;i<_this.selecteds.length;i++){
-				 _this.selecteds[i].items=[];
-			 }
-             _this.table.find('tbody').unbind().remove();
-             _this.loadData(_this.data);
+ * 加载数据成功回调函数
+ * @ignore
+ */
+ loadSuccessCallback:function(resultData,tbodyTemplateStr){
+  var _this=this;
+  _this.table.removeClass('u-groupgrid-loading');
+  if(!resultData||$.isEmptyObject(resultData)){
+	   _this.table.find('tbody').remove();
+  	_this.table.append("<tbody>"+tbodyTemplateStr+"</tbody>");     
+     if(_this.loaderror){
+       var  loaderrorObj = Horn.Util.getFunObj(_this.loaderror),
+       loaderrorFn;
+           if($.type(loaderrorObj.fn) == "function"){
+             loaderrorFn = loaderrorObj.fn ;
            }
+           if(loaderrorFn)
+             loaderrorFn.apply(_this,[_this.el,resultData]);
+           return;
+     }   
+ }else{
+    var data = resultData["data"];
+    _this.initPagebar(resultData);
+      if(data&&(data.length==0||$.isEmptyObject(data))){
+      	_this.table.find('tbody').remove();
+      	_this.table.append("<tbody>"+tbodyTemplateStr+"</tbody>");
 
-       }
+     }else{
+  	   _this.loadData(data);
+         }
+
+     }
 	 },
 	 /**
 	    * @description 加载数据到表格中
@@ -12446,59 +13423,261 @@ Horn.GroupGrid=Horn.extend(Horn.Base,{
 	    * @param {object} data 加载的数据<br>
 	    * @return void
 	    */
-	loadData:function(data){
-		var _this=this,
-		  body = [],
-	      h=body.length,
-	      count=data.length,
-	      size=_this.header.children().length;
-		var pageNo = _this.params["pageConfig"]["pageNo"];
-		var pageSize = _this.params["pageConfig"]["pageSize"];
-		var header=_this.params.items;
-		_this.reqPageNo = pageNo?pageNo:1;
-		_this.reqPageSize=pageSize?pageSize:10;
-	     for( var i = 0; i< count; i++) {
-	      body[h++] = '<tbody><tr class="u-groupgrid-grouphead">';
-	      if(_this.params.selectModel=="multi"){
-	    	  body[h++]='<td style="width:36px;"><div class="hc-datagrid-cell-check" style="TEXT-aLIGN: center;width:36px;"><input type="checkbox" name="'+_this.name+'groupcheck"></div></td>';
-	    	  body[h++] = '<td colspan="'+(size-1)+'"><div class="u-groupgrid-grouphead-title"><span class="fa-stack"><i class="fa fa-square-o fa-stack-1x"></i><i class="fa fa-angle-down fa-stack-1x"></i></span><span>'+data[i].title+'</span></div></td>';
-	      }else{
-	    	  body[h++] = '<td colspan="'+size+'"><div class="u-groupgrid-grouphead-title"><span class="fa-stack"><i class="fa fa-square-o fa-stack-1x"></i><i class="fa fa-angle-down fa-stack-1x"></i></span><span>'+data[i].title+'</span></div></td>'; 
+		loadData:function(data){
+			var _this=this;
+			_this.data =data;
+	        _this.selecteds=$.extend(true, [], _this.data);
+			 for(var i=0;i<_this.selecteds.length;i++){
+				 _this.selecteds[i].items=[];
+			 }
+			 _this.table.removeClass('u-groupgrid-loading');
+	        _this.table.find('tbody').unbind().remove();
+	        if(_this.params.editable){
+	       	 _this.editingCell=[];
+				 _this.cacheData=[];
+				 $.extend(true, _this.cacheData, _this.data);
+	       	 _this.creatEditTable(_this.data);
+	        }else{
+	       	 _this.loadGroupTable(_this.data);
+	        }
+		},
+		loadGroupTable:function(data){
+			var _this=this,
+			  body = [],
+		      h=body.length,
+		      count=data.length,
+		      size=_this.header.children().length;
+			var pageNo = _this.params["pageConfig"]["pageNo"];
+			var pageSize = _this.params["pageConfig"]["pageSize"];
+			var header=_this.params.items;
+			_this.reqPageNo = pageNo?pageNo:1;
+			_this.reqPageSize=pageSize?pageSize:10;
+		//	_this.table.find('tbody').unbind().remove();
+		     for( var i = 0; i< count; i++) {
+		      body[h++] = '<tbody><tr class="u-groupgrid-grouphead">';
+		      if(_this.params.selectModel=="multi"){
+		    	  body[h++]='<td style="width:36px;"><div class="hc-datagrid-cell-check" style="TEXT-aLIGN: center;width:36px;"><input type="checkbox" name="'+_this.name+'groupcheck"></div></td>';
+		    	  body[h++] = '<td colspan="'+(size-1)+'"><div class="u-groupgrid-grouphead-title"><span class="fa-stack"><i class="fa fa-square-o fa-stack-1x"></i><i class="fa fa-angle-down fa-stack-1x"></i></span><span>'+data[i].title+'</span></div></td>';
+		      }else{
+		    	  body[h++] = '<td colspan="'+size+'"><div class="u-groupgrid-grouphead-title"><span class="fa-stack"><i class="fa fa-square-o fa-stack-1x"></i><i class="fa fa-angle-down fa-stack-1x"></i></span><span>'+data[i].title+'</span></div></td>'; 
+		      }
+		      
+		      body[h++]='</tr>';
+		      var items=data[i].items;
+		         for(var l=0;l<items.length;l++){
+		            body[h++] = '<tr groupIndex="'+i+'" itemIndex="'+l+'">';
+		            if(_this.params.selectModel=="single"){
+		            	body[h++]='<td style="width:36px;"><div class="hc-datagrid-cell-check" style="TEXT-aLIGN: center;width:36px;"><input type="radio" name="'+_this.name+'radiobtn"></div></td>';
+		            }else if(_this.params.selectModel=="multi"){
+		            	 body[h++]='<td style="width:36px;"><div class="hc-datagrid-cell-check" style="TEXT-aLIGN: center;width:36px;"><input type="checkbox" name="'+_this.name+'checkbox"></div></td>';
+		            }
+		            for(var n=0;n<header.length;n++){
+		            	var key=header[n]['name'],
+	            	    width=header[n]['width'],
+	            	    hidden=header[n]['hidden'],
+	            	    renderer=header[n]['renderer'];
+		            	if(hidden&&hidden.toString()==='true'){
+		            		hidden='display:none';
+		            	}else{
+		            		hidden=""
+		            	}
+		            	if(renderer){
+		            		renderer=renderer;
+		            	}else{
+		            		renderer="";
+		            	}
+		            	if (n == (header.length - 1)) {
+		                       body[h++] = '<td style="width:auto;'+hidden+'"" renderer="'+renderer+'"><div style="width:100px;overflow: hidden; white-space: nowrap;text-overflow: ellipsis;">' + items[l][key] + '</div></td>';
+		                  } else {
+		                       if (width) {
+		                         body[h++] = '<td style="width:' + width + 'px;'+hidden+'"" renderer="'+renderer+'" ><div style="width:' + width + 'px;overflow: hidden; white-space: nowrap;text-overflow: ellipsis;">' + items[l][key] + '</div></td>';
+		                       } else {
+		                         body[h++] = '<td style="width:100px;'+hidden+'"" renderer="'+renderer+'"><div style="width:100px;overflow: hidden; white-space: nowrap;text-overflow: ellipsis;">' + items[l][key] + '</div></td>';
+		                       }
+		                   }
+		              }
+		            body[h++] = '</tr>';
+		         }
+		        body[h++] = '</tbody>';  
+		      };
+		      
+		      _this.storgedData=data;
+			//_this.reqPage(_this.reqPageNo,_this.reqPageSize);
+		     _this.table.append(body.join(''));
+		     if (_this.params.height && !isNaN(_this.params.height)) {
+		         _this.table.parent().height(_this.params.height);
+		       }
+		     _this.initEvent();
+		     _this.columnRender();
+		},
+	creatEditTable:function(data){
+	     var trString="",
+	       htmlArr=[],
+	       _this=this,
+	        size = _this.header.children().length,
+	    td=$("#grouptable_"+_this.id+"_copyedittab").find('td');
+	     _this.table.find('tbody').remove();
+	         if(data&&data.length>0){
+	           for (var i = 0,tb=data.length; i < tb; i++) {
+	               var tbody=$('<tbody></tbody>');
+	               var titletr=$('<tr class="u-groupgrid-grouphead"></tr>')
+	               if (_this.params.selectModel == "multi") {
+	                 titletr.append('<td style="width:36px;"><div class="hc-datagrid-cell-check" style="TEXT-aLIGN: center;width:36px;"><input type="checkbox" name="' + _this.name + 'groupcheck"></div></td>');
+	                 titletr.append('<td colspan="' + (size - 1) + '"><div class="u-groupgrid-grouphead-title"><span class="fa-stack"><i class="fa fa-square-o fa-stack-1x"></i><i class="fa fa-angle-down fa-stack-1x"></i></span><span>' + data[i].title + '</span></div></td>')
+	               }else{
+	                  titletr.append('<td colspan="' + size + '"><div class="u-groupgrid-grouphead-title"><span class="fa-stack"><i class="fa fa-square-o fa-stack-1x"></i><i class="fa fa-angle-down fa-stack-1x"></i></span><span>' + data[i].title + '</span></div></td>');
+	               }
+
+	               tbody.append(titletr);
+	      for(var n=0,item=data[i].items.length;n<item;n++){
+	        var itemData = data[i].items[n];
+	        var tr=$('<tr groupIndex='+i+' itemIndex='+n+' ></tr>');
+	        td.each(function(index){
+	          var item=$(this).clone();
+	            var key=item.attr('factorcode');
+	            var Guid=uuid();
+	            item.attr({'id':'td_'+key+n+Guid+index,
+	                     'compid':"field"+key+n+Guid+index+'ID',
+	                     'rownum':n,
+	                     'group':i
+	              });
+	            //var compid="field"+factor.factorcode+(this.compaddedsize)+"ID";
+	            var itemStr=item.html();
+	              //替换compid
+	            var compid="field"+key+n+Guid+index+'ID';
+	            var fieldtype=item.attr('fieldtype');
+	            
+	            item.html(itemStr.replace(new RegExp(("field"+key+"0ID"),"g"),compid));
+	            item.find('div.showvalue').text(itemData[key]).show();
+	            if(fieldtype=="6"){
+	              var th = $(_this.header.find('td')[index]);
+	              var dictName = th.attr("dictName");
+	               
+	              _this.dictColRender(item,dictName,itemData[key]);
+	            }
+	            if(fieldtype=="5"){
+	              _this.staticDict(item,index,itemData[key]);
+	            }
+
+	          
+	          tr.append(item);
+	        })
+	        tbody.append(tr);
 	      }
-	      
-	      body[h++]='</tr>';
-	      var items=data[i].items;
-	         for(var l=0;l<items.length;l++){
-	            body[h++] = '<tr groupIndex="'+i+'" itemIndex="'+l+'">';
-	            if(_this.params.selectModel=="single"){
-	            	body[h++]='<td style="width:36px;"><div class="hc-datagrid-cell-check" style="TEXT-aLIGN: center;width:36px;"><input type="radio" name="'+_this.name+'radiobtn"></div></td>';
-	            }else if(_this.params.selectModel=="multi"){
-	            	 body[h++]='<td style="width:36px;"><div class="hc-datagrid-cell-check" style="TEXT-aLIGN: center;width:36px;"><input type="checkbox" name="'+_this.name+'checkbox"></div></td>';
-	            }
-	            for(var n=0;n<header.length;n++){
-	            	var key=header[n]['name'];
-	            	var width=header[n]['width'];
-	            	 if(width){
-	            		 body[h++] = '<td><div>'+items[l][key]+'</div style="'+width+'px"></td>';
-	            	 }else{
-	            		 body[h++] = '<td><div>'+items[l][key]+'</div></td>';
-	            	 }
-	            }
-	              /*for(var j in items[l]){
-	                 body[h++] = '<td><div>'+items[l][j]+'</div></td>';
-	              }*/
-	            body[h++] = '</tr>';
-	         }
-	        body[h++] = '</tbody>';  
-	      };
-	      
-	      _this.storgedData=data;
-		//_this.reqPage(_this.reqPageNo,_this.reqPageSize);
-	     _this.table.append(body.join(''));
-	    // _this.pageBtnDisabled(false);
-	     _this.initEvent();
-	},
-	
+	       _this.table.append(tbody);
+	     };
+	     // this.tbody.empty().html(tbody.html());
+	     registeSelfui(_this.table);
+	    }
+       if (_this.params.height && !isNaN(_this.params.height)) {
+           _this.table.parent().height(_this.params.height);
+         }
+	         _this.initEvent();
+	  },
+	  
+	  columnRender:function(){
+		  var _this=this;
+		 var trs= _this.table.find('tbody>tr');
+		 trs.each(function(idx,trdom){
+			 var tr = $(trdom);
+			 tr.find('td').each(function(index,tddom){
+				 var td = $(tddom);
+				 var renderer=td.attr('renderer');
+				 if(renderer&&renderer!=""){
+	                    _this.colRendererFunc(td,renderer,index,tr);
+					}
+			 })
+		 })		  
+	  },
+	  
+		colRendererFunc :  function(td,renderer,index,tr){
+			var _this = this;
+			td.attr('key',td.find("div").text());
+			td.find("div").attr("title","");
+			var fn = Horn.Util.getFunObj(renderer);
+			var text = td.find("div").html();
+			var groupindex=tr.attr('groupindex');
+			var itemindex=tr.attr('itemindex')
+			//如果没有这个function，则不装入这个button
+			if(!fn.fn) return;
+			var dom = fn.fn.call($(this),{
+				val : text,
+				rowdata : _this.data[groupindex].items[itemindex],
+				alldata : _this.data,
+				table : _this,
+				tdidx : index,
+				tr : tr,
+				td : td
+			});
+			if( dom instanceof $ ){
+				td.find("div").html("");
+				td.find("div").append(dom);
+			}else{
+				td.find("div").html(dom);
+			}
+		},
+	  /**
+	   * 加载渲染数据字典
+	   * @ignore
+	   */
+	  dictColRender : function(td,dictName,key){
+	    var dict = Horn.getDict(dictName);
+	    if(dict){
+	      //17276 【TS:201602170281-JRESPlus-财富管理事业部-王瑞明-最近在使用JRES 框架进行开发过程中，发现使用了数据字典的】
+	      if(dict[key]!= undefined){
+	        td.children("div.showvalue").text(dict[key]).attr('key',key);
+	      }
+	    }
+	  },
+	  /**
+	   * 解析静态数据字典
+	   * @ignore
+	   */
+	  staticDict:function(td,index,key){
+		    if(this.params.selectModel!=""&&this.params.selectModel!=undefined){
+		      index=index-1;
+		    }
+		    var item=this.params.items[index];
+		    var itemlist=item['items'];
+		    var keyArr=key.toString().split(",");
+		    var result=[];
+		    for(var j=0;j<keyArr.length;j++){
+		    	var label=keyArr[j];
+		    	for(var i=0;i<itemlist.length;i++){
+		    	      if(itemlist[i]['code'] == label){
+		    	        result.push(itemlist[i]['text']);
+		    	        
+		    	      }
+		    	    }
+		    }
+		    var value=result.join(",");
+		    td.children("div.showvalue").text(value);
+		    td.children("div.showvalue").attr('key',key);
+		  },
+		  
+  /**
+   *保存编辑过的数据
+   */
+	 saveData:function(){
+		    var _this=this;
+		    _this.changeCelldata(_this.editingCell);
+		    _this.data= $.extend(true, [], _this.cacheData);
+		    _this.editingCell=[];
+		    return _this.data;
+		},
+		
+	  /**
+	   * 重新渲染表格
+	   */
+	  reload:function(){
+	    var _this=this;
+	     _this.cacheData = [];
+	     _this.editingCell=[];
+	       $.extend(true, _this.cacheData, _this.data);
+	       //动态展现表格数据
+	       _this.destroyUI();
+	       _this.creatEditTable(_this.data);
+	  },
 	initPagebar : function(resultData){
 	 	   if(this.hasPage){
 			   var total = resultData["total"];
@@ -12588,9 +13767,12 @@ Horn.GroupGrid=Horn.extend(Horn.Base,{
 			if(!this.hasPage){
 				this.result = this.storgedData;
 			}
-             this.staticInitPagebar();
+           this.staticInitPagebar();
 
 		}else{
+			if(this.params.editable){
+				this.destroyUI();
+			}
 			this.load();
 		}
 	},
@@ -12612,6 +13794,7 @@ Horn.GroupGrid=Horn.extend(Horn.Base,{
 		var groupdiv=_this.table.find('.u-groupgrid-grouphead-title');
 		if(expand){
 			_this.table.find('tbody>tr').show();
+			_this.tbody.hide();
 			groupdiv.closest('tr').addClass('active');
 		}else{
 			_this.table.find('tbody>tr').hide();
@@ -12703,7 +13886,7 @@ Horn.GroupGrid=Horn.extend(Horn.Base,{
 	    return this.title;
 	  },
 	  /**
-	   * @description 动态添加标题按钮
+	   * @description 动态添加标题按钮（注！如果初始时没有按钮，之后需通过addButton方法动态添加按钮，请刚开始将buttons属性设置为[{}]格式）。
 	   * @name Horn.GroupGrid#addButton
 	   * @param {object} obj button的参数对象，具体的参数有：label 按钮的标签（必填否则无法添加）；name 按钮的name，作为标识按钮；cls 按钮的图标样式(默认提供的图标样式有：新增[fa-plus-circle]，修改[fa-pencil-square-o]，删除[fa-remove]，保存[fa-save],查询[fa-search],刷新[fa-refresh],文件夹[fa-folder-open-o])，默认无图标；event 按钮点击的事件处理函数
 	   * @return 
@@ -12744,6 +13927,7 @@ Horn.GroupGrid=Horn.extend(Horn.Base,{
 	  }
 });
 Horn.regUI("div.hdsungroupgrid",Horn.GroupGrid);
+
 
 Horn.group_Pagebar = function(config,_gridid,_grid){
 	var pagebar = {
@@ -13152,6 +14336,1299 @@ Horn.group_Pagebar = function(config,_gridid,_grid){
 	}); 
 	Horn.Field.regFieldType("input.hc_hiddenfield",Horn.HiddenField) ;
 
+/**
+ * @name Horn.ImageBox
+ * @class
+ * 图片列表组件</br>
+ */
+
+/**
+ * @lends Horn.ImageBox#
+ */
+
+/**
+ * 组件唯一标识<br/>
+ * @name Horn.ImageBox#<b>id</b>
+ * @type String
+ * @default
+ * @example
+ * #@screen({})
+ * 		#imageBox({"name":"testImageBoxName","id":"testImageBoxId"})
+ * #end
+ */
+/**
+ * 组件名<br/>
+ * @name Horn.ImageBox#<b>name</b>
+ * @type String
+ * @default
+ * @example
+ * #@screen({})
+ * 	#imageBox({"name":"testImageBoxName","id":"testImageBoxId"})	
+ * #end
+ */
+/**
+ * @description 图片列表的标题展示。
+ * @property title
+ * @name Horn.ImageBox#<b>title</b>
+ * @type string
+ * @default 无
+ * @example
+ * 无
+ */
+/**
+ * @description 整体高度
+ * @property height
+ * @name Horn.ImageBox#<b>height</b>
+ * @type Int
+ * @default 无
+ * @example
+ * 无
+ */
+/**
+ * @description 每页图片展示几行（注！此属性只适用于大图展示列表）
+ * @property rows
+ * @name Horn.ImageBox#<b>rows</b>
+ * @type Int
+ * @default 3
+ * @example
+ * 无
+ */
+/**
+ * @description 每页图片展示几列（注！此属性只适用于大图展示列表,建议2、3、4、6列）
+ * @property columns
+ * @name Horn.ImageBox#<b>columns</b>
+ * @type Int
+ * @default 3
+ * @example
+ * 无
+ */
+/**
+ * @description 组件初始化加载数据列表的基础参数,基础参数每次请求时都会传入。
+ * @property baseParams
+ * @name Horn.ImageBox#<b>baseParams</b>
+ * @type object
+ * @default 无
+ * @example
+ * 无
+ */
+/**
+ * @description 数据请求的地址。请求该地址后返回的数据为符合要求的json数据对象。
+ * @property url
+ * @name Horn.ImageBox#<b>url</b>
+ * @type string
+ * @default ""
+ * @example
+ *后台返回的数据格式例子：
+ *total：总条数
+ *rows :数据集[分页场景存在，返回的数据结构]
+ *isHotSale为1或者true,显示热卖图标
+	*{"total":15,
+	* "rows":[{imgName: "1.jpg", imgTitle: "商品1", price: 10.01, url: "/components/photos/1.jpg",isHotSale:"1"},
+		    {imgName: "2.jpg", imgTitle: "商品2", price: 20.02, url: "/components/photos/2.jpg",isHotSale:""},
+		    {imgName: "3.jpg", imgTitle: "商品3", price: 30.01, url: "/components/photos/3.jpg",isHotSale:"1"}]
+ */
+/**
+ * @description 配置是否启用分页栏的开关，默认不开启分页栏。
+ * @property hasPage
+ * @name Horn.ImageBox#<b>hasPage</b>
+ * @type boolean
+ * @default false
+ * @example
+ * 注："hasPage":true可以配置开启分页栏。
+ * #@screen()
+ *		#imageBox({
+ *			"id":"imageId",
+ *			"name":"imageName",
+ *			"url":"/image/list.json",
+ *			"title":"图片列表",
+ *			"rows":2,
+ *			"columns":3,
+ *			"hasPage":"true",
+ *			"events":[{"event":"click","function":"testClick()"}
+ *				      ,{"event":"dblclick","function":"testdbClick()"}
+ *					  ,{"event":"btnclick","function":"testbtnClick()"}]
+ *			})
+ *	#end 
+ */
+/**
+ * @description 配置分页栏的参数，仅在开启分页栏的时候有效。
+ * @property pageConfig
+ * @name Horn.ImageBox#<b>pageConfig</b>
+ * @type object
+ * @default 无
+ * @example
+ * "pageConfig":{"pageSize":20,"pageNo":3}
+ * 其中pageSize表示每页的显示的数据条数;pageNo为当前显示页数，当pageNo值大于实际总页数时，自动取实际最大页码数
+ */
+/**
+ * @description 事件属性，所有的事件都需要在此配置
+ * @name Horn.ImageBox#<b>events</b>
+ * @type Array 
+ * @default 无
+ * @example
+ *  "events":[{      {"event":"click","function":"testClick()"},
+ *		             {"event":"dblclick","function":"testdbClick()"},
+ *					 {"event":"btnclick","function":"testbtnClick()"}]]
+ */
+/**
+ * 单击事件<br/>
+ * @name Horn.ImageBox#<b>click</b>
+ * @param {object} obj    单击图片事件
+ * @event
+ * @example 无
+ * 
+ */
+/**
+ * 双击事件<br/>
+ * 注意：双击事件会触发单击事件，所以在使用双击事件时应注意与单击事件的关系<br>
+ * @name Horn.ImageBox#<b>dblclick</b>
+ * @param {object} obj     双击图片事件
+ * @event
+ * @example 无
+ * 
+ */
+/**
+ * 列表中按钮点击事件<br/>
+ * @name Horn.ImageBox#<b>btnclick</b>
+ * @param {object} obj     列表中按钮点击事件
+ * @event
+ * @example 无
+ * 
+ */
+
+Horn.ImageBox = Horn.extend(Horn.Base, {
+	COMPONENT_CLASS : "ImageBox",
+	id:"imageBoxId",
+	baseParams:{},
+	url: "",
+	mode:"",
+	rows:3,
+	columns:3,
+	datas :null,
+	pagebar:null,
+	currentPage : 1,
+	hasPage:false,
+	reqPageNo:1,
+	reqPageSize:10,
+	init : function(dom) {
+		Horn.ImageBox.superclass.init.apply(this, arguments);
+		var _this = this;
+		this.mode = "iconMode";
+		if(this.params.id&&this.params.id!=""){
+			this.id = this.params.id;
+		}else{
+			if(this.params.name&&this.params.name!=""){
+				this.id = this.params.name;
+			}
+		}
+		this.baseParams = this.params.baseParams || {};
+		this.url = this.params.url?this.params.url:null;
+		this.rows = this.params.rows?this.params.rows:3;
+		this.columns = this.params.columns?this.params.columns:3;
+		//初始化pageConfig配置
+		if(!this.params.pageConfig){
+			this.params.pageConfig = {};
+		}
+		//分页对象
+		this.hasPage=this.params.hasPage+""||"false";
+		if(this.hasPage&&this.hasPage=="true"){
+			this.createPagebar();
+		}
+		//处理请求的页码数
+		this.processReqConf();
+		$.each(_this.params.events || [], function(i, o){
+	   		_this[o.event.toLowerCase()] = o["function"];
+			 });
+		this.load();
+		$("#iconBtn_"+this.id).on("click",function(e){
+			_this.mode = "iconMode";
+			$("#listBtn_"+_this.id).removeClass("active");
+			$(this).addClass("active");
+			$("#listMode_"+_this.id).hide();
+			$("#iconMode_"+_this.id).show();
+			_this.load();
+		})
+		$("#listBtn_"+this.id).on("click",function(e){
+			_this.mode = "listMode";
+			$("#iconBtn_"+_this.id).removeClass("active");
+			$(this).addClass("active");
+			$("#iconMode_"+_this.id).hide();
+			$("#listMode_"+_this.id).show();
+			_this.load();
+		})
+	},
+	/**
+	 * @ignore
+	 */
+	createPagebar : function(){
+		if(this.params["pageConfig"]){
+			var _this = this;
+			this.pagebar = new Horn._ImagePagebar(this.params["pageConfig"],this.id,_this);
+		}
+	},
+	/**
+	 * @ignore
+	 */
+	processReqConf :function(){
+		var pageNo = this.params["pageConfig"]["pageNo"];
+		var pageSize = this.params["pageConfig"]["pageSize"];
+		var _pageSizeObj = $("#pageSize_"+this.id);
+		if(pageSize){
+			_pageSizeObj.val(pageSize);
+		}
+		this.reqPageNo = this.reqPageNo?this.reqPageNo:pageNo;
+		this.reqPageSize=this.reqPageSize?this.reqPageSize:pageSize;
+	},
+	/**
+	    * @description 动态加载
+	    * @function
+	    * @name Horn.ImageBox#<b>load</b>
+	    * @return void
+	    * @ignore
+	    */
+	load : function(url,params){
+		params = params ||{};
+		if($.type(params)=="array"){
+            params = Horn.Util.arr2Obj(params) ;
+        }
+		this.reqPageNo = params["pageNo"] || this.reqPageNo;
+		this.reqPageSize = params["pageSize"] || this.reqPageSize;
+		if(this.hasPage){
+			params["pageNo"] = this.reqPageNo;
+			params["pageSize"] = this.reqPageSize;
+		}
+		this.execute(url,params);
+	},
+	/**
+	 * @ignore
+	 */
+	execute : function(url,options){
+		options = options||{};
+		var doRequest = true;
+		if(doRequest != false){
+			var paramsdata = Horn.apply({},this.baseParams,options);
+			//执行ajax请求
+			this.doAjax(url,paramsdata);
+		}
+		return doRequest;
+	},
+	doAjax : function(url,data){
+		   var _this = this;
+		   var mode = _this.mode;
+		   var rows = _this.rows;
+		   var columns = _this.columns;
+		   var hasPage = _this.params.hasPage+"";
+		   var rows = _this.rows;
+		   var url = url?url:_this.url;
+		   if(url && url.indexOf("http:")==-1){
+			   url = context_path + url;
+		   }
+	       $.ajax(
+	    		   url,
+	    	  {
+	           async : true,
+	           beforeSend : function(xhr) {},
+               type : "POST",
+               data : Horn.Util.obj2Arr(data) ,
+               dataType : "json",
+               error : function(xhr, textStatus, errorThrown) { console.log("图片请求失败"); },
+	           success : function(resultData, textStatus, jqXHR) {
+	         	   if(!resultData||$.isEmptyObject(resultData)){
+	         		   
+	         	   }else{
+	         		   var redirect_url = "";
+	           		   var _target = "";
+	           		   if(resultData){
+	           				var data = resultData["rows"];
+	           				redirect_url = resultData["redirectUrl"];
+	           				_target = resultData["target"];
+	           				_this.resultData=resultData;
+	           				if(data==null||data=="null"){
+	          					 if(redirect_url&&redirect_url!=""){
+	                				   if(_target=="top"){
+	                					   top.location.href =redirect_url;
+	                				   }else if(_target=="parent"){
+	                					   parent.location.href =redirect_url;
+	                				   }else{
+	                					   window.location.href =redirect_url;
+	                				   }
+	                				   return;
+	                			   }
+	           				}
+	           				this.result = data?data:resultData;
+	           		   }
+	         		   _this.datas=resultData;
+	         		   _this.params.data = resultData.rows;
+	         		   _this.currentPageSize = resultData.length || (resultData.rows&&resultData.rows.length);
+	         		   if(mode=="iconMode"){//大图列表形式
+	         			   var icon = $("#iconMode_"+_this.id);
+	         			   icon.html("");
+	         			   if(columns){//只能渲染列数为：2、3、4、6列
+	         				  var allimg = [];
+	         				  var imgpagesize=rows*columns;
+	         				  var dataLen=resultData.rows.length;
+	         				  if(dataLen>imgpagesize){
+	         					 dataLen=imgpagesize;
+	         				  }
+	         				  for(var i=0;i<dataLen;i++){
+	         					 var item = resultData.rows[i];
+	         				   	 var num=12/parseInt(columns);
+	         					 var iconHtml= '<div id="icon_'+_this.id+'_'+(i+1)+'" class="g-grid-'+num+'"><div class="imgBox f-fl"> <div class="imgBoxInner">'
+			         							+'<div class="img" imgindex="'+i+'"><a href="javascript:void(0)" class="imgShow" target="_blank">'
+			         							+'<img src="'+context_path+item.url+'" title="'+item.imgName+'" alt="'+item.imgName+'">';
+			         							var isHotSale = item.isHotSale+"";
+			         							if(isHotSale=="1"||isHotSale=="true"){
+			         								iconHtml=iconHtml+'<div class="hotsale"><i class="fa fa-tag"></i><span>热卖</span></div>';	
+			         							}
+			         							iconHtml=iconHtml+'</a></div>'
+			         							+'<div class="imgDetailInfo clearix text-ellipsis">'
+			         							+'<span class="f-fl imgInfoLeft text-ellipsis"  title="'+item.imgTitle+'">'+item.imgTitle+'</span>'
+			         							+'<span class="f-fr imgInfoRight text-ellipsis" title="$'+item.price+'">$'+item.price+'</span></div>'
+			         							+'</div></div></div>';
+							     allimg.push(iconHtml);
+	         				  }		
+	         				 icon.append(allimg.join(""));
+	         			   }
+	         			   
+	         		   }else{//条目列表形式
+	         			   var _list = $("#listMode_"+_this.id).find("ul");
+	         			   _list.html("");
+	         			   var allimg = [];
+         				   for(var i=0;i<resultData.rows.length;i++){
+         					  var item = resultData.rows[i];
+         					  var listHtml= '<li id="list_'+_this.id+'_'+(i+1)+'"><div class="g-grid-1 list_ImgBox"><div class="list_Img" imgindex="'+i+'">'
+               								+'<a href="javascript:void(0)" class="list_imgView"><img src="'+context_path+item.url+'" title="'+item.imgName+'" alt="'+item.imgName+'">';
+				         					var hotSale = item.isHotSale+"";
+				  							if(hotSale=="1"||hotSale=="true"){
+				  								listHtml=listHtml+'<div class="hotsale_list"><i class="fa fa-bookmark"></i></div>';
+				  							}
+         					  				listHtml=listHtml+'</a></div></div>'
+               								+'<div class="g-grid-8 list_infoBox"><div class="list_detailInfo">'
+               								+'<strong><a href="javascript:void(0)" class="list_info text-ellipsis" title="'+item.imgTitle+'">'+item.imgTitle+'</a></strong>'
+               								+'</div></div>'
+               								+'<div class="g-grid-1 list_prinBox"><div class=" list_prince ">'
+               								+'<strong><span class="text-ellipsis" title="$'+item.price+'">$'+item.price+'</span></strong>'
+               								+'</div></div>'
+               								+'<div class="g-grid-2 list_btnBox"><div class="list_btn"><button class="buy_btn" btnindex="'+i+'">购买</button></div></div></li>';
+						      allimg.push(listHtml);
+         				   }		
+         				   _list.append(allimg.join(""));
+	         		   }
+	         		   _this.bindClickEvent(resultData.length);
+	         		   //pagebar
+	         		  if(hasPage&&hasPage=="true"){
+	         			  _this.initPagebar(resultData);
+	         		  }
+	         	   }
+	         	           	   
+	           }
+	       });
+	},
+	/**
+	 * @ignore
+	 */
+	bindClickEvent : function(){
+		var _this=this;
+		var mode=this.mode;
+		var $modeId;
+		var imgDiv;
+		if(mode=="iconMode"){//大图列表形式
+			$modeId=$("#iconMode_"+this.id);
+			imgDiv="img";
+		}else{//条目列表形式
+			$modeId=$("#listMode_"+this.id);
+			imgDiv="list_Img";
+			$("#listMode_"+this.id).find(".buy_btn").each(function(index,btndom){
+				var btn = $(btndom);
+				btn.on("click",function(e){
+	        		 var target=$(e.target);
+	        		 if(_this.btnclick){
+	        	         var  rowclickObj = Horn.Util.getFunObj(_this.btnclick),
+	        	         rowclickFn;
+	        	         var params=rowclickObj.params,
+	        	         btnindex=$(this).attr('btnindex');
+	        	         if(btnindex){
+	        	        	 var rowdata=_this.datas.rows[btnindex];
+		        	         params.push(rowdata);
+	        	         }
+	    	             if($.type(rowclickObj.fn) == "function"){
+	    	            	 rowclickFn = rowclickObj.fn ;
+	    	             }
+	    	             if(rowclickFn)
+	    	            	 rowclickFn.apply(_this,params);
+	    	             return;
+	        	     } 
+	        	})
+			});
+		}
+		
+		$modeId.find("."+imgDiv).each(function(index,imgdom){
+			var img = $(imgdom);
+			img.on("click",function(e){
+        		 var target=$(e.target);
+        		 if(_this.click){
+        	         var  rowclickObj = Horn.Util.getFunObj(_this.click),
+        	         rowclickFn;
+        	         var params=rowclickObj.params,
+        	         imgindex=$(this).attr('imgindex');
+        	         if(imgindex){
+        	        	 var rowdata=_this.datas.rows[imgindex];
+	        	         params.push(rowdata);
+        	         }
+    	             if($.type(rowclickObj.fn) == "function"){
+    	            	 rowclickFn = rowclickObj.fn ;
+    	             }
+    	             if(rowclickFn)
+    	            	 rowclickFn.apply(_this,params);
+    	             return;
+        	     } 
+        	})
+        	img.on("dblclick",function(e){
+        		 var target=$(e.target);
+        		 if(_this.dblclick){
+        	         var  rowdblclickObj = Horn.Util.getFunObj(_this.dblclick),
+        	         rowdblclickFn;
+        	         var dbparams=rowdblclickObj.params,
+        	         dbimgindex=$(this).attr('imgindex');
+        	         if(dbimgindex){
+        	        	 var dbrowdata=_this.datas.rows[dbimgindex];
+        	        	 dbparams.push(dbrowdata);
+        	         }
+   	             if($.type(rowdblclickObj.fn) == "function"){
+   	            	 rowdblclickFn = rowdblclickObj.fn ;
+   	             }
+   	             if(rowdblclickFn)
+   	            	 rowdblclickFn.apply(_this,dbparams);
+   	             return;
+        	     }   
+        	});
+		});
+	},
+	/**
+	 * @ignore
+	 */
+	initPagebar : function(resultData){
+	 	   if(this.hasPage){
+			   var total = resultData["total"];
+			   if(this.pagebar){
+				   var data = resultData["rows"];
+				   if(!data||$.isEmptyObject(data)||data==""||data.length==0){
+					   total = 0;
+				   }
+				   this.pagebar.setTotalCount(total);
+				   this.pagebar.calPage_(this.reqPageNo,this.reqPageSize,total);
+				   this.setPageInfo();
+			   }
+			   
+		   }
+	},
+	/**
+	 * @ignore
+	 */
+	setPageInfo : function(){
+		$("#toPage_"+this.id).val(this.pagebar.currentPage);
+		$("#toPage_"+this.id).next().html(this.pagebar.currentPage);
+		$("#totalPages_"+this.id).html(this.pagebar.pages);
+		if((this.pagebar.pageSize%5)==0){
+			//100 200 500 1000
+			var index = this.pagebar.pageSize/5;
+			if(index==20)
+				index=11;
+			else if(index==40)
+				index=12;
+			else if(index == 100)
+				index=13;
+			else if(index == 200)
+				index=14;
+					
+			var activeli = $($(".dropdown-menu-datagrid").find('li').get(index-1));
+			activeli.addClass("active");
+			this.pagebar.activeLi=activeli;
+		}
+		if(1==this.pagebar.currentPage){
+			$("#page_"+this.id).find(".first_page_btn,.pre_page_btn").addClass("disabled");
+		}else{
+			$("#page_"+this.id).find(".first_page_btn,.pre_page_btn").removeClass("disabled");
+		}
+		if(this.pagebar.pages==this.pagebar.currentPage){
+			$("#page_"+this.id).find(".next_page_btn,.last_page_btn").addClass("disabled");
+		}else{
+			$("#page_"+this.id).find(".next_page_btn,.last_page_btn").removeClass("disabled");
+		}
+	},
+	/**
+	 * @ignore
+	 */
+	reqPage : function(reqPageNo,reqPageSize){
+		this.reqPageNo = reqPageNo?reqPageNo:this.reqPageNo;
+		this.reqPageSize = 	reqPageSize?reqPageSize:this.reqPageSize;
+		this.load();
+	}
+		
+});
+Horn.regUI("div.hc_imageBox", Horn.ImageBox);
+
+function setImagePageDefaultValue(params, propName, value) {
+    if (params[propName] === undefined) {
+        params[propName] = value;
+    }else{
+    	if(params[propName]=="true"){
+    		params[propName] = true;
+    	}else if(params[propName]=="false"){
+    		params[propName] = false;
+    	}
+    }
+};
+
+Horn._ImagePagebar = function(config,_gridid,_grid){
+	var pagebar = {
+			//表格对象
+			gridId:null,
+			//首页页码
+	        INDEX_PAGE:1,
+	        //当前页码
+	        currentPage : 1,
+			//页面大小，每页显示多少条
+			pageSize : 10,
+			 //总条数
+			pageCount : 0,
+			 //总页数
+			pages : 0,
+			 //起始条数
+			startRow:0,
+			//是否有总条数
+			isNotTotal:false,
+			//是否使用下拉式的总条数框
+			selectPageSize:false,
+			/**
+			 * @ignore
+			 */
+			init : function(config,_gridid,_grid){
+				if(config){
+				//14700 【TS:201511060024-JRESPlus-财富管理事业部-王瑞明-对于DataGrid 控件的“pageConfig”属性，目】
+					setImagePageDefaultValue(config,"pageSize",10);
+					setImagePageDefaultValue(config,"pageNo",1);
+					setImagePageDefaultValue(config,"startRow",0);
+					setImagePageDefaultValue(config,"pageCount",0);
+					setImagePageDefaultValue(config,"currentPage",0);
+					this.currentPage = parseInt(config["currentPage"]);
+					this.pageCount = parseInt(config["pageCount"]);
+					this.pageSize = parseInt(config["pageSize"]);
+					this.pageNo = parseInt(config["pageNo"]);
+					this.startRow = parseInt(config["startRow"]);
+					this.pages = 0;
+				}
+				this.gridId = _gridid;
+				this.grid = _grid;
+				this.grid.reqPageSize = this.pageSize;
+				this.grid.reqPageNo = this.pageNo;
+				this.el = $("#page_"+this.gridId);
+				var notTotal = this.el.attr("isNotTotal");
+				if(notTotal=="true"){
+					this.isNotTotal = true;
+				}
+				var isSelectPageSize = this.el.attr("selectPageSize");
+				if(isSelectPageSize=="true"){
+					this.selectPageSize = true;
+				}
+			},
+			/**
+			 * @ignore
+			 */
+			initEvents : function(){
+				var _pageBar = this;
+				$("#page_"+this.gridId).children(".pageIcon").children("ul").children("li").find('a').each(function(idx,a){
+					var item = $(a);
+					var regClick = function(item,f,arg){
+						item.click(function(){
+							if(item.hasClass('disabled')){
+								return;
+							}
+							//IE下debug的时候报错
+							arg=arg||[];
+							f.apply(_pageBar,arg);
+						});
+					};
+					if(!item.hasClass("disabled")){
+						if(item.hasClass("first_page_btn")){
+							regClick(item,_pageBar.first);
+						}else if(item.hasClass("pre_page_btn")){
+							regClick(item,_pageBar.pre);
+						}else if(item.hasClass("next_page_btn")){
+							regClick(item,_pageBar.next);
+						}else if(item.hasClass("last_page_btn")){
+							regClick(item,_pageBar.last);
+						}
+					}
+				});
+				//绑定分页按钮事件
+				this.perPage = false;
+				$("#_recPerPage"+this.gridId).on('click',function(){
+					optGridId = $(this).attr("id");
+					optGridId =optGridId.substring(11)
+					var currPage = $(this).children("strong").text();
+					if(_pageBar.perPage){
+						$(this).next().hide();
+						_pageBar.perPage = false;
+					}else{
+						$(this).next().show();
+						$(this).next().find("li").each(function(idx,a){
+							var _page = $(this).children("a").text();
+							if(currPage==_page){
+								$(this).addClass("active");
+							}else{
+								$(this).removeClass("active");
+							}
+						});
+						_pageBar.perPage = true;
+					}
+				});
+				
+				$("#_recPerPage"+this.gridId).bind('blur',function(e){
+					var t = e;
+					if(_pageBar.perPage){
+						$(".dropdown-menu-datagrid").hide();
+						_pageBar.perPage = false;
+						return true;
+					}
+				});
+				$(".dropdown-menu-datagrid").bind('mouseover',function(){
+					$("#_recPerPage"+_pageBar.gridId).unbind('blur');
+				});
+				$(".dropdown-menu-datagrid").bind('mouseout',function(){
+					$("#_recPerPage"+_pageBar.gridId).bind('blur',function(e){
+						var t = e;
+						if(_pageBar.perPage){
+							$(".dropdown-menu-datagrid").hide();
+							_pageBar.perPage = false;
+							return true;
+						}
+					});
+				});
+				
+				this.activeLi = $(".dropdown-menu-datagrid").find('li.active');
+				//注册事件
+				var thatgrid = this.grid;
+				var event = this.selectPageSize?"change":"blur";
+			},
+			callToPage : function(obj){
+				var thatgrid = this.grid;
+				var pageNum = obj.val();
+				if (!pageNum || isNaN(pageNum)){
+					pageNum = thatgrid.reqPageNo;
+				}
+				pageNum = parseInt(pageNum,10);
+				if(pageNum<=0)
+					pageNum=1;
+				else if(pageNum>thatgrid.pagebar.pages)	
+					pageNum = 1;
+				obj.val(pageNum);
+				thatgrid.reqPage(obj.val(), $("#pageSize_"+thatgrid.id).html());
+			},
+			callToPageSize : function(obj){
+				var _pageBar = this;
+				var pageSize = obj.val();
+				if(pageSize==""){
+					var tmpPageSize = _pageBar.pageSize;
+					if(tmpPageSize&&tmpPageSize!=""){
+						pageSize = tmpPageSize;
+					}else{
+						pageSize =10;
+					}
+				}
+				if (!pageSize || isNaN(pageSize)){
+					pageSize = thatgrid.pageSize;
+				}
+				pageSize = parseInt(pageSize,10);
+				if(pageSize<=0)
+					pageSize=1;
+
+				obj.val(pageSize);
+				
+				_pageBar.grid.reqPage(parseInt($("#toPage_"+_pageBar.grid.id).val()), pageSize);
+			},
+			/**
+			 * @ignore
+			 */ 
+			calPage_:function(reqPageNo,reqPageSize,totalCount){
+				this.pageSize = parseInt(reqPageSize);
+				this.pageCount = parseInt(totalCount);
+				this.pages = Math.ceil(this.pageCount/this.pageSize);
+				if(!this.isNotTotal){
+					if((reqPageNo*this.pageSize) > this.totalCount){
+						this.currentPage = this.pages;
+					}else{
+						this.currentPage = reqPageNo;
+					}
+				}else{
+					if(this.currentPage==0){
+						this.currentPage =1;
+					}
+				}
+				
+			},
+			/**
+			 * @ignore
+			 */
+			pre:function(){
+				if(this.isNotTotal){
+					var tmpPageNo = this.currentPage - 1;
+					this.currentPage = tmpPageNo;
+					this.grid.reqPage(tmpPageNo,this.pageSize);
+				}else{
+					if(this.currentPage <= 1 || this.pageCount == 0) {
+						this.grid.reqPage(1,this.pageSize);
+					}else{
+						this.grid.reqPage((this.currentPage - 1),this.pageSize);
+					}
+				}
+			},
+			/**
+			 * @ignore
+			 */
+			next:function(){
+				if(!this.isNotTotal){
+					if(this.pages == this.currentPage){
+						return;
+					}
+				}
+				//需求 #14790 【TS:201511120068-JRESPlus-财富管理事业部-虞凯 重新选择每页显示条数，点击下一页，页码出错
+				var tmpPageNo = 0;
+				if(this.currentPage!=""){
+					tmpPageNo = parseInt(this.currentPage)+1;
+				}
+				if(this.isNotTotal){
+					tmpPageNo = this.currentPage+1;
+					this.currentPage = tmpPageNo;
+				}
+				
+				this.grid.reqPage(tmpPageNo,this.pageSize);
+			},
+			/**
+			 * @ignore
+			 */
+			last:function(){
+				if(this.pages == 0) 
+					return ;
+				else
+					this.grid.reqPage(this.pages,this.pageSize);
+			},
+			/**
+			 * @ignore
+			 */
+			first :function(){
+				this.grid.reqPage(this.INDEX_PAGE,this.pageSize);
+			},
+			/**
+			 * @ignore
+			 */
+			setTotalCount:function(total){
+				this.totalCount = parseInt(total);
+			}
+			
+	};
+	pagebar.init(config,_gridid,_grid);
+	pagebar.initEvents();
+	return pagebar;
+}
+/*
+ * 修改日期                        修改人员        修改说明
+ * -------------------------------------------------------------------------------------
+ * 
+ * -------------------------------------------------------------------------------------
+ */
+/**
+ * @name Horn.ImageView
+ * @class
+ * 图片放大镜效果组件</br>
+ */
+
+/**
+ * @lends Horn.ImageView#
+ */
+
+/**
+ * 组件唯一标识<br/>
+ * @name Horn.ImageView#<b>id</b>
+ * @type String
+ * @default
+ * @example
+ * #@screen({})
+ * 		#imageView({"name":"testImageViewName","id":"testImageViewId"})
+ * #end
+ */
+/**
+ * 组件名<br/>
+ * @name Horn.ImageView#<b>name</b>
+ * @type String
+ * @default
+ * @example
+ * #@screen({})
+ * 	#imageView({"name":"testImageViewName","id":"testImageViewId"})	
+ * #end
+ */
+/**
+ * 组件中图的高度(高度不小于200，小于200自动按默认值300显示)<br/>
+ * @name Horn.ImageView#<b>height</b>
+ * @type Int
+ * @default 300
+ * @example
+ * #@screen({})
+ * 		#imageView({"name":"testImageViewName","id":"testImageViewId","height":300,"width":300})
+ * #end
+ */
+/**
+ * 组件中图的宽度(宽度不小于200，小于200自动按默认值300显示)<br/>
+ * @name Horn.ImageView#<b>width</b>
+ * @type Int
+ * @default 300
+ * @example
+ * #@screen({})
+ * 		#imageView({"name":"testImageViewName","id":"testImageViewId","height":300,"width":300})
+ * #end
+ */
+/**
+ * @description 组件初始化加载数据列表的基础参数,基础参数每次请求时都会传入。
+ * @property baseParams
+ * @name Horn.ImageView#<b>baseParams</b>
+ * @type object
+ * @default 无
+ * @example
+ * 无
+ */
+/**
+ * 静态显示图片 格式："data":[{"imgName":"1.jpg","imgTitle":"图片1","big":"$appServer/images/big1.jpg","mid":"$appServer/images/mid1.jpg","small":"$appServer/images/small1.jpg","price":1.1},
+    						{"imgName":"2.jpg","imgTitle":"图片2","big":"$appServer/images/big2.jpg","mid":"$appServer/images/mid2.jpg","small":"$appServer/images/small2.jpg","price":2.1}...]
+ * @name Horn.ImageView#<b>data</b>
+ * @type Array
+ * @default 无
+ * @example
+ * 说明：
+ * 1、big、mall、small分别是小图、中图、大图的url地址
+ * 2、big、mall、small地址前请写上$appServer或者自己的应用名
+ * 3、price价格是数字，不要带￥或者$符
+ * #@screen({})
+ *     #imageView({
+			"id":"imgId",
+			"name":"imgName",
+			"height":300,
+			"width":300,
+			"data":[{"imgName":"1.jpg","imgTitle":"图片1","big":"$appServer/images/big1.jpg","mid":"$appServer/images/mid1.jpg","small":"$appServer/images/small1.jpg","price":1.1},
+	    			{"imgName":"2.jpg","imgTitle":"图片2","big":"$appServer/images/big2.jpg","mid":"$appServer/images/mid2.jpg","small":"$appServer/images/small2.jpg","price":2.1},
+	    			{"imgName":"3.jpg","imgTitle":"图片3","big":"$appServer/images/big3.jpg","mid":"$appServer/images/mid3.jpg","small":"$appServer/images/small3.jpg","price":3.13}]
+		})
+ * #end 
+ */
+/**
+ * 图片请求后端加载地址(注！如果配置url，就不需要配置data，如果两个同时存在，默认加载data静态数据)
+ * @name Horn.ImageView#<b>url</b>
+ * @type Array
+ * @default ""
+ * @example
+ * 说明：
+ * 返回结果格式为："data":[{"imgName":"1.jpg","imgTitle":"图片1","big":"/images/big1.jpg","mid":"/images/mid1.jpg","small":"/images/small1.jpg","price":1.1},
+    						{"imgName":"2.jpg","imgTitle":"图片2","big":"/images/big2.jpg","mid":"/images/mid2.jpg","small":"/images/small2.jpg","price":2.1}...]
+ * 
+ * 实例：
+ * #@screen()
+		#imageView({
+			"id":"imgId1",
+			"name":"imgName1",
+			"url":"/imgView.json",
+			"height":300,
+			"width":300
+		})
+ *	#end 
+ */
+/**
+ * @description 事件属性，所有的事件都需要在此配置
+ * @name Horn.ImageView#<b>events</b>
+ * @type Array 
+ * @default 无
+ * @example
+ *  "events":[{"event":"loadSuccess","function":"testloadSuccess"}]]
+ */
+/**
+ * 异步数据加载成功,且图片初始化后<br/>
+ * @name Horn.ImageView#<b>loadSuccess</b>
+ * @param {jquery object} comp      控件对象
+ * @param {Array} arr       返回的结果集
+ * @event
+ * @example  无
+ * 
+ */
+
+Horn.ImageView = Horn.extend(Horn.Base, {
+	COMPONENT_CLASS : "ImageView",
+	id:"imageViewId",
+	baseParams:{},
+	url: "",
+	smallWidth:0,
+	init : function(dom) {
+		Horn.ImageView.superclass.init.apply(this, arguments);
+		var _this = this;
+		if(this.params.id&&this.params.id!=""){
+			_this.id = this.params.id;
+		}else{
+			if(this.params.name&&this.params.name!=""){
+				_this.id = this.params.name;
+			}
+		}
+		if(!_this.params.height||_this.params.height<200||_this.params.height==""){
+			_this.params.height=300;
+		}
+		if(!_this.params.width||_this.params.width<200||_this.params.width==""){
+			_this.params.width=300;
+		}
+		this.baseParams = this.params.baseParams || {};
+		if(_this.params.width&&_this.params.width!=""){
+			_this.smallWidth = (parseInt(_this.params.width) - 50 - 60) / 6;
+		}
+		//events
+        $.each(_this.params.events || [], function(i, o){
+        	_this[o.event.toLowerCase()] = o["function"];
+        });
+		this.url = this.params.url?this.params.url:null;
+		if(_this.params.url!=""&&!_this.params.data){
+			_this.load();
+		}
+		if(_this.params.data){
+			_this.initEvent();
+		}
+	},
+	/**
+	 * @ignore
+	 */
+	initEvent : function(){
+		var _this=this;
+		var midWidth = $("#midimg_"+_this.id).width();//中图的宽度
+		var count = $("#imageMenu_"+_this.id+" li").length - 5; /* 显示 6 个 li标签内容 */
+		var liLength = $("#imageMenu_"+_this.id+" li").length;
+		var interval = $("#imageMenu_"+_this.id+" li:first").width()+10;
+		var Rindex = liLength;
+		var curIndex=0;
+		//图片向右滚动
+		$('.scrollbutton').click(function(){
+			if( $(this).hasClass('disabled') ) return false;
+			if ($(this).hasClass('smallImgUp')) --curIndex;
+			else ++curIndex;
+			$('.scrollbutton').removeClass('disabled');
+			if (curIndex == 0) $('#smallImgUp_'+_this.id).addClass('disabled');
+			if (curIndex >= count-1) {
+				$('#smallImgDown_'+_this.id).addClass('disabled');
+				return;
+			}
+			$("#imageMenu_"+_this.id+" ul").stop(false, true).animate({"marginLeft" : -curIndex*interval + "px"}, 600);
+		});	
+		//绑定小图事件
+	    _this.bindImgEvent();
+	    $("#midimg_"+_this.id).on("mouseover",function(e){
+	    	_this.mouseover(e);
+	    }); //中图事件
+	    $("#midimg_"+_this.id+",#winSelector_"+_this.id).on("mousemove",function(e){
+	    	_this.mouseover(e);
+	    }).on("mouseout",function(e){
+	    	_this.mouseOut(e);
+	    }); //选择器事件
+	  
+	    _this.divWidth = $("#winSelector_"+_this.id).width(); //选择器宽度
+	    _this.divHeight = $("#winSelector_"+_this.id).height(); //选择器高度
+	    _this.imgWidth = $("#midimg_"+_this.id).width(); //中图宽度
+	    _this.imgHeight = $("#midimg_"+_this.id).height(); //中图高度
+	    _this.viewImgWidth = _this.viewImgHeight = _this.height = null; //浏览器加载后才能得到 大图宽度 大图高度 大图视窗高度
+	    _this.changeViewImg();
+	    $("#bigView_"+_this.id).scrollLeft(0).scrollTop(0);
+	},
+	/**
+	    * @description 动态加载
+	    * @function
+	    * @name Horn.ImageView#<b>load</b>
+	    * @return void
+	    * @ignore
+	    */
+	load : function(url,params){
+		params = params ||{};
+		var doRequest = true;
+		if(doRequest != false){
+			var paramsdata = Horn.apply({},this.baseParams,params);
+			//执行ajax请求
+			this.doAjax(url,paramsdata);
+		}
+		return doRequest;
+	},
+	/**
+	 * @ignore
+	 */
+	doAjax : function(url,data){
+		   var _this = this;
+		   var url = url?url:_this.url;
+		   if(url && url.indexOf("http:")==-1){
+			   url = context_path + url;
+		   }
+	       $.ajax(
+	    		   url,
+	    	  {
+	            async : true,
+	            beforeSend : function(xhr) {},
+	            type : "POST",
+	            data : Horn.Util.obj2Arr(data) ,
+	            dataType : "json",
+	            error : function(xhr, textStatus, errorThrown) { console.log("图片请求失败"); },
+		        success : function(resultData, textStatus, jqXHR) {
+		         	   if(!resultData||$.isEmptyObject(resultData)){
+		         		   
+		         	   }else{
+		         		   var redirect_url = "";
+		           		   var _target = "";
+		           		   if(resultData){
+		           				var data = resultData["items"];
+		           				redirect_url = resultData["redirectUrl"];
+		           				_target = resultData["target"];
+		           				_this.resultData=resultData;
+		           				if(data==null||data=="null"){
+		          					 if(redirect_url&&redirect_url!=""){
+		                				   if(_target=="top"){
+		                					   top.location.href =redirect_url;
+		                				   }else if(_target=="parent"){
+		                					   parent.location.href =redirect_url;
+		                				   }else{
+		                					   window.location.href =redirect_url;
+		                				   }
+		                				   return;
+		                			   }
+		           				}
+		           				_this.result = data?data:resultData;
+		           		   }
+		           		   
+		           		   //图片加载
+		           		   var midDiv = $("#midImgDiv_"+_this.id);
+		           		   var smallDiv = $("#imageMenu_"+_this.id).children("ul");
+		           		   var bigDiv = $("#bigView_"+_this.id);
+		           		   for(var i=0;i<resultData.items.length;i++){
+		           			   var item = resultData.items[i];
+		           			   if(i==0){
+		           				   //第一次需要加载中图
+		           				   midDiv.html("");
+		           				   var murl=item.mid;
+		           				   if(item.mid.indexOf(context_path) == -1){
+		           					   murl=context_path+item.mid;
+		           				   }
+		           				   var midImg='<img id="midimg_'+_this.id+'" src="'+murl+'" alt="">';
+		           				   midDiv.append(midImg);
+		           				   //第一次需要加载放大镜大图
+		           				   bigDiv.html("");
+		           				   var burl=item.big;
+		           				   if(item.big.indexOf(context_path) == -1){
+		           					   burl=context_path+item.big;
+		           				   }
+	   							   var bigImg='<img src="'+burl+'" style="';
+	   							   if(_this.params.height){
+	   								   var doubleH=_this.params.height*2;
+	   								   bigImg+='height:'+doubleH+'px;';
+	   							   }
+	   							   if(_this.params.width){
+	   								   var doubleW=_this.params.width*2;
+	   								   bigImg+='width:'+doubleW+'px;';
+	   							   }
+	   							   bigImg+='" alt="">';
+	   							   bigDiv.append(bigImg);
+		           			   }
+		           			   //加载小图li列表
+							   var smallImg='<li class="smallImgItem" ';
+							   if(i==0) smallImg+='id="onlickImg"';
+							   smallImg+='><img imgindex="'+i+'" style="';
+							   if(_this.params.height) {
+								   smallImg+='height:'+_this.smallWidth+'px;width:'+_this.smallWidth+'px;';
+							   }
+							   smallImg+='" ';
+							   var surl=item.small;
+	           				   if(item.small.indexOf(context_path) == -1){
+	           					   surl=context_path+item.small;
+	           				   }
+							   smallImg+='src="'+surl+'" alt=""></li>';
+   							   smallDiv.append(smallImg);
+		           		   }        			   
+		         	   }
+		         	  _this.initEvent(); 
+		         	  try{
+	            		   if(_this.loadsuccess){
+	            			   var  loadsuccessObj = Horn.Util.getFunObj(_this.loadsuccess),
+	            			   loadsuccessFn;
+	            	           if($.type(loadsuccessObj.fn) == "function"){
+	            	        	   loadsuccessFn = loadsuccessObj.fn ;
+	            	           }
+	            	           if(loadsuccessFn)
+	            	             loadsuccessFn.apply(_this,[_this.el,resultData]);
+	            		   }
+	            	   }catch(e){
+	            		   Horn.debug(e);
+	            	   }
+		           }
+	       });
+	      
+	},
+	/**
+	  * @description 返回图片信息（注：此方法请在页面加载成功后调用，例如用在loadSuccess之后）
+	  * @function
+	  * @name Horn.ImageView#getImgInfo<br>
+	  * @return Array
+	  */
+	getImgInfo : function(){
+		var infos = [];
+		//bug 静态数据获取不到图片信息
+		if(this.params.data){
+			this.result=this.params.data;
+		}
+		if(!this.result || this.result==undefined){
+			return;
+		}
+		for(var key in this.result){
+			if(key == "indexOf") continue;
+	   		var val = this.result[key];
+	   		if(val){
+	   			infos.push(val);
+	   		}
+	   	}
+		return infos;
+	},
+	/**
+	 * @ignore
+	 */
+	midChange : function(small,imgUrl) {
+		var path=context_path;
+		if(imgUrl.mid.indexOf(context_path) == -1){
+			imgUrl.mid=context_path+imgUrl.mid;
+		}
+		if(imgUrl.big.indexOf(context_path) == -1){
+			imgUrl.big=context_path+imgUrl.big;
+		}
+		var src=imgUrl.mid;
+		var _this=this;
+        $("#midimg_"+_this.id).attr("src", src).load(function() {
+            _this.changeViewImg(imgUrl.big);
+        });
+    },
+	/**
+	 * @ignore
+	 */
+	bindImgEvent : function(){
+		var midChangeHandler = null;
+		var _this=this;
+		$("#imageMenu_"+_this.id+" li img").bind("click", function(){
+			if ($(this).attr("id") != "onlickImg") {
+				var imgUrl=_this.dataIndex($(this));
+				_this.midChange($(this),imgUrl);
+				$("#imageMenu_"+_this.id+" li").removeAttr("id");
+				$(this).parent().attr("id", "onlickImg");
+			}
+		}).bind("mouseover", function(){
+			if ($(this).attr("id") != "onlickImg") {
+				window.clearTimeout(midChangeHandler);
+				var imgUrl=_this.dataIndex($(this));
+				_this.midChange($(this),imgUrl);
+			}
+		}).bind("mouseout", function(){
+			if($(this).attr("id") != "onlickImg"){
+				midChangeHandler = window.setTimeout(function(){
+					var imgUrl=_this.dataIndex($("#onlickImg img"));
+					_this.midChange($("#onlickImg img"),imgUrl);
+				}, 1000);
+			}
+		});
+	},
+	/**
+	 * @ignore
+	 */
+	dataIndex : function(img){
+		var _this=this;
+		var imgUrl={mid:"",big:""};
+		var index = img.attr("imgindex");
+		if(!index){
+			index=img.parent().attr("imgindex");
+		}
+		var data=_this.params.data || [];
+		if(data.length>0){//data静态加载的数据
+			imgUrl.mid = data[index].mid;
+			imgUrl.big = data[index].big;
+		}else{//url动态加载的数据
+			var datas = this.result;
+			imgUrl.mid = datas[index].mid;
+			imgUrl.big = datas[index].big;
+		}
+		return imgUrl;
+	},
+    /**
+	 * @ignore
+	 */
+    changeViewImg : function(big) {
+    	var _this=this;
+    	$("#bigView_"+_this.id+" img").attr("src", big);
+    },
+    /**
+     * 大视窗看图鼠标事件
+	 * @ignore
+	 */
+    mouseover : function(e) {
+    	var _this=this;
+        if ($("#winSelector_"+_this.id).css("display") == "none") {
+            $("#winSelector_"+_this.id+",#bigView_"+_this.id).show();
+        }
+        $("#winSelector_"+_this.id).css(_this.fixedPosition(e));
+        e.stopPropagation();
+    },
+    /**
+     * 大视窗看图鼠标事件
+	 * @ignore
+	 */
+    mouseOut : function(e) {
+    	var _this=this;
+        if ($("#winSelector_"+_this.id).css("display") != "none") {
+        	$("#winSelector_"+_this.id+",#bigView_"+_this.id).hide();
+        }
+        e.stopPropagation();
+    },
+    /**
+     * 定位放大镜图
+	 * @ignore
+	 */
+    fixedPosition : function(e) {
+    	var _this=this;
+    	var _id=_this.id;
+    	var _divWidth=_this.divWidth;
+    	var _divHeight=_this.divHeight;
+    	var _imgHeight=_this.imgHeight;
+    	var _imgWidth=_this.imgWidth;
+    	var _viewImgWidth=_this.viewImgWidth;
+    	var _viewImgHeight=_this.viewImgHeight;
+        if (e == null) {
+            return;
+        }
+        var $imgLeft = $("#midimg_"+_id).offset().left; //中图左边距
+        var $imgTop = $("#midimg_"+_id).offset().top; //中图上边距
+        X = e.pageX - $imgLeft - _divWidth / 2; //selector顶点坐标 X
+        Y = e.pageY - $imgTop - _divHeight / 2; //selector顶点坐标 Y
+        X = X < 0 ? 0 : X;
+        Y = Y < 0 ? 0 : Y;
+        X = X + _divWidth > _imgWidth ? _imgWidth - _divWidth : X;
+        Y = Y + _divHeight > _imgHeight ? _imgHeight - _divHeight : Y;
+        if (_viewImgWidth == null) {
+        	_viewImgWidth = $("#bigView_"+_id+" img").outerWidth();
+        	_viewImgHeight = $("#bigView_"+_id+" img").height();
+            if (_viewImgWidth < 200 || _viewImgHeight < 200) {
+            	_viewImgWidth = _viewImgHeight = 800;
+            }
+            _this.height = _divHeight * _viewImgHeight / _imgHeight;
+            $("#bigView_"+_id).width(_divWidth * _viewImgWidth / _imgWidth);
+            $("#bigView_"+_id).height(_this.height);
+        }
+        var scrollX = X * _viewImgWidth / _imgWidth;
+        var scrollY = Y * _viewImgHeight / _imgHeight;
+        $("#bigView_"+_id+" img").css({ "left": scrollX * -1, "top": scrollY * -1 });
+        $("#bigView_"+_id).css({ "top": $imgTop+20, "left": $imgLeft + _imgWidth + 15 });
+        return { left: X, top: Y };
+    }
+});
+Horn.regUI("div.hc_imageView", Horn.ImageView);
 /*
  * -----------------------------------------------------------------------
  * 修订记录：
@@ -13159,6 +15636,9 @@ Horn.group_Pagebar = function(config,_gridid,_grid){
  * 2014-2-26     zhangc   修正翻译后内容超长溢出的问题。
  * 2015-04-20    zhangsu  BUG #9731 需求11320--label原先有value值，再用setvalue设置值，tip还是原先的值
  * 2016-08-31                 刘蒙             #25042	 label组件新增clearValue方法
+ * 2016-12-20    王兰          bug查看模式下,处理raidogroup、checkboxgroup静态字典显示值被改变了
+ * 2017-01-05    刘蒙          需求#30088 【TS:201612300075-JRES UI-财富业委会-沈进-【需求描述】当配置了dictName时，请添加对changeDict方法的支持】
+ * 2017-1-6      王兰          需求#30226 【TS:201701050075-JRES UI-财富业委会-江志伟-【缺陷】combox控件在查看模式下，调用setValue方法赋值时，赋值结果为code属性，而非name
  * ----------------------------------------------------------------------- 
  */
 /**
@@ -13235,9 +15715,8 @@ Horn.group_Pagebar = function(config,_gridid,_grid){
  * @name Horn.Label#<b>dictName</b>
  * @type String
  * @default  
- * @ignore
  * @example
- * 无
+ * #label({"label":"项目类型：","name":"projectType","value": "1","dictName":"province"})
  */
 /**
  * 组件的隐藏名，如有值，则以此name提交一个当前的值到后台
@@ -13335,9 +15814,9 @@ Horn.Label = Horn.extend(Horn.Base,{
 		
 		this.staticDict = staticDict;
 		
-		if(value){
+		/*if(value){
 			this.setValue(  value );
-		}
+		}*/
 	},
 	 /**
      * @description 设置标签的值
@@ -13358,7 +15837,9 @@ Horn.Label = Horn.extend(Horn.Base,{
 		var getVal = function(val){
 			var tmpval = "";
 			if(staticDict){
-				tmpval = staticDict[val]||val;
+				//查看模式下,处理raidogroup、checkboxgroup静态字典显示值被改变了
+				//tmpval = staticDict[val]||val;
+				tmpval = val;
 			}else if(dictName){
 				var li = $('.hc_checkboxdiv[ref_target='+dictName+'_s]').find("li[key="+val+"]");
 				tmpval = li.attr('title')||val;
@@ -13381,7 +15862,50 @@ Horn.Label = Horn.extend(Horn.Base,{
 		}else{
 			fval = getVal(value);
 		}
-	
+		//如果有配置数据字典的，就翻译数据字典 20161228 add by 周智星
+		if(dictName&&value!=""){
+			fval = Horn.getDict(dictName,value);
+			 this.el.attr('code',value);
+		}
+		if(!dictName){//静态字典  需求#30226 【TS:201701050075-JRES UI-财富业委会-江志伟-【缺陷】combox控件在查看模式下，调用setValue方法赋值时，赋值结果为code属性，而非name
+			var checkedString = [];
+			var  keyAttr = this.el.attr('keyfield');
+    		var  valueAttr = this.el.attr('titlefield');
+			var items=this.params.items;
+			if(items&&items.length>0){
+        		for(var i = 0; i< items.length; i++){
+        			var item = items[i];
+        			var tmpKey = item.code;
+        			if(!tmpKey){
+        				tmpKey = item.label;
+        			}
+        			var tmpValue = item.text;
+        			if(!tmpValue){
+        				tmpValue = item.value;
+        			}
+        			if(keyAttr){
+        				tmpKey = item[""+keyAttr+""];
+        			}
+        			if(valueAttr){
+        				tmpValue = item[""+valueAttr+""];
+        			}
+        			if(this.multipleline){//多选
+        				var arr = value.split(this.delimiter);
+        				for(var j=0;j<arr.length;j++){
+        					if(tmpKey==arr[j]){
+	                    		checkedString.push(tmpValue);
+        					}
+        				}
+        			}else{//单选
+        				if(item!=null&&tmpKey==value){
+                    		checkedString.push(tmpValue);
+            			}
+        			}
+        		}
+        		checkedString=checkedString.toString().replace(/,/g, this.delimiter);
+        		fval=checkedString;
+        	}
+		}
 		this.el.html(fval);
 		var title = this.el.attr('title');
 		/*if(title){
@@ -13418,7 +15942,31 @@ Horn.Label = Horn.extend(Horn.Base,{
 		this.setValue("");
 	},
 	
-	
+	/**
+     * @description 切换数据字典,2.0.9及以上版本支持此方法
+     * @function
+     * @name Horn.Label#changeDict
+     * @param {String} dictName 数据字典名称 
+     * @return 无
+     */
+	changeDict:function(dictname){
+		var _this=this,
+		     value,
+		     fval = "";
+		_this.dictName=dictname;
+		if(_this.hidden.get(0)){
+			value=_this.hidden.val();
+		}else{
+			value=_this.el.attr('code');
+		}
+		 if(!value) value="";
+		 if(dictname&&value!=""){
+			fval = Horn.getDict(dictname,value);
+		 }
+		_this.el.html(fval);
+		var title = _this.el.attr('title');
+		_this.el.attr('title',fval);		
+	},
     /**
      * @description 设置标签的名字
      * @function
@@ -13459,6 +16007,1285 @@ Horn.Label = Horn.extend(Horn.Base,{
 
 Horn.regUI("div.hc_label",Horn.Label) ;
 
+/*
+ * 修改日期                        修改人员        修改说明
+ * -------------------------------------------------------------------------------------
+ * 
+ * -------------------------------------------------------------------------------------
+ */
+/**
+ * @name Horn.ListBox
+ * @class
+ * listBox（列表框）组件提供左右两边数据列表互相移动功能,提供上下移动功能(注！一个页面只允许一个listBox存在)。
+ * 
+ */
+
+/**@lends Horn.ListBox# */
+
+/**
+ * 组件唯一标识<br/>
+ * @name Horn.ListBox#<b>id</b>
+ * @type String
+ * @default
+ * @example
+ * 无
+ */
+/**
+ * 组件名<br/>
+ * @name Horn.ListBox#<b>name</b>
+ * @type String
+ * @default
+ * @example
+ * 无
+ */
+/**
+ * 左边列表的选型名(提交后台时使用)<br/>
+ * @name Horn.ListBox#<b>lname</b>
+ * @type String
+ * @default
+ * @example
+ * 无
+ */
+/**
+ * 右边列表的选型名(提交后台时使用)<br/>
+ * @name Horn.ListBox#<b>rname</b>
+ * @type String
+ * @default
+ * @example
+ * 无
+ */
+/**
+ * 左边列表的显示标题(默认为待选)<br/>
+ * @name Horn.ListBox#<b>ltitle</b>
+ * @type String
+ * @default "待选"
+ * @example
+ * 无
+ */
+/**
+ * 右边列表的显示标题(默认为已选)<br/>
+ * @name Horn.ListBox#<b>rtitle</b>
+ * @type String
+ * @default "已选"
+ * @example
+ * 无
+ */
+/**
+ * 左边列表的显示名称(默认为空)<br/>
+ * @name Horn.ListBox#<b>lColumnName</b>
+ * @type String
+ * @default ""
+ * @example
+ * 无
+ */
+/**
+ * 右边列表的显示名称(默认为空)<br/>
+ * @name Horn.ListBox#<b>rColumnName</b>
+ * @type String
+ * @default ""
+ * @example
+ * 无
+ */
+/**
+ * 左边列表数据的后台url地址<br/>
+ * @name Horn.ListBox#<b>lurl</b>
+ * @type String
+ * @default
+ * @example
+ * 返回结果格式为:[{"key":"1000","text":"杭州市"},{"key":"1001","text":"衢州市"},...]
+ */
+/**
+ * 右边列表数据的后台url地址<br/>
+ * @name Horn.ListBox#<b>rurl</b>
+ * @type String
+ * @default
+ * @example
+ * 返回结果格式为:[{"key":"1000","text":"杭州市"},{"key":"1001","text":"衢州市"},...]
+ */
+
+/**
+ * listBox局域高度<br/>
+ * @name Horn.ListBox#<b>height</b>
+ * @type int
+ * @default 350
+ */
+
+/**
+ * listBox左边列表框宽度（默认左右一样宽）<br/>
+ * @name Horn.ListBox#<b>lwidth</b>
+ * @type int
+ * @default ""
+ */
+
+/**
+ * listBox右边列表框的宽度（默认左右一样宽）<br/>
+ * @name Horn.ListBox#<b>rwidth</b>
+ * @type int
+ * @default ""
+ */
+
+Horn.ListBox = Horn.extend(Horn.Base, {
+	COMPONENT_CLASS : "ListBox",
+	id:"listboxId",
+	lurl:null,
+	rurl:null,
+	modelType:null,
+	leftIndex:[],
+	rightIndex:[],
+	init : function(dom) {
+	      Horn.ListBox.superclass.init.apply(this, arguments);
+	      var _this = this;
+	      this.lurl = this.params.lurl?this.params.lurl:null;
+	      this.rurl = this.params.rurl?this.params.rurl:null;
+	      
+	      this.id = this.el.attr("id");
+	      
+	      this.modelType = "checkbox";
+	      
+	      if(this.lurl&&this.lurl!=""){
+	    	  _this.createList(this.lurl,2);
+	      }
+	      if(this.rurl&&this.rurl!=""){
+	    	  _this.createList(this.rurl,1);
+	      }
+	      
+	      //绑定事件
+	      this.initEvent();
+	    
+			
+    },
+    initEvent : function(){
+    	var _this = this;
+    	//左侧li绑定点击事件
+		$("#left-columns_"+this.id).find("ul").on("click",function(e){
+			_this.bindLiClick(e);
+		})
+		
+		//左边数据向右边移动
+		$("#leftMove_"+this.id).click(function(){
+			_this.leftMove();
+		});
+		
+		//右侧li绑定点击事件
+		$("#right-columns_"+this.id).find("ul").on("click",function(e){
+			_this.bindLiClick(e);
+		})
+		
+		//右边数据向左边移动
+		$("#rightMove_"+this.id).click(function(){
+			_this.rightMove();
+		});
+		
+		//左侧整体向右侧移动
+		$("#leftMoveAll_"+this.id).click(function(){
+			_this.leftAllMove();
+		});
+		
+		//右侧整体向左侧移动
+		$("#rightMoveAll_"+this.id).click(function(){
+			_this.rightAllMove();
+		});
+		
+		//左侧全选
+		$("#leftCheckbox").change(function(e){
+			_this.leftCheckAll(e);
+		});
+		//右侧全选
+		$("#rightCheckbox").change(function(e){
+			_this.rightCheckAll(e);
+		});
+		
+		//向上移动
+		$("#up_"+this.id).click(function(){
+			_this.moveClick("p");
+		});
+		//向下移动
+		$("#down_"+this.id).click(function(){
+			_this.moveClick("a");
+		});
+    },
+    moveClick : function(flag){
+    	var _this = this;
+    	var tmpId = _this.el.attr("id");
+		 var leftCheckBox = $("#left-columns_"+_this.id+" ul").find("input[type='checkbox']").is(":checked");
+	     var rightCheckBox = $("#right-columns_"+_this.id+" ul").find("input[type='checkbox']").is(":checked");
+	     var leftLen=$("#left-columns_"+_this.id+" ul").find("input[type='checkbox']:checked").length;
+	     var rightLen=$("#right-columns_"+_this.id+" ul").find("input[type='checkbox']:checked").length;
+	     if(leftCheckBox&&rightCheckBox){
+	    	 Horn.Msg.alert("提示","只能选中一边，请重新选择");
+	    	 return;
+	     }else{
+	    	 if(flag=="a"){//下移暂时只支持单条移动
+	    		 if(leftLen>1||rightLen>1){
+	    			 Horn.Msg.alert("提示","暂时只支持单条下移，请重新选择");
+	    	    	 return;
+	    		 }
+	    	 }
+	    	 var targetDiv = null;
+	    	 var type = null;
+	    	 if(leftCheckBox){
+	    		 targetDiv = $("#left-columns_"+tmpId);
+	    		 type = "l";
+			     
+	    	 }
+	    	 if(rightCheckBox){
+	    		 targetDiv = $("#right-columns_"+tmpId);
+	    		 type = "r";
+			     
+	    	 }
+	    	 if(targetDiv!=null){
+	    		 targetDiv.find("li").each(function(index,dom){
+		      		 var li = $(dom);
+		      		 var check = li.find("input[type='checkbox']:checked");
+		      		 
+					 var tag = $(this).attr("tag");
+					 if(check&&check.length>0){
+						_this.move(tag,type,flag);
+					 }
+		      	});
+	    	 }
+	     }
+    },
+     move : function(tag,type,flag){ 
+    	var isLeftClick = false;
+    	var isRightClick = false;
+        var num=tag;
+        var leftUl = $("#left-columns_"+this.id+" ul").find("input[type='checkbox']").is(":checked");
+        var rightUl = $("#right-columns_"+this.id+" ul").find("input[type='checkbox']").is(":checked");
+        var pNode,cNode,nNode,index=-1; 
+        var targetDiv = type=="r"?$("#right-columns_"+this.id):$("#left-columns_"+this.id);
+        targetDiv.find("li").each(function (i){ 
+			var tag = $(this).attr("tag");
+            if(tag!=num&&index==-1){     
+                pNode=this;     
+            }     
+            else{     
+                if(tag==num){     
+                    index=i;     
+                    cNode=this;     
+                }     
+                else{     
+                    nNode=this;     
+                    return false;     
+                }     
+            }     
+        });     
+        if(flag=='p'){     
+            $(cNode).insertBefore($(pNode));     
+        }     
+        else{     
+            $(cNode).insertAfter($(nNode));     
+        }     
+    } ,
+    leftCheckAll : function(e){
+    	var _this =this;
+    	var checkbox = $("#left-columns_"+_this.id+" ul").find("input[type='checkbox']");
+		if(e.target.checked){
+			checkbox.prop("checked",true);
+			checkbox.closest('li').addClass("selected");
+		}else{
+			checkbox.prop("checked",false);
+			checkbox.closest('li').removeClass("selected");
+		}
+    },
+    rightCheckAll : function(e){
+    	var _this = this;
+    	var checkbox = $("#right-columns_"+_this.id+" ul").find("input[type='checkbox']");
+		if(e.target.checked){
+			checkbox.prop("checked",true);
+			checkbox.closest('li').addClass("selected");
+		}else{
+			checkbox.prop("checked",false);
+			checkbox.closest('li').removeClass("selected");
+		}
+    },
+    leftMove : function(){
+    	var _this = this,len=0;
+    	var tmpId = this.el.attr("id");
+		//删除左侧选择数据
+		$("#left-columns_"+tmpId).find("li").each(function(index,dom){
+       		 var li = $(dom);
+       		 var check = li.find("input[type='checkbox']:checked");
+			 var spanHtm = li.find("span").text();
+			 if(check&&check.length>0){
+				_this.leftIndex.push({"index":index,"code":li.children("input").attr("value"),"value":spanHtm});
+				li.remove();
+			 }
+       	});
+		var allRightLi=$("#right-columns_"+_this.id+" ul").children("li");
+		if(allRightLi) len=allRightLi.length;
+		//添加右侧数据
+		if(_this.leftIndex&&_this.leftIndex.length>0){
+			for(var k=0;k<_this.leftIndex.length;k++){
+    			//var $rightLi="<li tag='"+_this.leftIndex[k].index+"'><input type='checkbox' index='"+_this.leftIndex[k].index+"' name='"+_this.params.rname+"'><span>"+_this.leftIndex[k].value+"</span></li>";
+				var $rightLi="<li tag='"+(len+k)+"'><input type='checkbox' index='"+(len+k)+"' name='"+_this.params.rname+"' value='"+_this.leftIndex[k].code+"'><span>"+_this.leftIndex[k].value+"</span></li>";
+    			$("#right-columns_"+tmpId+" ul").append($rightLi);
+    		}
+		}
+		_this.leftIndex.splice(0);
+		_this.allSelect();
+	
+    },
+    rightMove : function(){
+    	var _this = this,len=0;
+    	var tmpId = this.el.attr("id");
+		//删除右侧选择数据
+		$("#right-columns_"+tmpId).find("li").each(function(index,dom){
+       		 var li = $(dom);
+       		 var check = li.find("input[type='checkbox']:checked");
+			 var spanHtm = li.find("span").text();
+			 if(check&&check.length>0){
+				_this.rightIndex.push({"index":index,"code":li.children("input").attr("value"),"value":spanHtm});
+				li.remove();
+			 }
+       	});
+		var allLeftLi=$("#left-columns_"+_this.id+" ul").children("li");
+		if(allLeftLi) len=allLeftLi.length;
+		//添加左侧数据
+		if(_this.rightIndex&&_this.rightIndex.length>0){
+			for(var k=0;k<_this.rightIndex.length;k++){
+    			var $leftLi="<li tag='"+(len+k)+"'><input type='checkbox' index='"+(len+k)+"' name='"+_this.params.lname+"' value='"+_this.rightIndex[k].code+"'><span>"+_this.rightIndex[k].value+"</span></li>";
+    			$("#left-columns_"+tmpId+" ul").append($leftLi);
+    		}
+		}
+		_this.rightIndex.splice(0);
+		_this.allSelect();
+	
+    },
+    leftAllMove : function(){
+    	var _this = this,len=0;
+    	var tmpId = this.el.attr("id");
+		var allRightLi=$("#right-columns_"+_this.id+" ul").children("li");
+		if(allRightLi) len=allRightLi.length;
+		//移动前，改变index和tag值
+		$("#left-columns_"+tmpId+" ul").children("li").each(function(i,li){
+     		$(li).attr("tag",(len+i));
+     		$(li).children("input").attr("index",(len+i));
+     		
+        });
+		var left = $("#left-columns_"+tmpId+" ul").html();
+		left = left.replace(_this.params.lname,_this.params.rname);
+		$("#right-columns_"+tmpId+" ul").append(left);
+		$("#left-columns_"+tmpId+" ul").html("");
+		_this.allSelect();
+	
+    },
+    rightAllMove : function(){
+    	var _this = this,len=0;
+    	var tmpId = this.el.attr("id");
+		var allLeftLi=$("#left-columns_"+_this.id+" ul").children("li");
+		if(allLeftLi) len=allLeftLi.length;
+		//移动前，改变index和tag值
+		$("#right-columns_"+tmpId+" ul").children("li").each(function(i,li){
+     		$(li).attr("tag",(len+i));
+     		$(li).children("input").attr("index",(len+i));
+        });
+		var right = $("#right-columns_"+tmpId+" ul").html();
+		right = right.replace(_this.params.rname,_this.params.lname);
+		$("#left-columns_"+tmpId+" ul").append(right);
+		$("#right-columns_"+tmpId+" ul").html("");
+		_this.allSelect();
+	
+    },
+    createList :function(url,type){
+    	var _this = this;
+	      $.ajax(
+	    		   url,
+	    	  {
+	           async : true,
+            beforeSend : function(xhr) {
+	    			   
+	    		   },
+            type : "POST",
+            dataType : "json",
+            error : function(xhr, textStatus, errorThrown) {
+          	  
+            },
+            success : function(resultData, textStatus, jqXHR) {
+          	  if(resultData && resultData.length >0){
+          		  for ( var i = 0; i <resultData.length; i++){
+     				   		var itemData = resultData[i];
+     				   		var $li = null;
+     				   		var name = type==1?_this.params.rname:_this.params.lname
+     				   		if(_this.modelType!=null){
+     				   			$li="<li tag=\""+i+"\"><input type=\""+_this.modelType+"\" index=\""+i+"\" name=\""+name+"\" value=\""+itemData.key+"\"><span>"+itemData.text+"</span></li>";
+     				   		}else{
+     				   			$li="<li tag=\""+i+"\"><input type=\"hidden\" index=\""+i+"\" name=\""+name+"\" value=\""+itemData.key+"\"><span>"+itemData.text+"</span></li>";
+     				   		}
+     				   		if(type==1){
+     				   			$("#right-columns_"+_this.id+" ul").append($li);
+     				   		}else{
+     				   			$("#left-columns_"+_this.id+" ul").append($li);
+     				   		}
+          		  }
+          	  }
+            }
+	     });
+    
+    },
+	bindLiClick : function(e){
+		var checkbox = $(e.target).closest('li').find("input:checkbox");
+		//var spanHtm = $(e.target).closest('li').find("span").text();
+		var index = $(e.target).closest('li').index();
+		if(checkbox.prop("checked")){
+			if(e.target.tagName!="INPUT"){
+				checkbox.prop("checked", false);
+				checkbox.attr("checked", false);
+				$(e.target).closest('li').removeClass("selected");
+			}else{
+				$(e.target).closest('li').addClass("selected");
+			}
+		}else{
+			if(e.target.tagName!="INPUT"){
+				checkbox.prop("checked", true);
+				checkbox.attr("checked", true);
+				$(e.target).closest('li').addClass("selected");
+			}else{
+				$(e.target).closest('li').removeClass("selected");
+			}
+		}
+	},
+    allSelect : function(){
+		$("#leftCheckbox").prop("checked",false);
+		$("#rightCheckbox").prop("checked",false);
+		$("#left-columns_"+this.id+" li").removeClass("selected");
+		$("#right-columns_"+this.id+" li").removeClass("selected");
+		$("#left-columns_"+this.id+" li input").prop("checked",false);
+		$("#right-columns_"+this.id+" li input").prop("checked",false);
+	},
+	/**
+	    * @description 动态加载数据
+	    * @function
+	    * @name Horn.ListBox#<b>load</b>
+	    * @param {string} url   请求后台地址<br>
+	    * @param {int} type   类型（1为右边数据，否则为左边数据）<br>
+	    * @return void
+	    * @example
+	    * 
+	    */
+	load :function(url,type){
+    	this.createList(url, type);
+    }
+});
+Horn.regUI("div.listbox", Horn.ListBox);
+/*
+ * 修改日期                        修改人员        修改说明
+ * -------------------------------------------------------------------------------------
+ * 
+ * -------------------------------------------------------------------------------------
+ */
+/**
+ * @name Horn.ListBox_Table
+ * @class
+ * ListBox_Table（表格列表框）组件提供左右两边数据列表互相移动功能,提供上下移动功能(注！一个页面只允许一个listbox_table存在)。
+ * 
+ */
+
+/**@lends Horn.ListBox_Table# */
+
+/**
+ * 组件唯一标识<br/>
+ * @name Horn.ListBox_Table#<b>id</b>
+ * @type String
+ * @default
+ * @example
+ * 无
+ */
+
+/**
+ * 组件名<br/>
+ * @name Horn.ListBox_Table#<b>name</b>
+ * @type String
+ * @default
+ * @example
+ * 无
+ */
+
+/**
+ * 左边列表的显示标题(默认为待选)<br/>
+ * @name Horn.ListBox_Table#<b>ltitle</b>
+ * @type String
+ * @default "待选"
+ * @example
+ * 无
+ */
+
+/**
+ * 右边列表的显示标题(默认为已选)<br/>
+ * @name Horn.ListBox_Table#<b>rtitle</b>
+ * @type String
+ * @default "已选"
+ * @example
+ * 无
+ */
+
+/**
+ * @description 配置点击行选中的开关。默认不开启。配置开启后当点击列表行会主动选中这一行的数据而不需要点击选择框。
+ * @property rowSelect
+ * @name Horn.ListBox_Table#<b>rowSelect</b>
+ * @type boolean
+ * @default false
+ * @example
+ * "rowSelect":true可以开启行选中
+ */
+
+/**
+ * 左边表格的数据<br/>
+ * @name Horn.ListBox_Table#<b>ldata</b>
+ * @type Json
+ * @default null
+ * @example
+ * 示例：
+ * [{"clintJur":"3", "departName":"研发0组", "projectJur":"2", "departNo":"100", "clientType":"1"}, 
+ *  {"clintJur":"3", "departName":"研发1组", "projectJur":"2", "departNo":"101", "clientType":"0"}, 
+ *  {"clintJur":"3", "departName":"研发2组", "projectJur":"2", "departNo":"102", "clientType":"1"}, 
+ *  {"clintJur":"3", "departName":"研发3组", "projectJur":"2", "departNo":"103", "clientType":"0"}, 
+ *  {"clintJur":"3", "departName":"研发4组", "projectJur":"2", "departNo":"104", "clientType":"1"}, 
+ *  {"clintJur":"3", "departName":"研发5组", "projectJur":"2", "departNo":"105", "clientType":"0"}]
+ */
+
+/**
+ * 右边表格的数据<br/>
+ * @name Horn.ListBox_Table#<b>rdata</b>
+ * @type Json
+ * @default null
+ * @example
+ * 示例：
+ * [{"clintJur":"2", "departName":"测试0组", "projectJur":"1", "departNo":"200", "clientType":"2"}, 
+ *  {"clintJur":"2", "departName":"测试1组", "projectJur":"1", "departNo":"201", "clientType":"0"}, 
+ *  {"clintJur":"2", "departName":"测试2组", "projectJur":"2", "departNo":"202", "clientType":"1"}, 
+ *  {"clintJur":"2", "departName":"测试3组", "projectJur":"2", "departNo":"203", "clientType":"0"}]
+ */
+
+/**
+ * ListBox_Table局域高度<br/>
+ * @name Horn.ListBox_Table#<b>height</b>
+ * @type int
+ * @default 350
+ */
+
+/**
+ * ListBox_Table左边表格列表框的宽度（默认左右一样宽）<br/>
+ * @name Horn.ListBox_Table#<b>lwidth</b>
+ * @type int
+ * @default ""
+ */
+
+/**
+ * ListBox_Table右边表格列表框的宽度（默认左右一样宽）<br/>
+ * @name Horn.ListBox_Table#<b>rwidth</b>
+ * @type int
+ * @default ""
+ */
+
+/**
+ * @description 左边表格的列数据模型对象。控制数据列表的列显示状态，包含许多可配置参数。
+ * @name Horn.ListBox_Table#<b>lcolumns</b>
+ * @type object
+ * @default 无
+ * @example
+ * <table>
+ *	<tr>
+      <td style="width:65px">属性名</td>
+      <td style="width:50px">类型</td>
+      <td>说明</td>	
+      <td style="width:50px">默认值</td>
+    </tr>
+     
+	<tr>
+	   <td>factorcode</td>	
+	   <td>sring</td>	
+	   <td>列字段名</td>	
+	   <td>--</td>	
+	</tr>
+	
+	<tr>
+		<td>text</td>	
+		<td>string</td>
+		<td>列标题</td>
+		<td>--</td>	
+	</tr>
+	<tr>
+		<td>fieldtype</td>
+		<td>string	</td>
+		<td>数据类型，1是普通文本，5是静态下拉框，6是数据字典类型下拉框，12是静态复选框组组件，13是数据字典复选框组组件，暂时支持以上几种数据类型。</td>	
+		<td>--</td>	
+	</tr>
+	<tr>
+		<td>width</td>
+		<td>number</td>
+		<td>设置单元格的宽度，注是必填项。每列都要设置宽度</td>
+		<td>--</td>
+	</tr>
+	<tr>
+		<td>dictName</td>
+		<td>string</td>	
+		<td>下拉列表翻译的字典条目名称，如果是数据字典型下拉框，则此属性必填</td>
+		<td>--</td>
+	</tr>
+	<tr>
+		<td>hidden</td>
+		<td>boolean</td>	
+		<td>是否隐藏列</td>
+		<td>false</td>
+	</tr>
+	<tr>
+		<td>align</td>
+		<td>String</td>	
+		<td>文字显示位置（left、center、right）</td>
+		<td>center</td>
+	</tr>
+	
+	</table>
+		使用方法：{
+		"factorcode":"fileType",
+		 "text":"文件类型",
+		"fieldtype":"1",
+		"width":100
+		}
+ */
+/**
+ * @description 右边表格的列数据模型对象。控制数据列表的列显示状态，包含许多可配置参数。
+ * @name Horn.ListBox_Table#<b>rcolumns</b>
+ * @type object
+ * @default 无
+ * @example
+ * <table>
+ *	<tr>
+      <td style="width:65px">属性名</td>
+      <td style="width:50px">类型</td>
+      <td>说明</td>	
+      <td style="width:50px">默认值</td>
+    </tr>
+     
+	<tr>
+	   <td>factorcode</td>	
+	   <td>sring</td>	
+	   <td>列字段名</td>	
+	   <td>--</td>	
+	</tr>
+	
+	<tr>
+		<td>text</td>	
+		<td>string</td>
+		<td>列标题</td>
+		<td>--</td>	
+	</tr>
+	<tr>
+		<td>fieldtype</td>
+		<td>string	</td>
+		<td>数据类型，1是普通文本，5是静态下拉框，6是数据字典类型下拉框，12是静态复选框组组件，13是数据字典复选框组组件，暂时支持以上几种数据类型。</td>	
+		<td>--</td>	
+	</tr>
+	<tr>
+		<td>width</td>
+		<td>number</td>
+		<td>设置单元格的宽度，注是必填项。每列都要设置宽度</td>
+		<td>--</td>
+	</tr>
+	<tr>
+		<td>dictName</td>
+		<td>string</td>	
+		<td>下拉列表翻译的字典条目名称，如果是数据字典型下拉框，则此属性必填</td>
+		<td>--</td>
+	</tr>
+	<tr>
+		<td>hidden</td>
+		<td>boolean</td>	
+		<td>是否隐藏列</td>
+		<td>false</td>
+	</tr>
+	<tr>
+		<td>align</td>
+		<td>String</td>	
+		<td>文字显示位置（left、center、right）</td>
+		<td>center</td>
+	</tr>
+	
+	</table>
+		使用方法：{
+		"factorcode":"fileType",
+		 "text":"文件类型",
+		"fieldtype":"1",
+		"width":100
+		}
+ */
+
+Horn.ListBox_Table = Horn.extend(Horn.Base, {
+	COMPONENT_CLASS : "ListBox_Table",
+	id:"listboxId",
+	modelType:null,
+	leftIndex:[],
+	rightIndex:[],
+	init : function(dom) {
+	      Horn.ListBox_Table.superclass.init.apply(this, arguments);
+	      var _this = this;
+	      var ldata = this.params["ldata"]||{};
+	      this.ldata = ldata;
+	      var rdata = this.params["rdata"]||{};
+	      this.rdata = rdata;
+	      this.lcacheData = [];
+	      this.rcacheData = [];
+	      this.lrcacheData=[];
+	      this.lrcacheData.push(_this.lcacheData);
+	      this.lrcacheData.push(_this.rcacheData);
+	      this.id = this.el.attr("id");
+	      if(this.params.id&&this.params.id!=""){
+				this.id = this.params.id;
+		  }else{
+				if(this.params.name&&this.params.name!=""){
+					this.id = this.params.name;
+				}
+		  }
+	      this.lcolumns = _this.params["lcolumns"];
+	      this.rcolumns = _this.params["rcolumns"];
+	      this.modelType = "checkbox";
+	      this.selecteds = {};   
+	      this.ltable = _this.el.find("#left-columns_"+_this.id).children('table');
+	      this.rtable = _this.el.find("#right-columns_"+_this.id).children('table');
+	      this.ltbody = this.ltable.children('tbody');
+	      this.rtbody = this.rtable.children('tbody');
+	      this.lths = this.ltable.find("th");
+	      this.rths = this.rtable.find("th");
+	      this.rowSelect=this.params.rowSelect+"";
+	      //绑定事件
+	      this.initEvent();
+    },
+    initEvent : function(){
+    	var _this = this;
+    	//tr点击事件
+     	_this.ltbody.children('tr').each(function(i,tr){
+     		var line=$(tr).attr("line");
+     		if(line){
+     			_this.lcacheData.push({"line":line,"data":_this.ldata[i]});
+     		}
+     		_this.bindTrClick(i,tr,"left");
+        });
+     	_this.rtbody.children('tr').each(function(i,tr){
+     		var line=$(tr).attr("line");
+     		if(line){
+     			_this.rcacheData.push({"line":line,"data":_this.rdata[i]});
+     		}
+     		_this.bindTrClick(i,tr,"right");
+        });
+     	//td中组件值改变时，触发缓存数据改变
+     	_this.changeTdData();
+		//左边数据向右边移动
+		$("#leftMove_"+this.id).click(function(){
+			_this.leftMove();
+		});
+		//右边数据向左边移动
+		$("#rightMove_"+this.id).click(function(){
+			_this.rightMove();
+		});
+		//左侧整体向右侧移动
+		$("#leftMoveAll_"+this.id).click(function(){
+			_this.leftAllMove();
+		});
+		//右侧整体向左侧移动
+		$("#rightMoveAll_"+this.id).click(function(){
+			_this.rightAllMove();
+		});
+		//左侧全选
+		$("#leftCheckbox").change(function(e){
+			_this.checkAll(e,"left");
+		});
+		//右侧全选
+		$("#rightCheckbox").change(function(e){
+			_this.checkAll(e,"right");
+		});
+		//向上移动
+		$("#up_"+this.id).click(function(){
+			_this.moveClick("p");
+		});
+		//向下移动
+		$("#down_"+this.id).click(function(){
+			_this.moveClick("a");
+		});
+    },
+    bindTrClick : function(i,tr,lrtag){
+    	var _this=this;
+    	var rowidx = i;
+		var _tr = $(tr),
+		    checkbox = _tr.find("input:checkbox.h_querytable_select");
+		var line = _tr.attr("line");
+ 		if(!line||line==undefined) return;
+ 		if(_this.rowSelect == "true"){
+ 			_tr.bind('click',function(e) {
+ 				var allCheckBox,body,_tbodyid=_tr.parent().attr("id");
+ 				if(_tbodyid.indexOf("left") > -1){
+ 		    		allCheckBox=$("#leftCheckbox");
+ 		    		body=$("#left_tbody_"+_this.id);
+ 		    	}else{
+ 		    		allCheckBox=$("#rightCheckbox");
+ 		    		body=$("#right_tbody_"+_this.id);
+ 		    	}
+ 				var checkAllTr = true;
+ 	 			if(_tr.hasClass('u-table-selected')){
+ 	            	_this.unSelectRow(rowidx, _tr, lrtag);
+ 	            	checkAllTr = false;
+ 	            }else{
+ 	            	 _this.selectRow(rowidx, _tr, lrtag);
+	 	             body.find("input.h_querytable_select[type='checkbox']").each(function(idx,divdom){
+		       			  if(!$(divdom).prop("checked")) { 
+		       				checkAllTr = false; 
+		       				  return;
+		       			  }
+		       		});
+ 	            }
+ 	 			if(checkAllTr){
+                	allCheckBox.prop("checked", true);
+        		}else{
+        			allCheckBox.prop("checked", false);
+        		}
+ 	 		 });
+ 		}else{
+ 			 var  input = _tr.find("input.h_querytable_select[type='checkbox']");
+ 			 input.change(function(){
+ 				var allCheckBox,body,_tbodyid=_tr.parent().attr("id");
+ 				if(_tbodyid.indexOf("left") > -1){
+ 		    		allCheckBox=$("#leftCheckbox");
+ 		    		body=$("#left_tbody_"+_this.id);
+ 		    	}else{
+ 		    		allCheckBox=$("#rightCheckbox");
+ 		    		body=$("#right_tbody_"+_this.id);
+ 		    	}
+ 				var checkAll = true;
+                if(this.checked){
+                	_this.selectRow(rowidx,_tr);
+                	body.find("input.h_querytable_select[type='checkbox']").each(function(idx,divdom){
+	        			  if(!$(divdom).prop("checked")) { 
+	        				  checkAll = false; 
+	        				  return;
+	        			  }
+	        		});
+                }else{
+                    _this.unSelectRow(rowidx,_tr);
+                    checkAll = false;
+                }
+                if(checkAll){
+                	allCheckBox.prop("checked", true);
+        		}else{
+        			allCheckBox.prop("checked", false);
+        		}
+             });
+ 		}
+    },
+    leftMove : function(){
+    	var _this = this;
+    	var tmpId = this.el.attr("id");
+    	var ldata = _this.ldata;
+    	//table上当显示的是"暂无数据"时，清空tr
+    	_this.isHasCheck(tmpId,"left");
+		//删除左侧选择数据 并移动
+		$("#left_tbody_"+tmpId).find("tr").each(function(index,dom){
+       		 var tr = $(dom),
+       		 line=tr.attr("line"),
+       		 _index=0;
+       		 if(line) _index=line.split("_")[1]-1;
+       		 var check = tr.find("input.h_querytable_select[type='checkbox']:checked");
+       		 var l; 
+       		 if(ldata&&ldata.length>0){
+       			l = ldata[_index];
+       		 }
+			 if(check&&check.length>0){
+				 //缓存左右表格数据
+				 _this.leftIndex.push({"line":line,"ldata":l});
+				 var lcacheData=_this.lcacheData;
+				 var rcacheData=_this.rcacheData;
+				 if(lcacheData&&lcacheData.length>0){
+					 for(var m=0;m<lcacheData.length;m++){
+						 if(line==lcacheData[m].line){
+							 rcacheData.push(lcacheData[m]);
+							 lcacheData.splice(m,1);
+						 }
+					 } 
+				 }
+			     var copyTr=_this.isOrNotHiddenTd(tr[0],"left");//控制td显隐
+				 $("#right_tbody_"+tmpId).append(copyTr);
+			 }
+       	});
+		_this.leftIndex.splice(0);
+		$("#rightCheckbox").prop("checked", false);
+    },
+    rightMove : function(){
+    	var _this = this;
+    	var tmpId = this.el.attr("id");
+    	var rdata = _this.rdata;
+    	//table上当显示的是"暂无数据"时，清空tr
+    	_this.isHasCheck(tmpId,"right");
+		//删除右侧侧选择数据 并移动
+		$("#right_tbody_"+tmpId).find("tr").each(function(index,dom){
+       		 var tr = $(dom),
+       		 line=tr.attr("line"),
+       		 _index=0;
+       		 if(line) _index=line.split("_")[1]-1;
+       		 var check = tr.find("input.h_querytable_select[type='checkbox']:checked");
+       		 var l; 
+       		 if(rdata&&rdata.length>0){
+       			l = rdata[_index];
+       		 }
+			 if(check&&check.length>0){
+				 //缓存左右表格数据
+				 _this.rightIndex.push({"line":line,"rdata":l});
+				 var rcacheData=_this.rcacheData;
+				 var lcacheData=_this.lcacheData;
+				 if(rcacheData&&rcacheData.length>0){
+					 for(var m=0;m<rcacheData.length;m++){
+						 if(line==rcacheData[m].line){
+							 lcacheData.push(rcacheData[m]);
+							 rcacheData.splice(m,1);
+						 }
+					 } 
+				 }
+				 var copyTr=_this.isOrNotHiddenTd(tr[0],"right");//控制td显隐
+				 $("#left_tbody_"+tmpId).append(copyTr);
+			 }
+       	});
+		_this.rightIndex.splice(0);
+		$("#leftCheckbox").prop("checked", false);
+    },
+    leftAllMove : function(){
+    	var _this = this;
+    	var tmpId = this.el.attr("id");
+    	//删除暂时无数据行
+    	var hastr = $("#left_tbody_"+tmpId).find("tr").attr("line");
+    	if(hastr){//存在数据
+    		$("#right_tbody_"+tmpId).find("tr").each(function(index,dom){
+	       		 var line = $(dom).attr("line");
+	       		 if(!line) $(dom).remove();
+    		});
+    	}
+		$("#left_tbody_"+tmpId).find("tr").each(function(index,dom){
+      		 var tr = $(dom);
+      		 if(tr.attr("line")){
+      			var copyTr = _this.isOrNotHiddenTd(tr[0],"left");//控制td显隐
+      			$("#right_tbody_"+tmpId).append(copyTr);
+      		 }
+      	});
+		//缓存左右表格数据
+		 var lcacheData=_this.lcacheData;
+		 var rcacheData=_this.rcacheData;
+		 if(lcacheData&&lcacheData.length>0){
+			 for(var m=0;m<lcacheData.length;m++){
+				if(lcacheData[m].line) rcacheData.push({"line":lcacheData[m].line,"data":lcacheData[m].data});
+			 } 
+		 }
+		 _this.lcacheData.splice(0);
+    },
+    rightAllMove : function(){
+    	var _this = this;
+    	var tmpId = this.el.attr("id");
+    	//删除暂时无数据行
+    	var hastr = $("#rigth_tbody_"+tmpId).find("tr").attr("line");
+    	if(hastr){//存在数据
+	    	$("#left_tbody_"+tmpId).find("tr").each(function(index,dom){
+	    		 var line = $(dom).attr("line");
+	    		 if(!line) $(dom).remove();
+	    	});
+    	}
+		$("#right_tbody_"+tmpId).find("tr").each(function(index,dom){
+      		 var tr = $(dom);
+      		 if(tr.attr("line")){
+	      		 var copyTr = _this.isOrNotHiddenTd(tr[0],"right");//控制td显隐
+				 $("#left_tbody_"+tmpId).append(copyTr);
+      		 }
+      	});
+		//缓存左右表格数据
+		 var lcacheData=_this.lcacheData;
+		 var rcacheData=_this.rcacheData;
+		 if(rcacheData&&rcacheData.length>0){
+			 for(var m=0;m<rcacheData.length;m++){
+				 if(rcacheData[m].line) lcacheData.push({"line":rcacheData[m].line,"data":rcacheData[m].data});
+			 } 
+		 }
+		 _this.rcacheData.splice(0);
+    },
+    moveClick : function(flag){
+    	var _this = this;
+    	var tmpId = _this.el.attr("id");
+		 var leftCheckBox = $("#left_tbody_"+_this.id).find("input.h_querytable_select[type='checkbox']").is(":checked");
+	     var rightCheckBox = $("#right_tbody_"+_this.id).find("input.h_querytable_select[type='checkbox']").is(":checked");
+	     var leftLen=$("#left_tbody_"+_this.id).find("input.h_querytable_select[type='checkbox']:checked").length;
+	     var rightLen=$("#right_tbody_"+_this.id).find("input.h_querytable_select[type='checkbox']:checked").length;
+	     if(leftCheckBox&&rightCheckBox){
+	    	 Horn.Msg.alert("提示","只能选中一边，请重新选择");
+	    	 return;
+	     }else{
+	    	 if(flag=="a"){//下移暂时只支持单条移动
+	    		 if(leftLen>1||rightLen>1){
+	    			 Horn.Msg.alert("提示","暂时只支持单条下移，请重新选择");
+	    	    	 return;
+	    		 }
+	    	 }
+	    	 var targetDiv = null;
+	    	 var type = null;
+	    	 if(leftCheckBox){
+	    		 targetDiv = $("#left_tbody_"+tmpId);
+	    		 type = "l";
+			     
+	    	 }
+	    	 if(rightCheckBox){
+	    		 targetDiv = $("#right_tbody_"+tmpId);
+	    		 type = "r";
+			     
+	    	 }
+	    	 if(targetDiv!=null){
+	    		 targetDiv.find("tr").each(function(index,dom){
+		      		 var tr = $(dom);
+		      		 var check = tr.find("input.h_querytable_select[type='checkbox']:checked");
+		      		 var tag = $(this).attr("line");
+					 if(check&&check.length>0){
+						_this.move(tag,type,flag);
+					 }
+		      	});
+	    	 }
+	     }
+    },
+     move : function(tag,type,flag){ 
+    	var isLeftClick = false;
+    	var isRightClick = false;
+        var num=tag;
+        var leftUl = $("#left_tbody_"+this.id).find("input.h_querytable_select[type='checkbox']").is(":checked");
+        var rightUl = $("#right_tbody_"+this.id).find("input.h_querytable_select[type='checkbox']").is(":checked");
+        var pNode,cNode,nNode,index=-1; 
+        var targetDiv = type=="r"?$("#right_tbody_"+this.id):$("#left_tbody_"+this.id);
+        targetDiv.find("tr").each(function (i){ 
+			//var _tag = $(this).attr("tag");
+        	var _tag = $(this).attr("line");
+            if(_tag!=num&&index==-1){     
+                pNode=this;     
+            }     
+            else{     
+                if(_tag==num){     
+                    index=i;     
+                    cNode=this;     
+                }     
+                else{     
+                    nNode=this;     
+                    return false;     
+                }     
+            }     
+        });     
+        if(flag=='p'){     
+            $(cNode).insertBefore($(pNode));     
+        }     
+        else{     
+            $(cNode).insertAfter($(nNode));     
+        }     
+    } ,
+    /**
+     * 是否存在选择的条目
+     * @ignore
+     */
+    isHasCheck:function(tmpId,tag){
+    	_this=this;
+    	var ctag="left";
+    	if(tag=="left") ctag="right";
+    	var hascheck=$("#"+tag+"_tbody_"+tmpId).find("tr").find("input.h_querytable_select[type='checkbox']:checked");
+    	if(hascheck&&hascheck.length>0){
+    		//table上当显示的是"暂无数据"时，清空tr
+    		$("#"+ctag+"_tbody_"+tmpId+" tr").each(function(index,dom){
+    			var line = $(dom).attr("line");
+    			if(!line) $("#"+ctag+"_tbody_"+tmpId).html("");
+    		})
+    	}
+    },
+    /**
+     * 移动时处理td显隐
+     * @ignore
+     */
+    isOrNotHiddenTd:function(copyTr,tag){
+    	_this=this;
+    	var columns;
+    	if(tag=="left"){
+    		columns= _this.rcolumns;
+    	}else{
+    		columns= _this.lcolumns;
+    	}
+    	copyTr=$(copyTr);
+    	if(copyTr&&copyTr.length>0){
+    		copyTr.removeClass("u-table-selected");
+    		 var _td =copyTr.children("td");
+	   		 //右移字段是否隐藏
+	   		 _td.each(function(index){
+	       		 var td=$(this);
+	       		 //移动时去掉选择框的选中
+	       		 var checkTd=td.find("input.h_querytable_select[type='checkbox']").prop("checked",false);
+	   	    	 var fcode=td.attr('factorcode');
+	   	    	 if(fcode){
+	   	    		 if(columns&&columns.length>0){
+	   	    			 for(var p=0;p<columns.length;p++){
+	   	    				 var column=columns[p];
+	   	    				 var colFcode=column.factorcode;
+	   	    				 var colWidth=column.width;
+	   	    				 if(fcode==colFcode){
+	   	    					 var hide = column.hidden+"";
+	   	    					 if(hide&&hide=="true"){
+	   	    						 td.css("display","none");
+	   	    					 }else{
+	   	    						 td.css("display","table-cell");//显示
+	   	    					 }
+	   	    					 if(colWidth){
+	   	    						td.attr("width",colWidth);
+		   	    					td.children("div").css("width",colWidth);
+	   	    					 }else{
+	   	    						td.attr("width","");
+		   	    					td.children("div").css("width","110");
+	   	    					 }
+	   	    				 }
+	   		    		 }
+	   	    		 }
+	   	    	 }
+	   		 })
+    	}
+    	return copyTr;
+    },
+    /**
+     * td中组件值改变时，触发缓存数据改变
+     * @ignore
+     */
+    changeTdData : function(){
+    	_this=this;
+    	var  ltd =$("div.u-customCols-wrap tbody").children('tr').children('td');
+        ltd.change(function(){
+        	var _td=$(this);
+        	var lrcacheData = _this.lrcacheData;
+        	var line=_td.parent().attr("line");
+        	var fieldtype=_td.attr('fieldtype');
+        	var factorcode=_td.attr('factorcode');
+        	var compid=_td.attr("compid");
+        	if(fieldtype&&fieldtype!=""){//td中是组件
+        		var compVal=Horn.getComp(compid).getValue();
+        		if(lrcacheData&&lrcacheData.length>0){
+        			 var leftDatas=lrcacheData[0];//左边table数据
+  					 for(var m=0;m<leftDatas.length;m++){
+  						 if(line==leftDatas[m].line){
+  							leftDatas[m].data[factorcode]=compVal;
+  						 }
+  					 } 
+  					var rightDatas=lrcacheData[1];//右边table数据
+ 					 for(var y=0;y<rightDatas.length;y++){
+ 						 if(line==rightDatas[y].line){
+ 							rightDatas[y].data[factorcode]=compVal;
+ 						 }
+ 					 } 
+  				 }
+            }
+        });
+    },
+    /**
+    * @description 获取左右表格数据
+    * @function
+    * @name Horn.ListBox_Table#getAllDatas
+    * @return {object}
+    * @example
+    *   var mydata=Horn.getComp("组件名").getAllDatas();
+	*	//mydata[0].leftData为左边表格数据，mydata[1].rightData为右边表格数据
+	*	if(mydata[0]){//左边表格有数据时
+	*		var leftData=mydata[0].leftData;
+	*		for(var i=0;i &lt; leftData.length;i++){
+	*			//alert(leftData[i].data.列字段名);
+	*		}
+	*	}
+	*	if(mydata[1]){//右边表格有数据时
+	*		var rightData=mydata[1].rightData;
+	*		//....
+	*	}
+    */
+    getAllDatas : function(){
+    	var _this=this,
+    	mydata=[],
+    	lcacheData=_this.lcacheData,
+    	rcacheData=_this.rcacheData;
+    	if(lcacheData&&lcacheData.length>0){
+    		mydata.push({"leftData":lcacheData});
+    	}
+    	if(rcacheData&&rcacheData.length>0){
+    		mydata.push({"rightData":rcacheData});
+    	}
+    	return mydata;
+    },
+    /**
+     * 全选
+     * @ignore
+     */
+    checkAll : function(e,tag){
+    	var _this =this;
+    	var checkbox = $("#"+tag+"_tbody_"+_this.id+" tr").find("input.h_querytable_select[type='checkbox']");
+		if(e.target.checked){
+			checkbox.prop("checked",true);
+			checkbox.closest('tr').addClass("u-table-selected");
+		}else{
+			checkbox.prop("checked",false);
+			checkbox.closest('tr').removeClass("u-table-selected");
+		}
+    },
+	 /**
+     * @description 选择某行
+     * @function
+     * @name Horn.ListBox_Table#selectRow
+     * @param {int} rowidx
+     * @param {JQuery} tr
+     * @param {String} lrtag 左边还是右边
+     * @ignore
+     */
+    selectRow:function(rowidx,_tr,lrtag){
+    	var tr = _tr;
+    	if(!tr){
+    		tr = $(this.el.find('tr').has('td').get(rowidx));
+    	}
+    	if(tr.size()==0){
+    		Horn.debug("listbox_table["+this.name+"]","选择的行"+rowidx+"不存在");
+    		return false;
+    	}
+    	var vals = {};
+    	var displays = {};
+    	var ths;
+    	if(lrtag=="left"){
+    		ths=this.lths;
+    	}else{
+    		ths=this.rths;
+    	}
+		var tds = tr.find('td');
+		ths.each(function(thidx,_th){
+			var td = tds.get(thidx),
+				th = $(_th);
+			if(th.attr('name')){
+				vals[th.attr('name')] = $(td).children("div").attr('fieldtype')!="" ? $(td).children("div").attr('factorval') :$.trim($(td).children("div").text());
+				displays[th.attr('name')] = $(td).children("div").attr('fieldtype')!="" ? $(td).children("div").attr('factorval') :$.trim($(td).children("div").text());
+			}
+		});
+		this.selecteds[rowidx] = {val:vals,displays:displays};
+		this.lastSelect = {
+				rowidx:rowidx,
+				tr:tr
+			};
+		tr.find("input:checkbox.h_querytable_select").prop("checked" , true);   //选中checkbox
+		tr.addClass("u-table-selected");//选中行的样式
+    },
+    /**
+     * @description 取消某行的选择
+     * TODO 这里尚有些不成熟的地方，需要取消选择项的勾。
+     * @function
+     * @name Horn.ListBox_Table#unSelectRow
+     * @param {DOMDocument} rowidx
+     * @param {DOMDocument} tr
+     * @param {String} lrtag 左边还是右边
+     * @ignore
+     */
+    unSelectRow:function(rowidx,_tr,lrtag){
+    	var tr = _tr;
+    	if(!tr){
+    		tr = $(this.el.find('tr').has('td').get(rowidx));   
+    	}
+    	this.selecteds[rowidx] =null;
+    	delete this.selecteds[rowidx];
+    	tr.removeClass("u-table-selected");//取消选中行的样式
+		tr.find("input:checkbox.h_querytable_select").prop("checked" , false);    //取消选中checkbox
+    }
+});
+Horn.regUI("div.listbox_table", Horn.ListBox_Table);
 /*
  * 修改日期                        修改人员        修改说明
  * -----------------------------------------------------------------------
@@ -14284,8 +18111,8 @@ var Horn = Horn || {};
 				}
    		});	
    	}
-   	currentMessageBox.find(".m-message-bg").css("z-index",Horn.Window.getNextZIndex());
-   	currentMessageBox.find(".m-message-positon").css("z-index",Horn.Window.getNextZIndex());
+   	currentMessageBox.find(".m-message-bg").css("z-index",Horn.Window.getNextZIndex()+10);
+   	currentMessageBox.find(".m-message-positon").css("z-index",Horn.Window.getNextZIndex()+10);
 		if(Horn.Window.getOpen()<1){
 			//$("body").addClass("h-overflow-hidden");
 			$("html").addClass("h-overflow-hidden");
@@ -14548,6 +18375,9 @@ var Horn = Horn || {};
 			 * Horn.Msg.unload();
 			 */
 			load:function(loadStr){
+				if(!$("body").hasClass("h-overflow-hidden")){
+					$("body").addClass("h-overflow-hidden");
+				}
 				$('body').doMask(loadStr);
 			},
 			/**
@@ -14564,6 +18394,9 @@ var Horn = Horn || {};
 			 */
 
 			unload:function(){
+				if($("body").hasClass("h-overflow-hidden")){
+					$("body").removeClass("h-overflow-hidden");
+			   }
 				$('body').doUnMask();
 			}
 	};
@@ -14591,6 +18424,8 @@ var Horn = Horn || {};
  *  2016-1-27     刘龙          STORY 16308 【TS:201601070241-JRESPlus-财富管理事业部-陈为-10.对于导航栏，希望研发中心给出统一标准的导航工具栏风格，】
  *  2016-2-16     刘龙          15934 需求16308--grid分页栏中，到第几页输入框中输入值，移开焦点未发送请求
  *  2016-3-28     刘龙          需求#18070 【TS:201603240534-JRESPlus-财富管理事业部-江志伟-【项目名称】恒生信托综合管理平台（TCMP）<br>【产品及】
+ *  2016-12-21    王兰        需求#29550 【TS:201612210083-JRESPlus-财富业委会-沈进-BUG2： 分页点击最后一页，每页显示条数设置比总条数大时，当前页数应该跳转到第一页，实际上当前页数没有变化，每页显示设置为100条（总数量为37）
+ *  2017-1-6      王兰        需求#30132 【TS:201701030041-JRES UI-财富业委会-沈进-【需求描述】组件 pagebar组件在第一次加载，通过分页触发form提交时，后台无法对实体类赋值
  *  -----------------------------------------------------------------------
  */
 /**
@@ -14934,11 +18769,19 @@ var Horn = Horn || {};
 					pageSize = parseInt(pageSize,10);
 					if(pageSize<=0)
 						pageSize=1;
+					
 					$(this).val(pageSize);
-                    
-                    var params = [];
-                    params.push(parseInt($("#"+_pageBar.bindFormName+"_topageid").val()), pageSize);
-                    _pageBar.goPage.apply(_pageBar,params);
+                    //bug 当总条数为0，每页显示条数失去焦点会报错
+                    if(_pageBar.pageCount>0){
+                    	var params = [];
+                    	var _toPage=parseInt($("#"+_pageBar.bindFormName+"_topageid").val());
+                    	//如果输入每页显示条数的值大于总条数，跳转到第一页    需求#29550 【TS:201612210083-JRESPlus-财富业委会-沈进-BUG2： 分页点击最后一页，每页显示条数设置比总条数大时，当前页数应该跳转到第一页，实际上当前页数没有变化，每页显示设置为100条（总数量为37）
+                        if(_pageBar.pageCount&&pageSize>_pageBar.pageCount){
+                        	_toPage=1;
+    					}
+                        params.push(_toPage, pageSize);
+                        _pageBar.goPage.apply(_pageBar,params);
+                    }
                     $("#"+_pageBar.bindFormName+"_topagesize").val(pageSize);
 				});
 		},
@@ -15053,7 +18896,8 @@ var Horn = Horn || {};
 		            this.form = Horn.getCurrent().find("form[name='"+bindformname+"']") ;
 		            var pageParamStr = '<input type="hidden" name="index" value="'+this.page+'"><input type="hidden" name="pageNo" value="'+this.page+'"><input type="hidden" name="pageSize" value="'+this.pageSize+'"><input type="hidden" name="count" value="'+this.pageCount+'"><input type="hidden" name="pages" value="'+this.pages+'">';
 		            this.form.append(pageParamStr);
-		            this.form.attr("action",this.url);
+		            //需求#30132 【TS:201701030041-JRES UI-财富业委会-沈进-【需求描述】组件 pagebar组件在第一次加载，通过分页触发form提交时，后台无法对实体类赋值
+		            //this.form.attr("action",this.url);
 		            this.form.submit();
 		            
 		            //绑定的form表单的参数
@@ -15096,6 +18940,9 @@ var Horn = Horn || {};
  * 2015-08-27       zhangsu      STORY #12493 【TS:201508100055-JRESPlus-资产管理事业部-张翔Panel组件的expandable有问题，当panel调用hide（）方法隐藏之后expandable图标未隐藏
  * 2015-12-03       周智星                   需求 #15282 [研发中心/WF]panel控件已经支持了是否能打开和收缩的功能，但是默认一定是打开的，希望增加默认打开还是收缩的配置项 
  * 2016-10-12       周智星                 解决show和hide方法不生效问题
+ * 2016-11-01       周智星                把show和hide恢复到2.0.6以下版本，新增展开和伸缩两个方法
+ * 2016-11-18       刘蒙                    BUG #33796 需求26994-调用展开收缩方法时，图标没有变化
+ * 2016-12-06       周智星               需求# 28002 【TS:201611180269-JRESPlus-经纪业委会（经纪）-施振东-【需求描述】panel容器在点击展开和收缩时支持click事】
  * -----------------------------------------------------------------------
  */
 /**
@@ -15163,6 +19010,42 @@ var Horn = Horn || {};
  *	#textfield({"label":"流程名称：", "name":"hsBpmNameLike"})
  * #end
  */
+/**
+ * 点击展开按钮时都会触发（注！版本必须2.0.8或以上版本）<br/>
+ * @name Horn.Panel#<b>expandClick</b>
+ * @event
+ * @example  
+ * #@panel({"name":"projectInfo","expandable":true,"isExpand":true,"cols":1,"title":"1列布局","unExpandClick":"unExpandClick","expandClick":"expandClick"})
+ * 
+ * #end
+ * 
+ * #jscode()
+ *	   function unExpandClick(){
+ *		   //在这里做业务操作;
+ *	   }
+ *	   function expandClick(){
+ *		   //在这里做业务操作;
+ *	   }
+ *	#end
+ */
+/**
+ * 点击收缩按钮时都会触发（注！版本必须2.0.8或以上版本）<br/>
+ * @name Horn.Panel#<b>unExpandClick</b>
+ * @event
+ * @example  
+ * #@panel({"name":"projectInfo","expandable":true,"isExpand":true,"cols":1,"title":"1列布局","unExpandClick":"unExpandClick","expandClick":"expandClick"})
+ * 
+ * #end
+ * 
+ * #jscode()
+ *	   function unExpandClick(){
+ *		   //在这里做业务操作;
+ *	   }
+ *	   function expandClick(){
+ *		   //在这里做业务操作;
+ *	   }
+ *	#end
+ */
 	Horn.Panel = Horn.extend(Horn.Base,{
 		COMPONENT_CLASS:"Panel",
 		init:function(){
@@ -15178,11 +19061,31 @@ var Horn = Horn || {};
 					btn.removeClass("fa-angle-up");
 					btn.addClass("fa-angle-down");
 					_this.autoGridHeight();
+					if(_this.params.unExpandClick){//点击收缩按钮时，触发用户自定义的click事件方法
+		  			   var  fnObj = Horn.Util.getFunObj(_this.params.unExpandClick);
+		  			   var tmpFn;
+		  	           if($.type(fnObj.fn) == "function"){
+		  	        	 tmpFn = fnObj.fn ;
+		  	           }
+		  	           if(tmpFn){
+		  	        	   tmpFn.apply(_this);
+		  	           }
+		  		   	}
 				 }else{
 					 _panel.show();
 					btn.removeClass("fa-angle-down");
 					btn.addClass("fa-angle-up");
 					_this.autoGridHeight();
+					if(_this.params.expandClick){//点击展开按钮时，触发用户自定义的click事件方法
+		  			   var  fnObj = Horn.Util.getFunObj(_this.params.expandClick);
+		  			   var tmpFn;
+		  	           if($.type(fnObj.fn) == "function"){
+		  	        	 tmpFn = fnObj.fn ;
+		  	           }
+		  	           if(tmpFn){
+		  	        	   tmpFn.apply(_this);
+		  	           }
+			  		}
 				 }
 			}) ;
 		 }
@@ -15205,7 +19108,7 @@ var Horn = Horn || {};
          * @return {void}
          */
 		show : function(){
-			this.el.children("div.g-wrap").show();
+			this.el.show();
 		},
         /**
          * 隐藏<br/>
@@ -15215,7 +19118,40 @@ var Horn = Horn || {};
          * @return {void}
          */
 		hide : function(){
-			this.el.children("div.g-wrap").hide();
+			this.el.hide();
+		},
+		/**
+         * 展开<br/>
+         * 展开面板容器的内容
+         * @name Horn.Panel#expand
+         * @function
+         * @return {void}
+         */
+		expand : function(){
+			var _this=this,
+			    expandDiv = _this.el.children('div.m-panel-box'),
+			    btn = expandDiv.children().children("i");
+			_this.el.children("div.g-wrap").show();
+			//33796 需求26994-调用展开收缩方法时，图标没有变化
+			btn.removeClass("fa-angle-down");
+			btn.addClass("fa-angle-up");
+			
+		},
+        /**
+         * 收缩<br/>
+         * 收缩面板容器及容器内的内容
+         * @name Horn.Panel#unexpand
+         * @function
+         * @return {void}
+         */
+		unexpand : function(){
+			var _this=this,
+		    	expandDiv = _this.el.children('div.m-panel-box'),
+		    	btn = expandDiv.children().children("i");
+			_this.el.children("div.g-wrap").hide();
+			//33796 需求26994-调用展开收缩方法时，图标没有变化
+			btn.removeClass("fa-angle-up");
+			btn.addClass("fa-angle-down");
 		},
 		/**
          * 设置内部输入组件为可用状态<br/>
@@ -15559,6 +19495,8 @@ var Horn = Horn || {};
  * 修订纪录
  * 2014-2-11 		张超		修正passwordgroup无法设置value的问题
  * 2016-10-12       周智星              修复不能触发自定义校验问题
+ * 2016-12-22       周智星             需求#29526 【TS:201612200412-经纪业委会（经纪）-吕威-【需求描述】<br>1.目前在bop项目中大量使用了pass
+ * 2016-12-27       刘蒙                 bug#37166 passwordgroup控件占一列、两列时，第二个输入框的提示信息显示位置不正确
  * -----------------------------------------------------------------------
  */
 /**
@@ -15685,6 +19623,14 @@ var Horn = Horn || {};
   * @example
   * "events":[{"event":"onchange","function":"getValue()"}]
   */
+ /**
+  * 禁用(此功能必须2.0.8或以上版本)
+  * @name Horn.PasswordGroup#disabled
+  * @type Boolean
+  * @default false
+  * @example
+  * #password_group({"name":"password","disabled":true, "label":"交易密码" ,"check": "required","hidden":false,"emptyText":["请输入密码","请输入确认"]})
+  */
 	Horn.PasswordGroup = Horn.extend(Horn.Field,{
 		COMPONENT_CLASS:"PasswordGroup",
 		field1 : null,
@@ -15721,18 +19667,22 @@ var Horn = Horn || {};
     			}
 	    		Horn.Validate.onValid({data:[Horn.Validate,_pwdgroup]});
 	    		if(val1!=""&&val2!=""){
-		    		if(_pwdgroup.isValid()){
-			    		var pwd = _pwdgroup.field1.val();
-			    		if(_pwdgroup.field2.val() != pwd){
-			    			_pwdgroup.showError('校验不匹配！');
-			    		}else{
-			    			_pwdgroup.removeError();
-			    		}
-			    	}
+	    			var pwd = _pwdgroup.field1.val();
+		    		if(_pwdgroup.field2.val() != pwd){
+		    			_pwdgroup.showError('前后密码不一致，请重新输入！',2);
+		    		}else{
+		    			_pwdgroup.removeError();
+		    		}
 	    		}else{
 	    			var rule2 =  _pwdgroup.field2.attr("check");
 	    			if(rule2 && rule2.indexOf(Horn.Validate.REQUIRED) > -1){
-	    				_pwdgroup.showError("当前输入不能为空");
+	    				if(val1==""){
+	    					_pwdgroup.showError("当前输入不能为空",1);
+	    				}else if(val2==""){
+	    					_pwdgroup.showError("当前输入不能为空",2);
+	    				}else{
+	    					_pwdgroup.showError("当前输入不能为空",1);
+	    				}
 	    			}
 	    		}
 	    	});
@@ -15752,17 +19702,22 @@ var Horn = Horn || {};
     			var pwd1 = _pwdgroup.field1.val();
 	    		var pwd2 = _pwdgroup.field2.val();
 	    		if(pwd1!=""&&pwd2!=""){
-		    		if(_pwdgroup.isValid()){
-			    		if(pwd1 != pwd2 && pwd2){
-			    			_pwdgroup.showError('校验不匹配！');
-			    		}else{
-			    			_pwdgroup.removeError();
-			    		}
+	    			if(pwd1 != pwd2){
+		    			_pwdgroup.showError('前后密码不一致，请重新输入！',1);
+		    		}else{
+		    			_pwdgroup.removeError();
 		    		}
 	    		}else{
+	    			
 		    		var rule1 =  _pwdgroup.field1.attr("check");
 	    			if(rule1 && rule1.indexOf(Horn.Validate.REQUIRED) > -1){
-	    				_pwdgroup.showError("当前输入不能为空");
+	    				if(pwd1==""){
+	    					_pwdgroup.showError("当前输入不能为空",1);
+	    				}else if(pwd2==""){
+	    					_pwdgroup.showError("当前输入不能为空",2);
+	    				}else{
+	    					_pwdgroup.showError("当前输入不能为空",1);
+	    				}
 	    			}
 	    		}
 	    	});
@@ -15856,7 +19811,7 @@ var Horn = Horn || {};
 	     * @param {String} 错误信息
 	     * @ignore
 	     */
-	    showError : function(errorMsg){
+	    showError : function(errorMsg,flag){
 	    	var field1 = this.field1; 
 	    	var field2 = this.field2;
 	    	var msgInBody =this.params.msgInBody+"";
@@ -15879,6 +19834,13 @@ var Horn = Horn || {};
 	        var msg = this.msgDiv;
 	        msg.html("<div class=\"verify-tip-arrow\"></div><div class=\"verify-tip-inner\">"+errorMsg+"</div>");
 	        msg.css("display", "block");
+	        if(flag==2){
+	        	//bug#37166 passwordgroup控件占一列、两列时，第二个输入框的提示信息显示位置不正确
+	        	var width=field2.width();
+	        	msg.css("left", width+"px");
+	        }else{
+	        	msg.css("left", 0);
+	        }
 	        this.err = true;
 	        if(msgInBody=="true"){
 		        //需求#23658 【TS:201608010414-JRESPlus-资管业委会（资管）-张翔-校验框层级问题，需要和日期组件和下拉组件一样高于window层级，校验信息被窗口遮住了
@@ -15889,21 +19851,21 @@ var Horn = Horn || {};
 				}else{
 					Horn.Window.MAX_ZINDEX = Horn.Window.MAX_ZINDEX -1;
 				}
-		        _this.positionError(index);
+		        _this.positionError(flag);
 		        $(".h_floatdiv-con").bind("scroll",function(){
-		        	_this.positionError(index);
+		        	_this.positionError(flag);
 		        });
 		        $(".h_floatdiv-con").bind("mousewheel",function(){
-		        	_this.positionError(index);
+		        	_this.positionError(flag);
 		        });
 		        $(".h_tabpanel-contents").bind("scroll",function(){
-		        	_this.positionError(index);
+		        	_this.positionError(flag);
 		        });
 		        $(".h_tabpanel-contents").bind("mousewheel",function(){
-		        	_this.positionError(index);
+		        	_this.positionError(flag);
 		        });
 		        $(".m-message-title").mousemove(function(e){
-		    		  _this.positionError(index);
+		    		  _this.positionError(flag);
 		    	});
 	        }
 	    },
@@ -15931,8 +19893,11 @@ var Horn = Horn || {};
 	    	if(msg) msg.remove();
 	    	delete this.msgDiv ;
 	    },
-	    positionError : function(){
-	    	var field = this.field1; 
+	    positionError : function(flag){
+	    	var field = this.field1;
+	    	if(flag==2){
+	    		field = this.field2;
+	    	}
 	    	var msg = this.msgDiv;
 	    	if(msg){
 		    	var pos = field.offset();
@@ -15996,6 +19961,32 @@ var Horn = Horn || {};
 				this.field1.attr("disabled","disabled");
 				this.field2.attr("disabled","disabled");
     			_pwdgroup.removeError();
+			}
+		},
+		/**
+	     * 禁用/启用(版本必须是2.0.8或以上版本)
+	     * @function
+	     * @name Horn.Field#setDisabled
+	     * @param {boolean} disabled true为禁用，false为启用
+	     * @example
+	     * #@screen({})
+		 *		#@panel({})
+		 *			#password_group({"name":"password","disabled":true, "label":"交易密码" ,"check": "required","hidden":false,"emptyText":["请输入密码","请输入确认"]})
+		 *		#end
+		 *	#button_panel_ex({"buttons":[{"label":"禁用","event":"setDisabled(true)"},{"label":"启用","event":"setDisabled(false)"}]})
+		 *	#end
+		 *	
+		 *	#jscode()
+		 *	   function setDisabled(enabled){
+		 *	          Horn.getComp("password").setDisabled(enabled);
+		 *	   }
+		 *	#end
+	     */
+	    setDisabled : function(disabled){
+			if(disabled){
+				this.setEnable(false);
+			}else{
+				this.setEnable(true);
 			}
 		}
 	});
@@ -16535,7 +20526,7 @@ Horn.QueryTable = Horn.extend(Horn.Base,{
 		//表格列是否可以拖动，默认true
 		var drag = this.params.isDrag+"";
 		if(drag!="false"){
-			$(".hc-datagrid-cell").resizable({
+			this.el.find(".hc-datagrid-cell").resizable({
 				autoHide : true,
 				minHeight : 35,
 				maxHeight : 35,
@@ -16965,8 +20956,11 @@ Horn.QueryTable = Horn.extend(Horn.Base,{
                     var dealFun = th.attr("dealFun");
                     var width = th.attr("width");
                     var w = "";
-                    if(width){
+                    if(width){//兼容%号的
                     	w = width.replace("%","0").replace("px","").replace("PX","")+"px";
+                    	if(width.indexOf("%")!=-1){
+                    		th.attr("width",width.replace("%","0"));
+                    	}
                     }
                     var align = "left";
                     if(th.attr("tAlign")){
@@ -17580,7 +21574,7 @@ Horn.regUI("table.h_querytable",Horn.QueryTable) ;
  * @type Array[JSON]
  * @default  
  * @example
- * "items":[{"label":"a","value":"a1"},{"label":"b","value":"b1"},{"label":"c","value":"c1"}]
+ * "items":[{"text":"葡萄","code":"0"},{"text":"苹果","code":"1"},{"text":"香蕉","code":"2"},{"text":"桔子","code":"3"}]
  */
 
 /**
@@ -18177,6 +22171,9 @@ Horn.Field.regFieldType("div.hc_radio-group",Horn.RadioGroup) ;
  * 2016-10-19       王兰            bug#30526 combox多选下拉框，配置自定义分隔符‘@’，在下拉框选择多项后鼠标焦点移出，再点击输入框弹出的下拉框中的字典项没有处于选择状态
  * 2016-10-19       刘蒙            bug#30452 combox多选下拉框配置hasSelectAll:true,enableFieldSearch:true,点击选择框输入查询内容时报错
  * 2016-10-20       刘蒙            bug#30446 combox多选下拉框配置selectAll：true，hasSelectAll：true，初始化数据后没有触发‘全选/反选’项，而手动选择全部后会触发‘全选/反选’
+ * 2016-10-26       王兰            需求#26788 [研发中心/内部需求]combox组件，当配置了filterby属性后，设置readonly为true，只读状态时，仍然可以操作下拉列表
+ * 2016-12-2        王兰            需求#28756 【TS:201612020108-JRESPlus-财富业委会-沈进-【现象描述】缺陷：combox组件changeDict失效
+ * 2016-12-2        王兰            需求#28802 【TS:201612020506-JRESPlus-资管业委会（资管）-王永良-【需求描述】combox在多选的情况下，如果使用ctrl+A 快捷键的时候，能够赋值全选的内容，但是下拉列表不能勾选
  * -----------------------------------------------------------------------
  */
 
@@ -18286,7 +22283,20 @@ Horn.Field.regFieldType("div.hc_radio-group",Horn.RadioGroup) ;
  * @example
  * 无
  */
-
+/**
+ * 下拉菜单下拉项请求地址(注！版本必须是2.0.8或以上版本，jresplus-ui-runtime包的版本也一样。dictName、items和url只能存在一个)
+ * @name Horn.Select#<b>url</b>
+ * @type Array
+ * @default ""
+ * @example
+ * 说明：
+ * 1.返回结果格式为：[{"text":"葡萄","code":"0"},{"text":"苹果","code":"1"} ...]
+ * 2.url地址不要写上$appServer或者自己的应用名
+ * 3.要确保提供的url有权限访问,JRESUI是在后台通过httpClient去请求url的（如果有权限拦截的，就请排除权限拦截）
+ * 4.一个页面如果使用相同的url，就必须在url添加不同的参数（url是唯一的,后面的参数随便写即可），如：/demo/dict/dictList.json?params=test1
+ * 实例：
+ * #select({"name":"test1","label":"单选","multiple": true,  "check": "required","headItem":{"value":"请选择...","label":""},"showLabel":false,"url":"/demo/dict/dictList.json"})
+ */
 /**
  * 是否多选，true表示多选，false表示单选
  * @name Horn.Select#<b>multiple</b>
@@ -18337,7 +22347,22 @@ Horn.Field.regFieldType("div.hc_radio-group",Horn.RadioGroup) ;
  * @example
  * 无
  */
-
+/**
+ * 增加配置项filterDicts(过滤掉不需要显示的字典项),注意showDicts和filterDicts不能同时存在
+ * @name Horn.Select#<b>filterDicts</b>
+ * @type Object
+ * @default value
+ * @example
+ * #select({"name":"test1","filterDicts":['1','2'],"label":"单选","dictName": "province",  "check": "required","headItem":{"value":"请选择...","label":""},"showLabel":true})
+ */
+/**
+ * 增加配置项showDicts(只显示想要的字典项),注意showDicts和filterDicts不能同时存在
+ * @name Horn.Select#<b>showDicts</b>
+ * @type Object
+ * @default value
+ * @example
+ * #select({"name":"test1","showDicts":['1','2'],"label":"单选","dictName": "province",  "check": "required","headItem":{"value":"请选择...","label":""},"showLabel":true})
+ */
 Horn.Select = Horn.extend(Horn.Field,{
 	COMPONENT_CLASS:"Select",
     delimiter : "," ,
@@ -18360,6 +22385,7 @@ Horn.Select = Horn.extend(Horn.Field,{
     hasHeadItem:false,
     tempCheckedKeyArray:[],
     tempCheckedValue:"",
+    ctrilA:false,
     /**
      * @ignore
      */
@@ -18408,6 +22434,16 @@ Horn.Select = Horn.extend(Horn.Field,{
 	        	_this.hideList(_this.field,_this.listEl);
 	        });
         }
+        //listbox_table组件中滚动条滚动，combox组件下拉隐藏控制
+        var winListboxTable = $('div.u-customCols-list-con');
+        if(winListboxTable){
+        	winListboxTable.mousewheel(function() {
+	        	_this.hideList(_this.field,_this.listEl);
+	        });
+        	winListboxTable.scroll(function() {
+	        	_this.hideList(_this.field,_this.listEl);
+	        });
+        }
       /*  if(!this.listEl.get(0)){
         	this.listEl = $("div.hc_hide_div").children("div.hc_checkboxdiv[ref_target='" + ref_target + "']");
         }
@@ -18439,7 +22475,7 @@ Horn.Select = Horn.extend(Horn.Field,{
         //STORY #10007 [海外发展部/胡琦][TS:201410110002]-JRESPlus-ui-根据patch20140930_2(jresui1.0.6)】
         this.setEditable(this.params.editable);
        // this.setReadonly(this.params.readonly);
-        if(this.params.readonly){
+        if(this.params.readonly===true || this.params.readonly === "true"){
         	this.el.attr("readonly", true);
     		this.readonly = true;
     		this.setEditable(false);
@@ -18493,7 +22529,7 @@ Horn.Select = Horn.extend(Horn.Field,{
         				var arr = value.split(this.delimiter);
         				for(var j=0;j<arr.length;j++){
         					if(tmpKey==arr[j]){
-	        					if(screenShowLabel == "true"||this.showLabel){
+	        					if((screenShowLabel&&screenShowLabel == "true")||this.showLabel){
 	        						checkedString.push(tmpKey+":"+tmpValue);
 	                    		}else{
 	                    			checkedString.push(tmpValue);
@@ -18503,7 +22539,7 @@ Horn.Select = Horn.extend(Horn.Field,{
         			}else{//单选
         				if(item!=null&&tmpKey==value){
             				//当设置了showLabel为true时，选择时需要显示出key值
-                    		if(screenShowLabel == "true"||this.showLabel){
+                    		if((screenShowLabel&&screenShowLabel == "true")||this.showLabel){
                     			checkedString.push(tmpKey+":"+tmpValue);
                     		}else{
                     			checkedString.push(tmpValue);
@@ -18669,6 +22705,10 @@ Horn.Select = Horn.extend(Horn.Field,{
 					$(o).show();
 				})
 			}
+			//需求#27596 【TS:201611100017-JRESPlus-财富业委会-沈进-【需求描述】<br>对combox组件添加两个属性。<br>】
+	        if(_this.params.filterDicts||_this.params.showDicts){
+	        	_this.filterOrShowDict();
+	        }
 		};
 		
 		_this.searchField.bind(bindAttr,fieldSearchFunc);
@@ -18686,6 +22726,8 @@ Horn.Select = Horn.extend(Horn.Field,{
 		_this.searchField.bind({
             'keydown':Horn.Util.apply(_this.onKeyDown,_this)
         });
+		//需求#26788 [研发中心/内部需求]combox组件，当配置了filterby属性后，设置readonly为true，只读状态时，仍然可以操作下拉列表
+    	if(_this.readonly===true || _this.readonly === "true" ){return;}
     },
     getIEVersion : function(){
     	var rv = -1;
@@ -18868,7 +22910,7 @@ Horn.Select = Horn.extend(Horn.Field,{
             		field.val("");
             	}else if(value.text){
             		//当设置了showLabel为true时，选择时需要显示出key值
-            		if(screenShowLabel == "true"||this.showLabel){
+            		if((screenShowLabel&&screenShowLabel == "true")||this.showLabel){
             			var checkedString = [];
             			var tmpKey = [];
             			var tmpValue = [];
@@ -18925,7 +22967,7 @@ Horn.Select = Horn.extend(Horn.Field,{
                 if(!value.text){
                     var li = ul.children("li[key='" + value.key + "']");
                     value.text = jQuery.trim(li.text());
-                    if(!this.showLabel&&screenShowLabel != "true"){
+                    if(!this.showLabel&&(!screenShowLabel||screenShowLabel != "true")){
                 		var span = li.find('span');
                 		value.text = value.text.replace(span.text(),"");
                     }
@@ -18940,7 +22982,7 @@ Horn.Select = Horn.extend(Horn.Field,{
                     	str = str.replace(/\s/g,"");
                     }
                     //解决关联时，点击出现了key值问题  20161012 modify by 周智星
-                    if(!this.showLabel&&screenShowLabel != "true"){
+                    if(!this.showLabel&&(!screenShowLabel||screenShowLabel != "true")){
                 		if(str.indexOf(":")!=-1){
                 			str = str.split(":")[1];
                 		}
@@ -19053,6 +23095,8 @@ Horn.Select = Horn.extend(Horn.Field,{
     },
     onClick : function(e) {//bug #12452 需求14586--combox添加了filterby属性后，模糊搜索后的数据无法选中
     	var _this=this;
+    	//需求#26788 [研发中心/内部需求]combox组件，当配置了filterby属性后，设置readonly为true，只读状态时，仍然可以操作下拉列表
+    	if(_this.readonly===true || _this.readonly === "true" ){return;}
     	if(this.searchField&&!this.setDisableSearch){
 	    	this.field.hide();
 	    	this.searchField.show();
@@ -19074,6 +23118,8 @@ Horn.Select = Horn.extend(Horn.Field,{
      */
     onFocus : function(e) {
     	if(this.disabled)return;
+    	//需求#26788 [研发中心/内部需求]combox组件，当配置了filterby属性后，设置readonly为true，只读状态时，仍然可以操作下拉列表
+    	if(this.readonly===true || this.readonly === "true"){return;}
         var curObj = $(e.currentTarget);
         if(curObj.hasClass("u-select-down")){     	
         	curObj=$(e.currentTarget).prev();	
@@ -19136,6 +23182,7 @@ Horn.Select = Horn.extend(Horn.Field,{
         var listDom = listEl.get(0) ;
         var last = ul.children("li").last().get(0) ;
         if (e.ctrlKey && keyCode === 65 && this.multipleline) {
+        	this.ctrilA=true;
             var inputs = ul.find("input:not(:checked)") ;
             if(inputs.length==0){
                 lis.removeClass("h_cur") ;
@@ -19281,7 +23328,10 @@ Horn.Select = Horn.extend(Horn.Field,{
      * @ignore
      */
     onKeyUp : function(e){
-    	
+      //需求#28802 【TS:201612020506-JRESPlus-资管业委会（资管）-王永良-【需求描述】combox在多选的情况下，如果使用ctrl+A 快捷键的时候，能够赋值全选的内容，但是下拉列表不能勾选
+      var ctrilA = this.ctrilA+"";
+ 	  if (ctrilA&&ctrilA=="true"&&this.multipleline){
+ 	  }else{
         var listEl = this.listEl ;
         var _this = this;
         //只针对多选有效
@@ -19348,6 +23398,7 @@ Horn.Select = Horn.extend(Horn.Field,{
                 	keyupFn.apply(this,params);
       }
         Horn.Util.stopPropagation(e);
+ 	 }
     },
     /**
      * @ignore
@@ -19443,7 +23494,7 @@ Horn.Select = Horn.extend(Horn.Field,{
                 }
                 //screen上没有配置showLabel，combox上配置showLabel时，title的key值显示不出来
                 var showLabel = _this.showLabel+"";
-                if(showLabel == "true" || screenShowLabel == "true"){
+                if(showLabel == "true" || (screenShowLabel&&screenShowLabel == "true")){
                 	if(curVal&&curValTitle.indexOf(":")==-1){
                 		curValTitle = curVal+":"+curValTitle;
                 	}
@@ -19511,24 +23562,34 @@ Horn.Select = Horn.extend(Horn.Field,{
     showList : function(inputEl, listEl) {
     	this.handerHeadItem();
         var _this = this ;
-        
+        //处理changedict过来的listEl并不是在隐藏域中    需求#28756 【TS:201612020108-JRESPlus-财富业委会-沈进-【现象描述】缺陷：combox组件changeDict失效
+        var ref_target = listEl.attr("ref_target");
+        var hasListEl = $("#hc_hide_div").children("div.hc_checkboxdiv[ref_target='" + ref_target + "']");
+        if(hasListEl&&hasListEl.length>0){
+        	listEl=hasListEl;
+        }
         //STORY #10007 [海外发展部/胡琦][TS:201410110002]-JRESPlus-ui-根据patch20140930_2(jresui1.0.6)】
         //当配置了readonly属性后下拉列表不能弹出
         if(this.readonly == true&&this.enableFieldSearch==false){
         	return false;
         }
-        
+        //需求#27596 【TS:201611100017-JRESPlus-财富业委会-沈进-【需求描述】<br>对combox组件添加两个属性。<br>】
+        if(this.params.filterDicts||this.params.showDicts){
+        	this.filterOrShowDict();
+        }
         //显示所有列表当中的表项
         //STORY #9590 [财富管理事业部/陈凯][TS:201409030108]-JRESPlus-ui-对于下拉框的控件，请支持模糊搜索
         //兼容不同combox的相互级联的功能
         //var searchField_val = this.searchField.val();
         if(this.enableFieldSearch){
         	//需求 #14584 【TS:201510300213-JRESPlus-资产管理事业部-张翔-Combox添加了filterBy属性之后再调用filter无效
-        	var searchField_val = this.searchField.val();
-        	if(searchField_val!=""){
-	        	$("li",listEl).each(function(i,o){
-	            	$(o).show();
-	            })
+        	if(this.searchField){
+	        	var searchField_val = this.searchField.val();
+	        	if(searchField_val!=""){
+		        	$("li",listEl).each(function(i,o){
+		            	$(o).show();
+		            })
+	        	}
         	}
         }
         if(this.setDisableSearch){
@@ -19630,7 +23691,7 @@ Horn.Select = Horn.extend(Horn.Field,{
             li.focus() ;
         }
         
-        if(screenShowLabel == "true"){
+        if(screenShowLabel&&screenShowLabel == "true"){
         	//当screen上配置showLabel属性时
         }else{
         	if(this.showLabel){
@@ -19649,6 +23710,35 @@ Horn.Select = Horn.extend(Horn.Field,{
         	this.listEl.find('li').attr("title","");
         }
     } ,
+    filterOrShowDict : function(){
+    	//需求#27596 【TS:201611100017-JRESPlus-财富业委会-沈进-【需求描述】<br>对combox组件添加两个属性。<br>】
+        if(this.params.filterDicts&&this.params.showDicts){
+        	//两种情况都配置，就什么都不做
+        }else{
+        	
+        	if((this.params.filterDicts&&typeof(this.params.filterDicts)=="object")||(this.params.showDicts&&typeof(this.params.showDicts)=="object")){
+	        	if(this.params.filterDicts&&typeof(this.params.filterDicts)=="object"){
+	        		var filters = this.params.filterDicts;
+	        		this.listEl.find('li').each(function(index,el){
+	    				var key = $(this).attr("key");
+	    				if($.inArray(key, filters)!=-1){
+	    					$(this).hide();
+	    				}
+	    			});
+	        	}
+	        	if(this.params.showDicts&&typeof(this.params.showDicts)=="object"){
+	        			var showDicts = this.params.showDicts;
+	        			this.listEl.find('li').each(function(){
+	        				var key = $(this).attr("key");
+	        				if($.inArray(key, showDicts)==-1){
+	        					$(this).hide();
+	        				}
+	        			});
+	        		
+	        	}
+        	}
+        } 
+    },
     /**
      * @ignore
      */
@@ -19822,6 +23912,11 @@ String.prototype.trim = function() {    return this.replace(/(^\s*)|(\s*$)/g,"")
  * 2016-3-22     刘龙          bug#17142 selecttree控件在window控件下，显示时报错
  * 2016-3-22     刘龙          bug#17152 单选模式下，selecttree控件设置value值，过滤功能失效
  * 2016-3-23     刘龙          bug#17194 window控件中selecttree控件显示不全，点击下拉框后树乱掉了
+ * 2016-12-7     王兰          需求#29006 【TS:201612070731-资管业委会（资管）-张翔-bug1：selecttree多选，用setValue赋值多个值无法赋值
+ * 2016-12-24    王亚男        bug#36600ie8浏览器下，selecttree控件设置value属性为多个值，若是数据为url请求，则不会显示为高亮
+ * 2016-12-27    刘蒙           bug#37234 selectTree控件使用setValue方法设置不存在的值时，输入框信息被清除，但是点开下拉框原先的勾选项还是勾选状态
+ * 2016-12-27    刘蒙          bug#37242 selectTree控件使用clearValue方法清空选项后，下拉选项中该选项的勾选框没有选中但是还是处于选中的高亮状态，getPid方法能获取到该选项的父节点id
+ * 2017-01-06    刘蒙          需求#29918 selectTree控件设置value值，加载页面后使用getSelectedNodes方法获取不到节点数据
  * -----------------------------------------------------------------------
  */
 /**
@@ -19858,13 +23953,23 @@ String.prototype.trim = function() {    return this.replace(/(^\s*)|(\s*$)/g,"")
  * 无
  */
 /**
- * 表单在首次展现时填充的值
+ * 表单在首次展现时填充的值(多个值以逗号隔开)
  * @name Horn.SelectTree#<b>value</b>
  * @type String
  * @default ""
  * @example
- * @ignore
- * 无
+ * #set($dataT='[{"id":"1","name":"根","pId":""},{"id":"21","name":"sub11","pId":"1"},{"id":"22","name":"sub12","pId":"1"},{"id":"212","name":"sub111","pId":"21"},{"id":"221","name":"sub211","pId":"22"},{"id":"a0113","name":"测试下了树后台赋值","pId":"21"}]') 
+ *	#select_tree({
+ *	        "id":"vc_industry_detail",
+ *	        "name":"vc_industry_detail",
+ *			"label":"select_tree",
+ *			"disabled":false,			
+ *			"data":$dataT,
+ *			"expandFirst":false,
+ *			"checkMode":"radio",
+ *			"check":"required",
+ *			"value":"21,22"
+ *			})
  */
 /**
  * 隐藏标签（也就是label属性）。适用场景：单独使用一个组件，但是又不想要label的。不推荐混合适用，否则布局会乱。
@@ -20137,9 +24242,13 @@ Horn.SelectTree = Horn.extend(Horn.Field,{
 	init : function() {
 		Horn.SelectTree.superclass.init.apply(this,arguments) ;
 		var name=this.name;
-		this.field = this.el.children("input[type='text'][ref*='"+name+"']");
+		
+		this.id = this.el.attr("id") ;
+		var nameStr = this.id.replace(/\./,"_");
+		this.field = this.el.children("input[type='text'][ref*='"+nameStr+"']");
 		this.hidden = this.field.prev();
 		this.name = this.hidden.attr("name") ;
+		
 		this.ref = this.field.attr("ref");
 		this.img=this.el.find(".u-select-down");
 		_this=this;
@@ -20201,9 +24310,9 @@ Horn.SelectTree = Horn.extend(Horn.Field,{
 	 * @ignore
 	 */
 	initZTree : function() {
-		
+		var id = this.params.id?this.params.id:this.params.name;
 		var current = Horn.getCurrent() ;
-		var name = this.hidden.attr("name").replace(/\./,"_") ;
+		var name = this.id.replace(/\./,"_") ;
 		this.listEl = $("#hc_hide-div-tree-"+name).find("div.hc_selectbox-tree-div[ref_target='"+ this.ref + "']") ;
 		if(this.listEl.length == 0){
 			var arrHtml = [] ;
@@ -20268,7 +24377,7 @@ Horn.SelectTree = Horn.extend(Horn.Field,{
 				beforeClick: this.beforeClick,
 				beforeCheck: this.params.beforeCheck?window[this.params.beforeCheck]:null,
 				beforeAsync : this.params.beforeAsync?window[this.params.beforeAsync]:null,
-				onAsyncSuccess : this.params.onAsyncSuccess?window[this.params.onAsyncSuccess]:null,
+				onAsyncSuccess : this.onAsyncSuccess,
 				onAsyncError : this.params.onAsyncError?window[this.params.onAsyncError]:null,
 				beforeCollapse : this.params.beforeCollapse?window[this.params.beforeCollapse]:null,
 				beforeDblClick : this.params.beforeDblClick?window[this.params.beforeDblClick]:null,
@@ -20330,15 +24439,14 @@ Horn.SelectTree = Horn.extend(Horn.Field,{
 		this.treeObj = $.fn.zTree.getZTreeObj(treeid);
 		
 		this.treeObj.expandAll(expandFirst);
-		//根据value值给输入框赋name值
-		var keyId = this.hidden.attr("value") ;
-		var treeNodes=this.treeObj.getNodesByParam("id", keyId, null);
-		if(treeNodes && treeNodes[0] !=null && treeNodes[0] != {} ){
-			this.field.val(treeNodes[0].name);
-			this.showLog(treeNodes,this.treeObj,true);
-		}else{
-			this.field.val("");
+		if(!async){
+			//同步类型赋初始值
+			var initValue = this.hidden.val() ;
+			if(initValue!=""){
+				this.initVal();
+			}
 		}
+		
 		var treeObj = this.treeObj;
 		//模糊查询
 		var filterBy = "name" ;
@@ -20390,6 +24498,47 @@ Horn.SelectTree = Horn.extend(Horn.Field,{
 		});
 	   
 	},
+	 /**
+     * 清空值
+     * @function
+     * @name Horn.SelectTree#clearValue
+     * @return void
+     * @example
+     * Horn.getComp("select_tree").clearValue();
+     * 
+     */
+	clearValue : function(){
+		this.field.val("");
+		this.field.attr("selectnodes","");
+		this.hidden.val("");
+		this.field.attr("pIds","");
+		//bug#37242 selectTree控件使用clearValue方法清空选项后，下拉选项中该选项的勾选框没有选中但是还是处于选中的高亮状态，getPid方法能获取到该选项的父节点id
+		this.clearHighlight();
+		this.initVal();
+	},
+	 /**
+     * 重置值
+     * @function
+     * @name Horn.SelectTree#reset
+     * @return void
+     * @example
+     * Horn.getComp("select_tree").reset();
+     * 
+     */
+	reset : function(){
+		var _this=this;
+		var initValue = _this.params.value;
+		//bug#37244 selectTree控件的reset方法不能使用
+		if(initValue&&initValue!=""){
+			_this.initVal(initValue);
+		}else{
+			_this.field.val("");
+			_this.field.attr("selectnodes","");
+			_this.hidden.val("");
+			//bug先选中一个值，再重置为空，高亮样式还存在
+			_this.clearHighlight();	
+		}
+	},
 	/**
 	 * @ignore
 	 */
@@ -20412,28 +24561,83 @@ Horn.SelectTree = Horn.extend(Horn.Field,{
 			}
 		}).apply(_this,arguments) ;
 	},
-	
+	/**
+	 *清空下拉列表选中样式
+	 * @ignore
+	 */
+	//bug#37242 selectTree控件使用clearValue方法清空选项后，下拉选项中该选项的勾选框没有选中但是还是处于选中的高亮状态，getPid方法能获取到该选项的父节点id
+	clearHighlight:function(){
+		var _this=this;
+		var nodeList = _this.treeObj.getNodesByParamFuzzy("id","",null);
+		$.each(nodeList,function(index,node){
+	        node.highlight = false;
+	        _this.treeObj.updateNode(node);
+	    });	
+	},
+	/**
+	 *初始化时，赋值
+	 * @ignore
+	 */
+	initVal : function(value){
+		if(value){
+			this.hidden.val(value);
+		}
+		var val = this.hidden.val() ;
+		var treeName = "";
+		var nodes = [] ;
+		var ref_target = this.field.attr("ref");
+		var check = this.hidden.attr("checkMode") == "checkbox" || this.hidden.attr("checkMode") == "radio";
+		var zTree = $.fn.zTree.getZTreeObj(ref_target);
+		if(val!=""){
+			var vals = val.split(",");
+			for(var i=0 ;i<vals.length;i++){
+				var treeNodes=this.treeObj.getNodesByParam("id", vals[i], null);
+				if(treeNodes && treeNodes[0] !=null && treeNodes[0] != {} ){
+					treeName+=","+treeNodes[0].name;
+					nodes.push(treeNodes[0]);
+				}
+			}
+		}
+		this.clearLog(zTree) ;
+		zTree.checkAllNodes(false);
+		zTree.selectNode(null, false);
+		if(treeName!=""){
+			this.field.val(treeName.substring(1));
+			this.showLog(nodes,this.treeObj,true);
+		}else{
+			this.field.val("");
+			//37234 selectTree控件使用setValue方法设置不存在的值时，输入框信息被清除，但是点开下拉框原先的勾选项还是勾选状态
+		//	this.clearValue();
+		}
+		//需求#29918 selectTree控件设置value值，加载页面后使用getSelectedNodes方法获取不到节点数据
+		if(this.hidden.val()){
+			tIdArrs = this.hidden.attr("tids") || "" ;
+			tIdArrs = tIdArrs.split(",") ;
+			var nodes = [] ;
+			for(var i=0;i<tIdArrs.length;i++){
+				if(tIdArrs[i]){
+					var node = zTree.getNodeByTId(tIdArrs[i]);
+					nodes.push(node) ;
+					if (check) {
+						zTree.checkNode(node, true, true, false);
+					} else {
+						zTree.selectNode(node, false);
+					}	
+				}
+			}
+			//this.showLog(nodes,zTree,check,false) ;
+		}
+	},
 	/**
 	 * 异步加载成功后，全部展开树节点
 	 * @ignore
 	 */
 	onAsyncSuccess : function(event, treeId, treeNode, msg){
-		var _this = this
-		var treeObj = $.fn.zTree.getZTreeObj(treeId);
-		treeObj.expandAll(expandFirst);
-		
-		//根据value值给输入框赋name值
-		var keyId = _this.hidden.attr("value") ;
-		var treeNodes=treeObj.getNodesByParam("id", keyId, null);
-		if(treeNodes && treeNodes[0] !=null && treeNodes[0] != {} ){
-			_this.field.val(treeNodes[0].name);
-			_this.showLog(treeNodes,treeObj,true);
-		}else{
-			_this.field.val("");
-		}
+		var id = treeId.substring(6);
+		Horn.getCompById(id).initVal();
 	},
 	getFontCss:function(treeId, treeNode) {  
-	    return (treeNode.highlight) ? {"color":"rgb(255, 0, 0)", "font-weight":"bold"} : {'color':'#333', 'font-weight': 'normal'};  
+	    return (treeNode.highlight) ? {'color':'#f00', 'font-weight':'bold'} : {'color':'#333', 'font-weight': 'normal'};  
 	},
 	/**
 	 * @ignore
@@ -20545,7 +24749,7 @@ Horn.SelectTree = Horn.extend(Horn.Field,{
 	onFocus : function(e) {		
 		var current = Horn.getCurrent() ;
 		 var ref_target = this.field.attr("ref");
-		 this.listEl = $("#hc_hide-div-tree-"+this.params.name).children("div.hc_selectbox-tree-div[ref_target='" + ref_target + "']");
+		 this.listEl = $("#hc_hide-div-tree-"+this.id).children("div.hc_selectbox-tree-div[ref_target='" + ref_target + "']");
 		this.listEl.find("div.hc_selectbox-tree-left").width(this.field.width()+30);
 		
 		var curObj = $(e.currentTarget);
@@ -20693,25 +24897,28 @@ Horn.SelectTree = Horn.extend(Horn.Field,{
 		}
 	},
 	 /**
-     * 设置下拉树的值，必须传递树节点的id值，如果id值不存在则设置为空(注：只能设置单个节点)。
+     * 设置下拉树的值，必须传递树节点的id值，如果id值不存在则显示为空，获取值为设置的value值。
      * @function
      * @name Horn.SelectTree#setValue
      * @param {String} value 值
      * @return void
      * @example
      * ##设置默认值为根节点
-     * Horn.getComp("select_tree").setValue("1");
+     * 注意！多个值以逗号隔开
+     * Horn.getComp("select_tree").setValue("1,2");
      * 
      */
     setValue : function(value) {
-        var treeNodes=this.treeObj.getNodesByParam("id", value, null);
+        /*var treeNodes=this.treeObj.getNodesByParam("id", value, null);
 		if(treeNodes && treeNodes[0] !=null && treeNodes[0] != {} ){
 			this.field.val(treeNodes[0].name);
 			this.showLog(treeNodes,this.treeObj,true);
 		}else{
 			this.field.val("");
 			this.showLog({},this.treeObj,true);
-		}
+		}*/
+    	//需求#29006 【TS:201612070731-资管业委会（资管）-张翔-bug1：selecttree多选，用setValue赋值多个值无法赋值
+    	this.initVal(value);
         this.validate();
     },
     /**
@@ -20804,7 +25011,7 @@ Horn.SelectTree = Horn.extend(Horn.Field,{
      */
     getPid : function() {
     	 var input = this.field;
-         var pIds= input.attr("pIds");;
+         var pIds= input.attr("pIds");
          return pIds;
     }
 }) ;
@@ -20817,6 +25024,10 @@ Horn.Field.regFieldType("div.hc_select-tree",Horn.SelectTree) ;
  * 2015-03-13     zhangsu        STORY #11042 [财富管理事业部-陈为][TS:201503130069]-JRESPlus--tabpanel页面初始化的时候 加载静态tab页签会初始化两次页签
  * 2015-09-29     周智星          STORY #13326 window中若是放入tabpanel，tab默认打开页无法显示
  * 2016-10-13     刘蒙            需求#25990 【TS:201609230645-JRESPlus-资管业委会（资管）-张翔-2.tab页组件实现（点击tab页标签的时候去加载页面，而不是一次性加载，tab页是两个不同的iframe而不是两个不同的div】
+ * 2016-11-09     刘蒙			需求#27072 【TS:201611030067-JRESPlus-资管业委会（资管）-张翔-【需求描述】 1.tab页组件提供一个方法可以修改iframe url】
+ * 2016-11-09     刘蒙            需求#27070 【TS:201611030069-JRESPlus-资管业委会（资管）-张翔】支持点击tab页iframe根据url跳转一次，跳转之后后续点击tab页切换时iframe不再每次跳转
+ * 2016-11-10     刘蒙            需求#27600 【TS:201611100005-JRESPlus-经纪业委会（经纪）-刘晓春-【需求描述】TabPanel标签页面板组件支持click事件】
+ * 2016-11-21     刘蒙            bug#33950 tabpanel控件通过iframe加载后，高度无法自适应
  */
 /**
  * @name Horn.TabPanel
@@ -21001,6 +25212,35 @@ Horn.Field.regFieldType("div.hc_select-tree",Horn.SelectTree) ;
  * @example 
  * 无
  */
+/**
+ * 
+ * 默认是否选中第一页签，默认为true<br/>
+ * @name Horn.TabPanel#<b>selectFirst</b>
+ * @type boolean
+ * @default true
+ * @example 
+ * 无
+ */
+
+/**
+ * @description 事件属性，所有的事件都需要在此配置
+ * @name Horn.TabPanel#<b>events</b>
+ * @type Array 
+ * @default 无
+ * @example
+ *  "events":[ {"event":"tabClick","function":"tabClickfn"}]
+ */
+
+/**
+ * @description  tab标签页点击触发事件
+ * @name Horn.TabPanel#<b>tabClick</b>
+ * @param {object} this  当前点击的tab对象
+ * @event 
+ * @example
+ * 无
+ * 
+ */
+
 var isFirstClick = true;
 var firstTab = null;
 ;(function(H){
@@ -21048,7 +25288,9 @@ var firstTab = null;
 			this.rightScroller = this.tabsDiv.children(".h_tabscroller-right");
 			this.topScroller = this.tabsDiv.children(".h_tabscroller-top");
 			this.bottomScroller = this.tabsDiv.children(".h_tabscroller-bottom");
-			
+			 $.each(_this.params.events || [], function(i, o){
+			  _this[o.event.toLowerCase()] = o["function"];
+			 });
 			var tempTabsUl = tabPanel.children("ul");//宏生成的临时页签
 			
 			//超出最大允许页签数时移除多余页签（但是不阻止组件的初始化）
@@ -21093,6 +25335,18 @@ var firstTab = null;
 						}
 					}
 					_this.activate($(this));
+					//需求#27600 【TS:201611100005-JRESPlus-经纪业委会（经纪）-刘晓春-【需求描述】TabPanel标签页面板组件支持click事件】
+					if(_this.tabclick){ 
+				            var tabclickObj = Horn.Util.getFunObj(_this.tabclick),
+				            tabclickFn;
+				            var params=tabclickObj.params;
+				                if($.type(tabclickObj.fn) == "function"){
+				                	tabclickFn = tabclickObj.fn ;
+				                }
+				                if(tabclickFn){
+				                	tabclickFn.apply($(this),params); 
+				                }
+				    }
 				}).data({
 					content: content
 				}).css("width", _this.tabWidth);
@@ -21126,9 +25380,15 @@ var firstTab = null;
 			firstTab = this.tabWrapUl.children("li:eq(0)");
 			
 			calculateScrollLength.call(this);
-			
-			//默认选中第一页
-			firstTab.addClass("h_cur").click();
+			var isSelectFirst = true;//是否默认选中第一页，默认是
+			var selectFirst = this.params.selectFirst+"";
+			if(selectFirst=="false"){
+				isSelectFirst = false;
+			}
+			if(isSelectFirst){
+				//默认选中第一页
+				firstTab.addClass("h_cur").click();
+			}
 			//需求 #13326 window中若是放入tabpanel，tab默认打开页无法显示
 			isFirstClick = false;
 			firstTab.data("content").show();
@@ -21335,6 +25595,38 @@ var firstTab = null;
 			tab.hide().data("content").hide();
 			whenTabEdit.call(this);
 		},
+		
+		/**
+		 * 设置iframeurl
+		 * @name Horn.TabPanel#setIframeUrl 
+		 * @function
+		 * @param {string}id  需要修改的iframe的iframeID
+		 * @param {string}url  设置的url
+		 * @return {void}
+		 */
+		//#27072 【TS:201611030067-JRESPlus-资管业委会（资管）-张翔-【需求描述】 1.tab页组件提供一个方法可以修改iframe url】
+		setIframeUrl:function(id,url){
+			if(id&&url){
+				var _this=this;
+				var tabContent=_this.contentsDiv.find('div[iframeID="'+id+'"]');
+				if(tabContent.length>0){
+					tabContent.attr('iframeurl',url);
+					if(tabContent.css('display')==="block"){
+						$("#"+id).attr("src",url);
+						$("body").doMask('正在加载,请稍后...');
+						$("#"+id).load(function(){   
+				        	$("body").doUnMask();
+				        	
+				    	});
+					}
+				}				
+			}else{
+				return;
+			}
+			
+		},
+		
+		
 		doLayout:function(){
 			//当前组件布局的样式都尽可能的在css里面做掉了，JS里面只是计算滚动的距离之类的
             //重新布局的方法不需要
@@ -21386,13 +25678,26 @@ var firstTab = null;
 		}
 		//#25990 新增支持加载iframe
 		if(iframeId){
-			var iframeUrl=content.attr("iframeUrl");
-			$("#"+iframeId).attr("src",iframeUrl);
-			$("body").doMask('正在加载,请稍后...');
-			$("#"+iframeId).load(function(){   
-	        	$("body").doUnMask();
-	        	
-	    	});
+			//27070 【TS:201611030069-JRESPlus-资管业委会（资管）-张翔支持点击tab页iframe根据url跳转一次，跳转之后后续点击tab页切换时iframe不再每次跳转】
+			if(!content.data("loaded")){
+				var iframeUrl=content.attr("iframeUrl");
+				$("#"+iframeId).attr("src",iframeUrl);
+				$("body").doMask('正在加载,请稍后...');
+				$("#"+iframeId).load(function(){   
+		        	$("body").doUnMask();
+		        	//bug #33950 tabpanel控件通过iframe加载后，高度无法自适应
+		        	if($(this).attr('height')==undefined){
+		        		var height=$(this).contents().height();
+			        	$(this).height(height+'px');
+		        	}
+		        	
+		    	});
+				content.data("loaded",true);
+			}else{
+				return
+			}
+			
+			
 		}
 		
 	}
@@ -21495,7 +25800,8 @@ var firstTab = null;
 			}
 			//控制下侧滚动按钮显示
 			if ((scrollTop + this.outerHeight()) < this.data("scrollLength")) {
-				bottomScroller.css("top",135);
+				//修复向下按钮固定问题
+				bottomScroller.css("top",this.outerHeight()-25);
 				bottomScroller.show();
 			} else {
 				bottomScroller.hide();
@@ -21932,7 +26238,12 @@ var firstTab = null;
 })(jQuery);
 //resizes：resize事件加强
 (function($,h,c){var a=$([]),e=$.resizes=$.extend($.resizes,{}),i,k="setTimeout",j="resizes",d=j+"-special-event",b="delay",f="throttleWindow";e[b]=250;e[f]=true;$.event.special[j]={setup:function(){if(!e[f]&&this[k]){return false}var l=$(this);a=a.add(l);$.data(this,d,{w:l.width(),h:l.height()});if(a.length===1){g()}},teardown:function(){if(!e[f]&&this[k]){return false}var l=$(this);a=a.not(l);l.removeData(d);if(!a.length){clearTimeout(i)}},add:function(l){if(!e[f]&&this[k]){return false}var n;function m(s,o,p){var q=$(this),r=$.data(this,d);r.w=o!==c?o:q.width();r.h=p!==c?p:q.height();n.apply(this,arguments)}if($.isFunction(l)){n=l;return m}else{n=l.handler;l.handler=m}}};function g(){i=h[k](function(){a.each(function(){var n=$(this),m=n.width(),l=n.height(),o=$.data(this,d);if(m!==o.w||l!==o.h){n.trigger(j,[o.w=m,o.h=l])}});g()},e[b])}})(jQuery,this);
-
+/**
+ * 修改记录:
+ * 修改日期       修改人员        修改说明
+ * 2016-11-29     wanglan        需求#28500 【TS:201611290670-JRESPlus-财富业委会-沈进-【现象描述】TargetSelect有个可以手动填写的功能
+ * 2016-12-19     王兰           bug#36228 targetselect控件在setvalue值之后，鼠标移上去时的提示信息没有对应改变
+ */
 /**
  * @name Horn.TargetSelect
  * @class
@@ -21995,9 +26306,10 @@ var firstTab = null;
  * 无
  */
  /**
-  * 组件的是读配置，被设置为只读的组件只能通过API的方式修改表单的值，可以获得焦点，参与表单校验（校验失败会阻止表单提交），并且可以参与表单提交；
+  * 组件是否只读配置 
+  * 注：当配置readonly为false时，可以在文本框中输入内容，提交时可以提交当前内容，点击放大镜图片可以执行event方法
   * true表示只读状态，false表示正常状态
-  * @name Horn.Textfield#readonly
+  * @name Horn.TargetSelect#readonly
   * @type Boolean
   * @default true
   * @example
@@ -22043,7 +26355,7 @@ var firstTab = null;
   * @type String
   * @default ""
   * @example
-  * #targetselect({"label":"targetselect","name":"targetselect","value":{"label":"周智星","key":"09150"},"event":"showWin()","check": "required","onChange":"change"})
+  * #targetselect({"label":"targetselect","name":"targetselect","value":{"label":"周智星","key":"09150"},"event":"showWin()","check": "required","onChange":"change()"})
   * #jscode()
   *   function change(){
   *		Horn.getComp("clientId22").validate();
@@ -22103,15 +26415,27 @@ Horn.TargetSelect = Horn.extend(Horn.Field,{
         if(readonlyParam=="false"){
         	this.field.attr("readonly",false);
         }
-        this.field.blur(function(){ 
+        //需求#28500 【TS:201611290670-JRESPlus-财富业委会-沈进-【现象描述】TargetSelect有个可以手动填写的功能
+        this.field.keyup(function(e){
         	var readonlyVal = _this.field.attr("readonly")+"";
         	if(readonlyVal&&readonlyVal!="undefined"){
         	}else{
         		var inputValue = $(this).val();
             	_this.hidden.val(inputValue);
+            	_this.field.attr("title",inputValue);
         	}
         	_this.validate();
-        });
+		});
+        this.field.blur(function(e){
+        	var readonlyVal = _this.field.attr("readonly")+"";
+        	if(readonlyVal&&readonlyVal!="undefined"){
+        	}else{
+        		var inputValue = $(this).val();
+            	_this.hidden.val(inputValue);
+            	_this.field.attr("title",inputValue);
+        	}
+        	_this.validate();
+		});
     },
     /**
      * @description 设置值
@@ -22143,6 +26467,8 @@ Horn.TargetSelect = Horn.extend(Horn.Field,{
 	    	this.getEventTarget().trigger("change");
     	}
     	this.validate();
+    	//bug#36228 targetselect控件在setvalue值之后，鼠标移上去时的提示信息没有对应改变
+    	this.clearOrResetTitle();
     },
     /**
      * 内容校验
@@ -22941,6 +27267,1783 @@ Horn.Field.regFieldType("div.hc_inputsearch",Horn.TargetSelect) ;
 	
 })(jQuery);
 /**
+ * 版本：
+ * 系统名称: JRESPLUS
+ * 模块名称: JRESPLUS-UI
+ * 文件名称: Treetable.js
+ * 软件版权: 恒生电子股份有限公司
+ * 功能描述： Treetable组件对应的代码
+ * 修改记录:
+ * 修改日期       修改人员        修改说明
+ * ----------------------------------------------------------------------- 
+ * 2016-12-7     liumeng            #26568 【TS:201610190422-JRESPlus-资管业委会（资管）-张翔-【需求描述】提供表格分组组件（主表里包含子表）
+ * 2016-12-24    liumeng            #bug36866 treetable组件子表内容挨个全部选中之后全选标志没有被选中  
+ * 2017-01-05    liumeng            需求#30162 【TS:201701030454-JRES UI-财富业委会-沈进-【需求描述】treetable支持render属性（主表字表】
+ *-----------------------------------------------------------------------
+ */
+
+/**
+ * @description 带分页栏、工具栏、异步数据加载、主表包含子表的grid
+ * @name Horn.TreeTable
+ * @class
+ * 数据分组表格嵌套列表组件
+ * --带分页栏、工具栏、异步数据加载、主表包含子表的grid
+ * @extends Horn.Base
+ * @example
+ */
+	 
+
+   /**
+	 * @description 组件唯一标识。
+	 * @property id
+	 * @name Horn.TreeTable#<b>id</b>
+	 * @type String
+	 * @default ""
+	 * @example
+	 * 无
+	 */
+	/**
+	 * @description 组件名称。通过Horn.getComp(name)来获取组件。
+	 * @property name
+	 * @name Horn.TreeTable#<b>name</b>
+	 * @type String
+	 * @default ""
+	 * @example
+	 * "name":"treetableName"
+	 * Horn.getComp("treetableName");
+	 */
+	/**
+	 * @description 组件标题。
+	 * @property title
+	 * @name Horn.TreeTable#<b>title</b>
+	 * @type String
+	 * @default ""
+	 * @example
+	 * 无
+	 */
+   
+   /**
+	 * @description titleButton显示。
+	 * @property buttons
+	 * @name Horn.TreeTable#<b>buttons</b>
+	 * @type object
+	 * @default 无
+	 * @example
+	 * 默认的图标样式有add/edit/query/del/save/refresh/open
+	 * 还可以在按钮中关联menu组件，配置方式为，"refmenu":"test"//该按钮关联的menu组件（菜单）
+	 * "buttons":[{"label":"测试","name":"test","cls":"del"},{"label":"测试","name":"test","cls":"del"},{"label":"测试","name":"test","cls":"del"},{"label":"测试","name":"test","cls":"del"},{"label":"测试","name":"test","cls":"del"},{"label":"测试","name":"test","cls":"del"}]
+	 * 默认提供了add,edit,del,save,query,refresh,open供选择
+	 * @example
+	 * "buttons":[{"label":"新增","cls":"add","refmenu":"test11","event":"add()"},
+	 *	              {"label":"修改","cls":"edit","refmenu":"test11","event":"edit()"},
+	 *				  {"label":"删除","cls":"del","refmenu":"test11"},
+	 *				  {"label":"保存","cls":"save","refmenu":"test11"},
+	 *				  {"label":"查询","cls":"query","refmenu":"test11"},
+	 *				  {"label":"刷新","cls":"refresh","refmenu":"test11"},
+	 *				  {"label":"打开","cls":"open","refmenu":"test11"}
+	 *				  ]
+	 */
+	/**
+	 * @description 配置是否启用分页栏的开关，默认不开启分页栏。
+	 * @property hasPage
+	 * @name Horn.TreeTable#<b>hasPage</b>
+	 * @type boolean
+	 * @default false
+	 * @example
+	 * "hasPage":true可以配置开启分页栏
+	 */
+   /**
+	 * @description 配置点击行选中的开关。默认不开启。配置开启后当点击列表行会主动选中这一行的数据而不需要点击选择框。
+	 * @property rowSelect
+	 * @name Horn.TreeTable#<b>rowSelect</b>
+	 * @type boolean
+	 * @default false
+	 * @example
+	 * "rowSelect":true可以开启行选中
+	 */
+   /**
+	 * @description 主表启用单选/多选选择框,当值为single时为单选列表，仅能够选择一条数据；当其值为multi时为多选列表，可同时选择多条数据。
+	 * @property selectModel
+	 * @name Horn.TreeTable#<b>selectModel</b>
+	 * @type String
+	 * @default 无
+	 * @example
+	 * "selectModel":"single",单选列表
+	 * "selectModel":"multi",多选列表
+	 */
+	
+   /**
+	 * @description 主表数据请求的地址。请求该地址后返回的数据为符合要求的json数据对象。
+	 * @property url
+	 * @name Horn.TreeTable#<b>url</b>
+	 * @type string
+	 * @default ""
+	 * @example
+	 *后台返回的数据格式例子：
+	 *total：总条数
+	 *rows :数据集[分页场景存在，返回的数据结构]
+ 	 *{"total":15,
+ 	 * "pages":2,
+ 	 * "pageSize":10,
+ 	 * "pageNo""1,
+ 	 * "rows":[{"id":"1","name":"zhangsan"},
+        {"id":"2","name":"zhangsan"},
+        {"id":"3","name":"zhangsan"}]
+	 */
+   
+  /**
+	 * @description 子表数据异步加载请求的地址。每次展开异步刷新数据。
+	 * @property subUrl
+	 * @name Horn.TreeTable#<b>subUrl</b>
+	 * @type String
+	 * @default 无
+	 */
+    
+     /**
+	 * @description 主表格列是否可以拖拽(默认为false)。</br>
+	 * @property isDrag
+	 * @name Horn.TreeTable#<b>isDrag</b>
+	 * @type Boolean
+	 * @default false
+	 * @example
+	 * 无
+	 */
+    
+     /**
+	 * @description 主表表格的列数据模型对象。控制数据列表的列显示状态，包含可配置参数。
+	 * @property items
+	 * @name Horn.TreeTable#<b>items</b>
+	 * @type object
+	 * @default 无
+	 * @example
+	 *<table>
+	 *	<tr><td style="width:67px">属性名</td>	<td style="width:50px">类型</td>	<td>说明</td>	<td style="width:50px">默认值</td></tr>
+		<tr><td>name</td>	<td>sring</td>		<td>列字段名</td>	<td>--</td>	</tr>
+		<tr><td>text</td>		<td>string	</td>	<td>列标题</td>	<td>--</td>	</tr>
+		<tr><td>renderer</td>	<td>func	</td>	<td>列渲染函数,函数参数:Object,例如{val : String ,rowdata : Object,alldata : Array}}，其中val代表当前单元格的数据，rowdata代表当前行数据，alldata代表主表所有行的数据</td>	<td>--</td>	</tr>
+		<tr><td>width</td>	 <td>number</td>	<td>列宽	px</td>	<td>--</td>	</tr>
+	</table>
+
+			使用方法："items":[{
+			"name":"name6",
+			"text":"字段6",
+			"width":100
+			}]	
+	 */
+
+	/**
+	 * @description 配置主表格的高度的属性，默认是自适应宽高(不建议设置高度)。
+	 * @property height
+	 * @name Horn.TreeTable#<b>height</b>
+	 * @type number
+	 * @default 无
+	 * @example
+	 * "height":300
+	 */
+    
+   /**
+	 * @description 主表与子表关联字段,用于子表异步加载数据传参
+	 * @property groupkey
+	 * @name Horn.TreeTable#<b>groupkey</b>
+	 * @type string
+	 * @default 无
+	 * @example
+	 * "groupkey":"clientId"
+	 */
+   
+   /**
+	 * @description 子表启用单选/多选选择框,当值为single时为单选列表，仅能够选择一条数据；当其值为multi时为多选列表，可同时选择多条数据。
+	 * @property subSelectModel
+	 * @name Horn.TreeTable#<b>subSelectModel</b>
+	 * @type String
+	 * @default 无
+	 * @example
+	 * "selectModel":"single",单选列表
+	 * "selectModel":"multi",多选列表
+	 */
+     
+    /**
+	 * @description 子表表格的列数据模型对象。控制数据列表的列显示状态，包含可配置参数。
+	 * @property subItems
+	 * @name Horn.TreeTable#<b>subItems</b>
+	 * @type object
+	 * @default 无
+	 * @example
+	 *<table>
+	 *	<tr><td style="width:67px">属性名</td>	<td style="width:50px">类型</td>	<td>说明</td>	<td style="width:50px">默认值</td></tr>
+		<tr><td>name</td>	<td>sring</td>		<td>列字段名</td>	<td>--</td>	</tr>
+		<tr><td>renderer</td>	<td>func	</td>	<td>列渲染函数,函数参数:Object,例如{val : String ,rowdata : Object,maindata : Array}}，其中val代表当前单元格的数据，rowdata代表当前行数据，maindata代表主表所有行的数据</td>	<td>--</td>	</tr>
+		<tr><td>text</td>		<td>string	</td>	<td>列标题</td>	<td>--</td>	</tr>
+	</table>
+
+			使用方法："items":[{
+			"name":"name6",
+			"text":"字段6"
+			}]	
+	 */
+
+    /**
+	 * @description 子表格列是否可以拖拽(默认为false)。</br>
+	 * @property subDrag
+	 * @name Horn.TreeTable#<b>subDrag</b>
+	 * @type Boolean
+	 * @default false
+	 * @example
+	 * 无
+	 */
+    /**
+	 * @description 配置分页栏的参数，仅在开启分页栏的时候有效。
+	 * @property pageConfig
+	 * @name Horn.TreeTable#<b>pageConfig</b>
+	 * @type object
+	 * @default 无
+	 * @example
+	 * "pageConfig":{"pageSize":20,"pageNo":3}
+	 * 其中pageSize表示每页的显示的数据条数;pageNo为当前显示页数，当pageNo值大于实际总页数时，自动取实际最大页码数
+	 */
+
+	/**
+	 * @description 事件属性，所有的事件都需要在此配置
+	 * @name Horn.TreeTable#<b>events</b>
+	 * @type Array 
+	 * @default 无
+	 * @example
+	 *  "events":[
+	 *			  {"event":"beforeLoad","function":"testbeforeLoad"},
+	 *			  {"event":"loadSuccess","function":"testloadSuccess"},
+	 *			  {"event":"loadError","function":"testloadError"}]
+	 */
+    
+    /**
+	 * 主表异步数据加载前<br/>
+	 * @name Horn.TreeTable#<b>beforeLoad</b>
+	 * @param {jquery object} comp     控件对象
+	 * @param {object} param       请求的参数
+	 * @return   如果返回false则取消请求执行
+	 * @event
+	 * @example
+	 * 
+	 */
+	/**
+	 * 主表异步数据加载成功,且表格初始化后<br/>
+	 * @name Horn.TreeTable#<b>loadSuccess</b>
+	 * @param {jquery object} comp      控件对象
+	 * @param {Array} resultData       返回的结果集
+	 * @event
+	 * @example  无
+	 * 
+	 */
+	/**
+	 * 主表异步数据加载成功，但数据格式错误时（数据为空）逻辑错误，非ajax请求失败触发<br/>
+	 * @name Horn.TreeTable#<b>loadError</b>
+	 * @param {jquery object} comp      控件对象
+	 * @param {Object} resultData    返回的结果集
+	 * @event
+	 * @example  无
+	 * 
+	 */
+
+    /**
+	 * 主表行单击事件<br/>
+	 * @name Horn.TreeTable#<b>rowclick</b>
+	 * @param {Object} rowdata    返回行数据
+	 * @event
+	 * @example  无
+	 * 
+	 */
+     /**
+	 * 主表行双击事件<br/>
+	 * @name Horn.TreeTable#<b>rowdblclick</b>
+	 * @param {Object} rowdata    返回行数据
+	 * @event
+	 * @example  无
+	 * 
+	 */
+     
+        /**
+	 * 子表异步数据加载前<br/>
+	 * @name Horn.TreeTable#<b>subbeforeLoad</b>
+	 * @param {jquery object} comp     控件对象
+	 * @param {object} param       请求的参数
+	 * @return   如果返回false则取消请求执行
+	 * @event
+	 * @example
+	 * 
+	 */
+	/**
+	 * 子表异步数据加载成功,且表格初始化后<br/>
+	 * @name Horn.TreeTable#<b>subloadSuccess</b>
+	 * @param {jquery object} comp      控件对象
+	 * @param {Array} resultData       返回的结果集
+	 * @event
+	 * @example  无
+	 * 
+	 */
+	/**
+	 * 子表异步数据加载成功，但数据格式错误时（数据为空）逻辑错误，非ajax请求失败触发<br/>
+	 * @name Horn.TreeTable#<b>subloadError</b>
+	 * @param {jquery object} comp      控件对象
+	 * @param {Object} resultData    返回的结果集
+	 * @event
+	 * @example  无
+	 * 
+	 */
+
+    /**
+	 * 子表行单击事件<br/>
+	 * @name Horn.TreeTable#<b>subrowclick</b>
+	 * @param {Object} rowdata    返回行数据
+	 * @param {Object} maindata   返回对应主表行数据
+	 * @event
+	 * @example  
+	 * function subrowclickFn(data){
+	 *   var rowdata=data.rowdata;    //行数据
+	 *   var maindata=data.maindata;     //对应主表行数据
+	 * }
+	 * 
+	 */
+     /**
+	 *子表行双击事件<br/>
+	 * @name Horn.TreeTable#<b>subrowdblclick</b>
+	 * @param {Object} rowdata    返回行数据
+	 * @param {Object} maindata   返回对应主表行数据
+	 * @event
+	 * @example  
+	 *  function subrowdblclickFn(data){
+	 *   var rowdata=data.rowdata;    //行数据
+	 *   var maindata=data.maindata;     //对应主表行数据
+	 * }
+	 */
+
+
+Horn.Treetable = Horn.extend(Horn.Base,{
+    COMPONENT_CLASS:"treetable",
+    id:"dyncTreetable",
+    name:"dyncTreetable",
+    title:"",
+    data :null,
+    selectModel:"",
+    items:[],
+    subSelectModel:"",
+    url:"",
+    emptyMsg:"",
+    suburl:"",
+    groupkey:"",
+    rowSelect:false,
+    hasPage:false,
+    toolbar:null,
+    pagebar:null,
+    pageinfo : {totalPagesText:'页，每页{pagesize}条,共{pages}页',displayMsg:'当前显示{from}到{to}，共{total}条记录'},
+    reqPageNo:1,
+    reqPageSize:10,
+    init : function(){
+        Horn.Treetable.superclass.init.apply(this,arguments);
+         this.name = this.params["name"]||this.name;
+         var _this=this;
+       if(_this.params.id&&_this.params.id!=""){
+            _this.id = _this.params.id;
+          }else{
+            if(_this.params.name&&_this.params.name!=""){
+              _this.id = _this.params.name;
+            }
+          }
+        _this.hasPage=_this.params.hasPage?_this.params.hasPage:_this.hasPage;
+       $.each(this.params.events || [], function(i, o){
+              _this[o.event.toLowerCase()] = o["function"];
+            });
+        _this.initElement();
+         _this.processReqConf()
+     if(!_this.params.pageConfig){
+        _this.pageConfig = {};
+      }
+       if(_this.params.url&&_this.params.url!=""){
+         _this.load(_this.params.url);
+       }
+        if(this.params.subSelectModel&&_this.params.subSelectModel!=""){
+        _this.subSelectModel=this.params.subSelectModel;
+      }  
+       
+    },
+    initElement:function(){
+      var _this = this;
+          _this.title = _this.params["title"] || null;
+          _this.titleEl = null;   
+          _this.table = _this.el.find('#treetable_' + this.id);
+          _this.header = _this.table.find('#treetableHeader_' + this.id+'>tr');
+          _this.tbody = _this.table.find('#treetablebody_' + this.id);
+      if (_this.title) {
+        _this.titleEl = _this.el.find(".u-datagrid-header>h4");
+      }
+      var drag = _this.params.isDrag+"";
+		 if(drag=="true"){
+		        //#25278 datagrid控件中，若是screen与window中同时有datagrid，拖动其中一个datagrid，只有列头能拖动，列内容无法拖动
+			 _this.header.find('.u-groupgrid-cell').resizable({
+		            autoHide : true,
+		            minHeight : 35,
+		            maxHeight : 35,
+		            resize : function(event, ui) {
+		              var width = ui.size.width;
+		              var td = $(ui.element[0]).parent();
+		              $(ui.element[0]).parent().css("width", width);
+		              var index = td.index();
+		              var trs = _this.table.find('.tree-table-bg');
+		              trs.each(function(idx, trdom) {
+		                var tr = $(trdom);
+		                $(tr.children("td").get(index)).css("width", width);
+		                $(tr.children("td").get(index)).children("div")
+		                    .css("width", width);
+		              });
+		            }
+		        });
+		      }  
+      if (_this.params.hasPage && _this.params.hasPage == true) {
+        _this.createPagebar();
+      }
+    },
+    initEvents:function(){
+      var _this=this;
+      _this.initGroupBtn();
+      _this.initHeighlightEvent();
+      if(_this.params.selectModel&&_this.params.selectModel!=""){
+        _this.initSelectEvent();
+      } 
+      
+    },
+    initsubTableDrag:function(subcontent){
+    	var _this=this;
+    	var header=subcontent.find('thead');
+    	header.find('.subtable-header').resizable({
+            autoHide : true,
+            minHeight : 35,
+            maxHeight : 35,
+            resize : function(event, ui) {
+              var width = ui.size.width;
+              var td = $(ui.element[0]).parent();
+              $(ui.element[0]).parent().css("width", width);
+              var index = td.index();
+              var trs = subcontent.find('tbody>tr');
+              trs.each(function(idx, trdom) {
+                var tr = $(trdom);
+                $(tr.children("td").get(index)).css("width", width);
+                $(tr.children("td").get(index)).children("div")
+                    .css("width", width);
+              });
+            }
+        });
+    },
+    initHeighlightEvent:function(){
+        var _this=this;
+        var trs=this.table.find('tbody>tr.tree-table-bg');
+            trs.each(function(index,trdom){
+              var tr = $(trdom);
+                  tr.on("click",function(e){
+
+                    var target=$(e.target);
+                    var idx=target.index();
+                    if(_this.params.rowSelect){
+                        if(target.attr('type')=="checkbox"||target.attr('type')=="radio"){
+                          return;
+                        }
+                        if(_this.params.selectModel=="multi"){
+                            if(tr.hasClass('u-table-selected')){
+                              _this.isRowSelect(false,tr,index);
+                            }else{
+                              _this.isRowSelect(true,tr,index);
+                            }
+                           _this.setGroupcheckStatus(tr);
+                        }else{
+                             if(tr.hasClass('u-table-selected')){                         
+                                    if(_this.lastselect.index==idx){
+                                      _this.lastselect={};
+                                    }
+                                    _this.isRowSelect(false,tr,idx);
+                                  }else{
+                                     if(_this.lastselect&&_this.lastselect.index!=idx){
+                                        _this.isRowSelect(false,_this.lastselect.tr,_this.lastselect.index);
+                                      }
+                                     _this.isRowSelect(true,tr,idx);
+                              }
+                        }
+                    }
+                    
+                      if(_this.rowclick){
+                             var  rowclickObj = Horn.Util.getFunObj(_this.rowclick),
+                             rowclickFn;
+                             var params=rowclickObj.params;
+                             var trindex=tr.attr('index');
+                             var rowdata=_this.data[trindex];
+                             params.push(rowdata);
+                                 if($.type(rowclickObj.fn) == "function"){
+                                   rowclickFn = rowclickObj.fn ;
+                                 }
+                                 if(rowclickFn)
+                                   rowclickFn.apply(_this,params);
+                                 return;
+                      }
+                        
+                  }).on('dblclick',function(){
+                     if(_this.rowdblclick){
+                             var  rowdblclickObj = Horn.Util.getFunObj(_this.rowdblclick),
+                             rowdblclickFn;
+                             var params=rowdblclickObj.params;
+                             var trindex=tr.attr('index');
+                             var rowdata=_this.data[trindex];
+                             params.push(rowdata);
+                                 if($.type(rowdblclickObj.fn) == "function"){
+                                   rowdblclickFn = rowdblclickObj.fn ;
+                                 }
+                                 if(rowdblclickFn)
+                                   rowdblclickFn.apply(_this,params);
+                                 return;
+                      }
+                  })
+              });
+      },
+      initsubHeighlightEvent:function(subtable){
+    	     var _this=this;
+    	      var trs=subtable.find('tbody>tr');
+    	          trs.each(function(index,trdom){
+    	            var tr = $(trdom);
+    	              
+    	             tr.on("click",function(e){
+    	              var target=$(e.target);
+    	                  var idx=target.index();
+    	                if(_this.params.rowSelect){
+    	                  
+    	                    if(target.attr('type')=="checkbox"||target.attr('type')=="radio"){
+    	                      return;
+    	                    }
+    	                    if(_this.params.subSelectModel=="multi"){
+    	                      if(tr.hasClass('u-table-selected')){
+    	                        _this.subRowSelect(false,tr,index);
+    	                      }else{
+    	                        _this.subRowSelect(true,tr,index);
+    	                      }
+    	                      //#bug36866 treetable组件子表内容挨个全部选中之后全选标志没有被选中 
+    	                      _this.setSubGroupcheckStatus(tr,subtable);
+    	                    }else{
+    	                       if(tr.hasClass('u-table-selected')){                         
+    	                                _this.subRowSelect(false,tr,idx);
+    	                        }else{
+    	                           trs.removeClass('u-table-selected');
+    	                                 _this.subRowSelect(true,tr,idx);
+    	                           }
+    	                    }
+    	                 } 
+    	                 if(_this.subrowclick){
+    	                        var  subrowclickObj = Horn.Util.getFunObj(_this.subrowclick),
+    	                        subrowclickFn;
+    	                        var params=subrowclickObj.params;
+    	                        var trid=tr.closest('.u-datagrid-sub').parent().attr('id');
+    	                        var index=_this.table.find('tr[reftab="'+trid+'"]').attr('index');
+    	                        var maindata=_this.data[index];
+    	                        var rowdata=tr.data()['rowdata'];
+    	                        var obj={};
+    	                        obj.maindata=maindata;
+    	                        obj.rowdata=rowdata;
+    	                        params.push(obj);
+    	                            if($.type(subrowclickObj.fn) == "function"){
+    	                              subrowclickFn = subrowclickObj.fn ;
+    	                            }
+    	                            if(subrowclickFn)
+    	                              subrowclickFn.apply(_this,params);
+    	                            return;
+    	                      } 
+
+    	                }).on('dblclick',function(){
+    	                    if(_this.subrowdblclick){
+    	                         var  subrowdblclickObj = Horn.Util.getFunObj(_this.subrowdblclick),
+    	                         subrowdblclickFn;
+    	                         var params=subrowdblclickObj.params;
+    	                        var trid=tr.closest('.u-datagrid-sub').parent().attr('id');
+    	                        var index=_this.table.find('tr[reftab="'+trid+'"]').attr('index');
+    	                        var maindata=_this.data[index];
+    	                        var rowdata=tr.data()['rowdata'];
+    	                        var obj={};
+    	                        obj.maindata=maindata;
+    	                        obj.rowdata=rowdata;
+    	                        params.push(obj);
+    	                            if($.type(subrowdblclickObj.fn) == "function"){
+    	                              subrowdblclickFn = subrowdblclickObj.fn ;
+    	                            }
+    	                            if(subrowdblclickFn)
+    	                              subrowdblclickFn.apply(_this,params);
+    	                            return;
+    	                  }
+    	                })
+    	              
+    	            });
+    	     
+    	   },
+    initGroupBtn: function() {
+        var _this = this;
+        var groupdiv = _this.table.find('.tree-table-bg');
+        groupdiv.each(function(index, item) {
+          var item = $(item);
+          var btn = item.find('.fa-stack');
+          btn.on("click", function() {
+            var tr = item.closest('tr');
+            if (tr.hasClass('active')) {
+              tr.removeClass('active');
+              _this.expandsubTable(false, tr);
+            } else {
+              tr.addClass('active');
+              _this.expandsubTable(true, tr);
+            }
+          })
+        })
+      },
+    expandsubTable: function(tag, item) {
+      var _this = this;
+      var grouptabid=item.attr('reftab');
+      var subtable=_this.el.find("#"+grouptabid);
+      if (_this.params.subUrl && _this.params.subUrl != "") {
+        var suburl = _this.params.subUrl;  
+      } else {
+        return;
+      }
+      if (tag) {
+        if(_this.subbeforeload){
+       var  subbeforeloadObj = Horn.Util.getFunObj(_this.subbeforeload),
+       subbeforeloadFn;
+       if($.type(subbeforeloadObj.fn) == "function"){
+         subbeforeloadFn = subbeforeloadObj.fn ;
+       }
+       if(subbeforeloadFn){
+         try { 
+          subbeforeloadFn.apply(_this,[_this.el]);
+        } catch (e) { 
+          Horn.debug(e);
+        }
+      }
+    }
+        _this.getSubData(suburl, item);
+      } else {
+        subtable.hide();
+      }
+
+    },
+    initSelectEvent:function(){
+      var _this=this;
+      if(_this.params.selectModel&&_this.params.selectModel=="multi"){
+        _this.initMulSelectEvent();
+      }else{
+        _this.initSglSelectEvent();
+      }
+    
+   },
+   initSubSelect:function(subtablecontent){
+         var _this=this;
+      if(_this.subSelectModel=="multi"){
+        _this.initsubMulEvent(subtablecontent);
+      }else{
+        _this.initsubSglEvent(subtablecontent);
+      }
+
+   },
+    initMulSelectEvent:function(){
+      var _this=this;
+      var trs=_this.table.find('tbody>tr.tree-table-bg');
+      var  selectall=_this.el.find('input[name="selectall"]'),
+           allcheck=_this.table.find('tr.tree-table-bg').length-1;
+            selectall.change(function(){
+                  if(this.checked){
+                    _this.selectAll(true);
+                  }else{
+                    _this.selectAll(false);
+                  }
+             });
+           trs.each(function(index,dom){
+             var tr = $(dom);
+                  var  input = tr.find('input[type="checkbox"]');
+                  var name=input.attr('name');
+                    input.change(function(){
+                          if(this.checked){
+                            _this.isRowSelect(true,tr,index);
+                          }else{
+                            _this.isRowSelect(false,tr,index);
+                          }
+                        _this.setGroupcheckStatus(tr);
+                        });    
+            })
+    },
+
+    initsubMulEvent:function(subtablecontent){
+       var _this=this;
+       var trs=subtablecontent.find('tbody>tr');
+      var  selectall=subtablecontent.find('input[name="subcheckAll"]'),
+           allcheck=subtablecontent.find('tbody>tr').length-1;
+            selectall.change(function(){
+                  if(this.checked){
+                    _this.subselectAll(true,$(this));
+                  }else{
+                     _this.subselectAll(false,$(this));
+                  }
+             });
+           trs.each(function(index,dom){
+             var tr = $(dom);
+                  var  input = tr.find('input[type="checkbox"]');
+                  var name=input.attr('name');
+                    input.change(function(){
+                          if(this.checked){
+                            _this.subRowSelect(true,tr,index);
+                          }else{
+                            _this.subRowSelect(false,tr,index);
+                          }
+                          _this.setSubGroupcheckStatus(tr,subtablecontent);
+                        });    
+            })
+
+    },
+    initsubSglEvent:function(subtablecontent){
+      var _this=this;
+      var trs=subtablecontent.find('tbody>tr');
+      trs.each(function(index,dom){
+         var tr = $(dom);
+              var  input = tr.find('input[type="radio"]');
+              input.change(function(){
+                   if(this.checked){
+                     trs.removeClass('u-table-selected');
+                     _this.subRowSelect(true,tr,index);
+                   }else{
+                     _this.subRowSelect(false,tr,index);
+                   }
+                 });
+      })
+    },
+    subRowSelect:function(select,tr){
+      if (select) {
+          tr.addClass("u-table-selected");
+          if (this.params.subSelectModel && this.params.subSelectModel == "single") {
+            tr.find("input[type='radio']").prop("checked", true);
+
+          } else if (this.params.subSelectModel && this.params.subSelectModel == "multi") {
+            tr.find("input[type='checkbox']").prop("checked", true);
+          }
+
+      } else {
+          tr.removeClass("u-table-selected");
+          if (this.params.subSelectModel && this.params.subSelectModel == "single") {
+            tr.find("input[type='radio']").prop("checked", false);
+          } else if (this.params.subSelectModel && this.params.subSelectModel == "multi") {
+            tr.find("input[type='checkbox']").prop("checked", false);
+          }
+      }
+
+    },
+    initSglSelectEvent:function(){
+      var _this=this;
+      var trs=_this.table.find('tbody>tr.tree-table-bg');
+      trs.each(function(index,dom){
+         var tr = $(dom);
+              var  input = tr.find('input[type="radio"]');
+              input.change(function(){
+                   if(this.checked){
+                    if(_this.lastselect&&_this.lastselect.index!=index){
+                        _this.isRowSelect(false,_this.lastselect.tr,_this.lastselect.index);
+                       }
+                     _this.isRowSelect(true,tr,index);
+                   }else{
+                     _this.isRowSelect(false,tr,index);
+                   }
+                 });
+      })
+    },
+    isRowSelect: function(select, tr, index) {
+      if (select) {
+          tr.addClass("u-table-selected");
+          this.lastselect = {
+            rowindex: index,
+            tr: tr
+          };
+          if (this.params.selectModel && this.params.selectModel == "single") {
+            tr.find("input[type='radio']").prop("checked", true);
+
+          } else if (this.params.selectModel && this.params.selectModel == "multi") {
+            tr.find("input[type='checkbox']").prop("checked", true);
+          }
+
+      } else {
+          tr.removeClass("u-table-selected");
+          if (this.params.selectModel && this.params.selectModel == "single") {
+            tr.find("input[type='radio']").prop("checked", false);
+          } else if (this.params.selectModel && this.params.selectModel == "multi") {
+            tr.find("input[type='checkbox']").prop("checked", false);
+          }
+      }
+
+    },
+    setGroupcheckStatus:function(tr){
+    	var _this=this,
+		  selectall=_this.el.find('input[name="selectall"]'),
+		  allcheck=_this.table.find('tr.tree-table-bg').length;
+		if(_this.table.find('tr.tree-table-bg input[name!="selectall"]:checked').length==allcheck){
+			selectall.prop("checked", true);
+		}else{
+			selectall.prop("checked", false);
+		}
+    },
+    setSubGroupcheckStatus:function(tr,subtable){
+    	var _this=this,
+		  selectall=subtable.find('input[name="subcheckAll"]'),
+		  allcheck=subtable.find('tbody>tr').length;
+		if(subtable.find('tr input[name!="subcheckAll"]:checked').length==allcheck){
+			selectall.prop("checked", true);
+		}else{
+			selectall.prop("checked", false);
+		}
+    },
+    getSubData:function(url,item){
+      var _this=this;
+      var grouptabid=item.attr('reftab');
+      var index=item.attr('index');
+      var subtable=_this.el.find("#"+grouptabid);
+         if(url && url.indexOf("http:")==-1){
+           url = context_path + url;
+         }
+      var data={};
+      data['parentRowdata']=JSON.stringify(_this.data[index]);
+      data['groupkey']=_this.params.groupkey||"";
+         subtable.show();
+      var colLength =_this.header.children().length;
+           $.ajax(url,
+            {
+               async : true,
+               beforeSend : function(xhr) {
+                   subtable.find('.u-datagrid').html("");
+                   subtable.find('.u-datagrid').html("<tr><td style=\"border-right:0px;padding:15px;\" colspan='"
+                         + colLength
+                         + "'><img src='"+context_path+"/components/datagrid/img/hc_onLoad.gif'></img></td></tr>");                  
+                 },
+                 type : "POST",
+                 data : Horn.Util.obj2Arr(data) ,
+                 dataType : "json",
+                 error : function(xhr, textStatus, errorThrown) {
+                     var status = xhr.status;
+                    _this.loadErrorCallback(textStatus,subtable);
+
+                 },
+                 success : function(resultData, textStatus, jqXHR) {  
+                  var tbodyTemplateStr="<tr><td style=\"border-right:0px;padding:15px;\" colSpan='"+ colLength  + "'><p>暂时无数据</p></td></tr>";
+                    if (!resultData || $.isEmptyObject(resultData)) {
+                     subtable.find('.u-datagrid').empty().html(tbodyTemplateStr);
+                      if(_this.subloaderror){
+                               var  subloaderrorObj = Horn.Util.getFunObj(_this.subloaderror),
+                               subloaderrorFn;
+                                   if($.type(subloaderrorObj.fn) == "function"){
+                                     subloaderrorFn = subloaderrorObj.fn ;
+                                   }
+                                   if(subloaderrorFn){
+                                     subloaderrorFn.apply(_this,[_this.el,resultData]);
+                                   }
+                                   return;
+                          } 
+                    } else {
+                      var data = resultData["rows"];
+                      //  _this.initPagebar(resultData);
+                      if (data && (data.length == 0 || $.isEmptyObject(data))) {
+                        subtable.find('.u-datagrid').empty().html(tbodyTemplateStr);
+                      } else {
+                        _this.createSubtable(data,subtable);
+                      }
+
+                        try{
+                         if(_this.subloadsuccess){
+                           var  subloadsuccessObj = Horn.Util.getFunObj(_this.subloadsuccess),
+                           subloadsuccessFn;
+                               if($.type(subloadsuccessObj.fn) == "function"){
+                                 subloadsuccessFn = subloadsuccessObj.fn ;
+                               }
+                               if(subloadsuccessFn)
+                                 subloadsuccessFn.apply(_this,[_this.el,resultData]);
+                         }
+                     }catch(e){
+                       Horn.debug(e);
+                     }
+
+                    }
+                 }
+           });
+
+    },
+    createPagebar:function(){
+      var _this=this;
+      if(_this.params["pageConfig"]){
+      _this.pagebar = new Horn.treetable_Pagebar(_this.params["pageConfig"],_this.id,_this);
+      }
+    
+    },
+    load : function(data,params){
+        var _this=this;
+        params = params ||{};
+        if($.type(params)=="array"){
+                params = Horn.Util.arr2Obj(params) ;
+            }
+        _this.reqPageNo = params["pageNo"] || _this.reqPageNo;
+        _this.reqPageSize = params["pageSize"] || _this.reqPageSize;
+      if(_this.hasPage){
+        params["pageNo"] = _this.reqPageNo;
+        params["pageSize"] = _this.reqPageSize;
+      }
+        _this.execute(data,params);
+    },
+
+    execute : function(url,options){
+      options = options||{};
+      var doRequest = true;
+      //需要先触发beforeload事件
+      if(this.beforeload){
+       var  beforeloadObj = Horn.Util.getFunObj(this.beforeload),
+       beforeloadFn;
+       if($.type(beforeloadObj.fn) == "function"){
+         beforeloadFn = beforeloadObj.fn ;
+       }
+       if(beforeloadFn){
+         try { 
+          doRequest =  beforeloadFn.apply(this,[this.el,options]);
+        } catch (e) { 
+
+        }
+      }
+    }
+    if(doRequest != false){
+      var paramsdata = Horn.apply({},this.baseParams,options);
+        //执行ajax请求
+        this.doAjax(url,paramsdata);
+      }
+      return doRequest;
+    },
+
+    doAjax : function(url,data){
+         var _this = this;
+         var url = url?url:_this.params.url;
+         if(url && url.indexOf("http:")==-1){
+           url = context_path + url;
+         }
+         var colLength =_this.header.children().length;
+           $.ajax(url,
+            {
+               async : true,
+               beforeSend : function(xhr) {
+                   _this.tbody.html("");
+                   _this.tbody.html("<tr><td style=\"border-right:0px;padding:15px;\" colspan='"
+                         + colLength
+                         + "'><img src='"+context_path+"/components/datagrid/img/hc_onLoad.gif'></img></td></tr>");
+                   _this.tbody.parent().addClass('u-groupgrid-loading');
+                  
+                 },
+                 type : "POST",
+                 data : Horn.Util.obj2Arr(data) ,
+                 dataType : "json",
+                 error : function(xhr, textStatus, errorThrown) {
+                     var status = xhr.status;
+                     _this.tbody.parent().removeClass('u-groupgrid-loading');
+                    _this.loadErrorCallback(textStatus);
+                 },
+                 success : function(resultData, textStatus, jqXHR) {  
+                  var tbodyTemplateStr="<tr><td style=\"border-right:0px;padding:15px;\" colSpan='"+ colLength  + "'><p>暂时无数据</p></td></tr>";
+                  _this.loadSuccessCallback(resultData,tbodyTemplateStr);
+                   try{
+                     if(_this.loadsuccess){
+                       var  loadsuccessObj = Horn.Util.getFunObj(_this.loadsuccess),
+                       loadsuccessFn;
+                           if($.type(loadsuccessObj.fn) == "function"){
+                             loadsuccessFn = loadsuccessObj.fn ;
+                           }
+                           if(loadsuccessFn)
+                             loadsuccessFn.apply(_this,[_this.el,resultData]);
+                     }
+                   }catch(e){
+                     Horn.debug(e);
+                   }
+                   
+                 }
+           });
+         // _this.autoDataHeight();
+    },
+  /**
+   * 加载数据失败回调函数
+   * @ignore
+   */
+   loadErrorCallback:function(textStatus,subtable){
+    var _this=this;
+    var colLength =_this.header.children().length;
+    if(subtable){
+        subtable.find('.u-datagrid').html("<tr><td style=\"border-right:0px;padding:15px;\" colspan='"
+                         + colLength
+                         + "'><p>暂时无数据</p><p>错误状态："+status+";错误信息："+textStatus+"</p></td></tr>");   
+        return;               
+    } 
+      _this.tbody.empty().html( "<tr><td style=\"border-right:0px;padding:15px;\" colSpan='"
+                           + colLength
+                           + "'><p>暂时无数据</p><p>错误状态："+status+";错误信息："+textStatus+"</p></td></tr>");
+
+   },
+
+/**
+   * 加载数据成功回调函数
+   * @ignore
+   */
+   loadSuccessCallback:function(resultData,tbodyTemplateStr){
+    var _this=this;
+    _this.tbody.parent().removeClass('u-groupgrid-loading');
+    if(!resultData||$.isEmptyObject(resultData)){
+     _this.tbody.empty().html(tbodyTemplateStr);        
+       if(_this.loaderror){
+         var  loaderrorObj = Horn.Util.getFunObj(_this.loaderror),
+         loaderrorFn;
+             if($.type(loaderrorObj.fn) == "function"){
+               loaderrorFn = loaderrorObj.fn ;
+             }
+             if(loaderrorFn)
+               loaderrorFn.apply(_this,[_this.el,resultData]);
+             return;
+       }   
+   }else{
+      var data = resultData["rows"];
+       _this.initPagebar(resultData);
+        if(data&&(data.length==0||$.isEmptyObject(data))){
+         _this.tbody.empty().html(tbodyTemplateStr);
+       }else{
+         _this.loadData(data);
+           }
+
+       }
+   },
+   /**
+      * @description 加载数据到表格中
+      * @function
+      * @name Horn.GroupGrid#loadData
+      * @param {object} data 加载的数据<br>
+      * @return void
+      */
+    loadData:function(data){
+      var _this=this;
+      _this.data =data;
+          _this.selecteds=$.extend(true, [], _this.data);
+          _this.table.find('tbody').unbind().remove();
+          _this.creatMainTable(_this.data);
+
+    },
+   creatMainTable:function(data){
+      var _this=this,
+        body = [],
+          h=body.length,
+          count=data.length,
+          size=_this.header.children().length;
+     // var pageNo = _this.params["pageConfig"]["pageNo"];
+     // var pageSize = _this.params["pageConfig"]["pageSize"];
+      var header=_this.params.items;
+    //  _this.reqPageNo = pageNo?pageNo:1;
+    //  _this.reqPageSize=pageSize?pageSize:10;
+      _this.table.find('tbody').unbind().remove();
+      for( var i = 0; i< count; i++) {
+       body[h++] = '<tr  class="tree-table-bg" index="'+i+'" reftab="subtable_'+i+'">';
+       body[h++] ='<td class="u-table-number"><div style="width: 40px;">';
+       body[h++] ='<span class="fa-stack"><i class="fa fa-square-o fa-stack-1x"></i><i class="fa fa-angle-down fa-stack-1x"></i></span>';
+       body[h++] ='</div>';
+       body[h++] ='</td>';
+       if(_this.params.selectModel=="multi"){
+         body[h++]='<td class="u-table-check"><div  style="width:40px;"><input type="checkbox" name="'+_this.name+'groupcheck"></div></td>';
+       //  body[h++] = '<td colspan="'+(size-1)+'"><div class="u-groupgrid-grouphead-title"><span class="fa-stack"><i class="fa fa-square-o fa-stack-1x"></i><i class="fa fa-angle-down fa-stack-1x"></i></span><span>'+data[i].title+'</span></div></td>';
+       }else if(_this.params.selectModel=="single"){
+         body[h++] = '<td class="u-table-check"><div  style="width:40px;"><input type="radio" name="'+_this.name+'groupcheck"></div></td>'; 
+       }
+          for(var j=0;j<header.length;j++){
+           var key=header[j]['name'],
+             width=header[j]['width'];
+             renderer=header[j]['renderer'];
+             
+            if(renderer){
+         		renderer=renderer;
+         	}else{
+         		renderer="";
+         	}
+           if(j==header.length-1){
+        	   body[h++] = '<td style="width:auto;" renderer="'+renderer+'"><div style="width:100px">' + data[i][key] + '</div></td>';
+           }else{
+        	   if(width){
+                   body[h++] = '<td style="width:' + width + 'px;" renderer="'+renderer+'" ><div style="width:' + width + 'px">' + data[i][key] + '</div></td>';
+                 }else{
+                   body[h++] = '<td style="width:100px" renderer="'+renderer+'"><div style="width:100px">' + data[i][key] + '</div></td>';
+                 }
+             }             
+          }
+       body[h++]='</tr>';
+       body[h++]='<tr style="display:none" id="subtable_'+i+'"><td colspan="'+size+'" class="u-datagrid-sub"><div class="u-datagrid" style="display: block;"></div></td> </tr>'
+       };
+          
+          _this.storgedData=data;
+      //_this.reqPage(_this.reqPageNo,_this.reqPageSize);
+         _this.table.append(body.join(''));
+         if (_this.params.height && !isNaN(_this.params.height)) {
+             _this.table.parent().height(_this.params.height);
+           }
+         _this.initEvents();
+         _this.columnRender();
+    },
+    //#30162 【TS:201701030454-JRES UI-财富业委会-沈进-【需求描述】treetable支持render属性（主表字表】
+    columnRender:function(table){
+		  var _this=this;
+		  var trs;
+		  if(table){
+			 trs= table.find('tbody>tr');
+		  }else{
+			 trs= _this.table.find('tbody>tr.tree-table-bg');
+		  }
+		 
+		 trs.each(function(idx,trdom){
+			 var tr = $(trdom);
+			 tr.find('td').each(function(index,tddom){
+				 var td = $(tddom);
+				 var renderer=td.attr('renderer');
+				 if(renderer&&renderer!=""){
+					 if(table){
+						 var rowdata=tr.data().rowdata;
+						 _this.colRendererFunc(td,renderer,idx,rowdata); 
+					 }else{
+						 _this.colRendererFunc(td,renderer,idx);
+					 }
+	                    
+					}
+			 })
+		 })		  
+	  },
+	  
+		colRendererFunc :  function(td,renderer,index,rowdata){
+			var _this = this;
+			td.attr('key',td.find("div").text());
+			td.find("div").attr("title","");
+			var fn = Horn.Util.getFunObj(renderer);
+			var text = td.find("div").html();
+			//如果没有这个function，则不装入这个button
+			if(!fn.fn) return;
+			if(rowdata){
+				var dom = fn.fn.call($(this),{
+					val : text,
+					rowdata : rowdata,
+					maindata : _this.data
+				});
+			}else{
+				var dom = fn.fn.call($(this),{
+					val : text,
+					rowdata : _this.data[index],
+					alldata : _this.data
+				});
+			}
+			
+			if( dom instanceof $ ){
+				td.find("div").html("");
+				td.find("div").append(dom);
+			}else{
+				td.find("div").html(dom);
+			}
+		},
+    createSubtable:function(data,subtable){
+       var _this=this;
+       var selectmodel;
+       var subtablecontent=subtable.find('.u-datagrid');
+       var itemid=subtable.attr('id');
+       subtablecontent.html('');
+       var tb=$('<table class="u-datagrid-group"></table');
+       var tbody=$('<tbody></tbody>');
+       var thead=$('<thead><tr></tr></thead');
+       if(_this.params.subSelectModel&&_this.params.subSelectModel!=""){
+               selectmodel=_this.params.subSelectModel;
+              if(selectmodel==="multi"){
+                thead.find('tr').append('<th class="u-table-check"><div style="width: 40px;"><input type="checkbox" name="subcheckAll"></div></th>');
+              }else{
+                thead.find('tr').append('<th class="u-table-check"><div style="width: 40px;"></div></th>');
+              }
+       }
+       var items=_this.params.subItems;
+       for(var i=0;i<items.length;i++){
+          var th=$('<th><div class="subtable-header">'+items[i]['text']+'</div></th>');
+          thead.find('tr').append(th);
+       }
+       for(var j=0;j<data.length;j++){
+         var tr=$('<tr></tr>');
+         tr.data('rowdata',data[j]);
+         if(selectmodel==="multi"){
+          tr.append('<td class="u-table-check"><div style="width: 40px;"><input type="checkbox" name="item"></div></td>');
+         }else if(selectmodel==="single"){
+           tr.append('<td class="u-table-check"><div style="width: 40px;"><input type="radio" name="'+itemid+'item"></div></td>');
+         }
+         for(var n=0;n<items.length;n++){
+           var name=items[n]['name'];
+           var renderer=items[n]['renderer'];
+           var td=$('<td name="'+name+'" renderer="'+renderer+'"><div>'+data[j][name]+'</div></td>');
+           tr.append(td);
+         }
+         tbody.append(tr);
+       }
+        tb.append(thead);
+        tb.append(tbody);
+        subtablecontent.append(tb);  
+        if(_this.subSelectModel){
+          _this.initSubSelect(subtablecontent);
+          _this.initsubHeighlightEvent(subtablecontent);
+        }
+        _this.columnRender(subtablecontent);
+        var subDrag=_this.params.subDrag+"";
+        if(subDrag=='true'){	
+        	_this.initsubTableDrag(subtablecontent);
+        }
+    },
+    /**
+	 * @description 主表行全选,用在多选模式下
+	 * @name  Horn.TreeTable#selectAll
+	 * @param {boolean} true  true全选，false反选<br>
+	 * @return  string
+	 * @function 
+	 */
+    selectAll:function(flag){
+      var _this = this;
+    var trs=_this.table.find('tbody>tr.tree-table-bg');
+      trs.each(function(index,dom){
+           var tr = $(dom);
+          _this.isRowSelect(flag,tr,index);    
+        });
+        var headCheck = _this.header.find("input[type='checkbox']");
+        if(headCheck.length>0){
+          headCheck.prop("checked",flag );
+        }
+     
+    }, 
+    
+    subselectAll:function(flag,selectall){
+    	 var _this = this;
+    	 var table=selectall.closest('table');
+    	 var header=table.find('thead');
+    	    var trs=table.find('tbody>tr');
+    	      trs.each(function(index,dom){
+    	           var tr = $(dom);
+    	          _this.subRowSelect(flag,tr,index);    
+    	        });
+    	        var headCheck = header.find("input[type='checkbox']");
+    	        if(headCheck.length>0){
+    	          headCheck.prop("checked",flag );
+    	        }
+    },
+
+    processReqConf :function(){
+      var _this=this,
+       pageNo = _this.params["pageConfig"]["pageNo"],
+       pageSize = _this.params["pageConfig"]["pageSize"],
+       _pageSizeObj = $("#pageSize_"+_this.id);
+      if(pageSize){
+        _pageSizeObj.val(pageSize);
+      }
+      _this.reqPageNo = _this.reqPageNo?_this.reqPageNo:pageNo;
+      _this.reqPageSize=_this.reqPageSize?_this.reqPageSize:pageSize;
+    },
+
+    staticInitPagebar : function(){
+       if(this.hasPage){
+         var total = this.storgedData.length;
+         if(this.pagebar){
+           this.pagebar.setTotalCount(total);
+           this.pagebar.calPage_(this.reqPageNo,this.reqPageSize,total);
+           this.setPageInfo();
+         }
+         this.reqPageNo = this.reqPageNo+1;
+       }
+    },
+
+    initPagebar : function(resultData){
+       if(this.hasPage){
+         var total = resultData["total"];
+         if(this.pagebar){
+           if(resultData!=null){
+              $("#toPage_"+this.id).attr("disabled",false);
+            $("#pageSize_"+this.id).attr("disabled",false);
+           }
+           this.pagebar.setTotalCount(total);
+           this.pagebar.calPage_(this.reqPageNo,this.reqPageSize,total);
+           this.setPageInfo();
+         }
+         
+       }
+  },
+  pageBtnDisabled: function(disabled){
+    if(disabled){
+      $("#toPage_"+this.id).attr("disabled",true);
+      $("#pageSize_"+this.id).attr("disabled",true);
+      $("#page_"+this.id).find(".first_page_btn,.pre_page_btn").addClass("disabled");
+      $("#page_"+this.id).find(".next_page_btn,.last_page_btn").addClass("disabled");
+      $("#page_"+this.id).find(".refresh_btn").addClass("disabled");
+    }else{
+      $("#toPage_"+this.id).attr("disabled",false);
+      $("#pageSize_"+this.id).attr("disabled",false);
+      $("#page_"+this.id).find(".first_page_btn,.pre_page_btn").removeClass("disabled");
+      $("#page_"+this.id).find(".next_page_btn,.last_page_btn").removeClass("disabled");
+      $("#page_"+this.id).find(".refresh_btn").removeClass("disabled");
+    }
+  },
+  
+  
+  setPageInfo : function(){
+    //设置当前第几页
+    $("#toPage_"+this.id).val(this.pagebar.currentPage);
+    $("#pageSize_"+this.id).val(this.pagebar.pageSize);
+    $("#totalPages_"+this.id).html(this.pagebar.pages);
+    if((this.pagebar.pageSize%5)==0){
+      //100 200 500 1000
+      var index = this.pagebar.pageSize/5;
+      if(index==20)
+        index=11;
+      else if(index==40)
+        index=12;
+      else if(index == 100)
+        index=13;
+      else if(index == 200)
+        index=14;
+          
+      var activeli = $($(".dropdown-menu-datagrid").find('li').get(index-1));
+      activeli.addClass("active");
+      this.pagebar.activeLi=activeli;
+    }
+     
+    
+    //设置总共几页
+    //var tempstr = this.pageinfo.totalPagesText.replace("{pages}",this.pagebar.pages);
+    //tempstr = tempstr.replace("{pagesize}",this.pagebar.pageSize);
+    var isNotTotal = this.params.isNotTotal?this.params.isNotTotal+"":"false";
+    if(isNotTotal!="true"){
+      $("#pageInfo_"+this.id).html(this.pagebar.getPageInfo());
+    }
+    if(1==this.pagebar.currentPage){
+      $("#page_"+this.id).find(".first_page_btn,.pre_page_btn").addClass("disabled");
+    }else{
+      $("#page_"+this.id).find(".first_page_btn,.pre_page_btn").removeClass("disabled");
+    }
+    if(this.pagebar.pages==this.pagebar.currentPage){
+      if(isNotTotal!="true"){
+        $("#page_"+this.id).find(".next_page_btn,.last_page_btn").addClass("disabled");
+      }
+    }else{
+      $("#page_"+this.id).find(".next_page_btn,.last_page_btn").removeClass("disabled");
+    }
+    $("#page_"+this.id).find(".refresh_btn").removeClass("disabled");
+    
+  },
+  /**
+   * @ignore
+   */
+  reqPage : function(reqPageNo,reqPageSize){
+    this.reqPageNo = reqPageNo?reqPageNo:this.reqPageNo;
+    this.reqPageSize =  reqPageSize?reqPageSize:this.reqPageSize;
+    
+    if(this.loadFlag != "autoLoad" && this.storgedData){
+      this.result = this.storgedData.slice((this.reqPageNo-1)*this.reqPageSize,this.reqPageNo*this.reqPageSize);
+      if(!this.hasPage){
+        this.result = this.storgedData;
+      }
+             this.staticInitPagebar();
+    }else{
+      this.load();
+    }
+  },
+  /**
+	 * @description 获取表格的id
+	 * @name  Horn.TreeTable#getId
+	 * @return  string
+	 * @function 
+	 */
+	getId:function(){
+		return this.id;
+		
+	},
+	/**
+	 * @description 重置主表的工具栏按钮
+	 * @name  Horn.TreeTable#resetToolbar
+	 * @param {objArray} obj button的参数对象数组，具体的参数有：label 按钮的标签（必填否则无法添加）；name 按钮的name，作为标识按钮；cls 按钮的图标样式(默认提供的图标样式有：新增[fa-plus-circle]，修改[fa-pencil-square-o]，删除[fa-remove]，保存[fa-save],查询[fa-search],刷新[fa-refresh],文件夹[fa-folder-open-o])，默认无图标；event 按钮点击的事件处理函数
+	 * @return  void
+	 * @function 
+	 * @example
+	 * var buttons=[{"label":"新增","cls":"add","event":"add()"},{"label":"修改","cls":"edit","event":"edit()"}];
+	 *   Horn.Horn.getComp('treetablexxx').resetToolbar(buttons);
+	 */
+	 resetToolbar:function(objAry){
+	      var _this=this;
+	      var tmp = [];
+	      //增加nama参数和盼lable存在的条件;icon的样式设置不正确逗号放置的位置
+	      if(!objAry || objAry.length<1){
+	        return;
+	      }
+	      var titleButtons = _this.el.find("div.u-datagrid-toolbar").children("ul");
+	      titleButtons.empty();
+	      for(var i=0;i<objAry.length;i++){
+	    	  var cls;
+	    	  switch(objAry[i].cls){
+	    	  case 'add':
+	    		  cls="fa-plus-circle";
+	    		  break;
+	    	  case 'edit':
+	    		  cls="fa-pencil-square-o";
+	    		  break;
+	    	  case 'del':
+	    		  cls="fa-remove";
+	    		  break;
+	    	  case 'confirm':
+	    		  cls="fa-save";
+	    		  break;
+	    	  case 'save':
+	    		  cls="fa-save";
+	    		  break;
+	    	  case 'query':
+	    		  cls="fa-search";
+	    		  break;
+	    	  case 'open':
+	    		  cls="fa-folder-open-o";
+	    		  break;
+	    	  case 'refresh':
+	    		  cls="fa-refresh";
+	    		  break;
+	          default:cls=objAry[i].cls;
+	    	  }
+	           var buttonToAdd=$('<li><a name="'+objAry[i].name+'" href="JavaScript:void(0)" class="hc-datagrid-a hc_datagrid-alink" onclick="'+objAry[i].event+'"><i class="fa '+cls+'"></i>'+objAry[i].label+'</a></li>');
+	            titleButtons.append(buttonToAdd);
+	          }
+	   },
+   /**
+    * @description 获取主表选中项
+    * @name Horn.TreeTable#getMainSelecteds
+    * @return obj
+    * @function
+    */   
+	getMainSelecteds:function(){
+		var _this=this;
+		var selectedItems=_this.table.find('tr.tree-table-bg.u-table-selected');
+		var obj=[];
+		selectedItems.each(function(index,trdom){
+			var tr = $(trdom);
+			var idx=tr.attr('index');
+			obj.push(_this.data[idx]);
+		})
+		return obj;
+	},   
+
+  /**
+   * @description 设置表格的标题
+   * @name Horn.TreeTable#setTitle
+   * @param {string} title  标题名<br>
+   * @return void
+   * @function
+   */
+  setTitle:function(title){
+	  var _this=this;
+    _this.title = title;
+    _this.titleEl.text(title);
+  },
+  /**
+   * @description 获取表格的标题
+   * @name Horn.TreeTable#getTitle
+   * @param 
+   * @return string
+   * @function
+   */
+  getTitle:function(){
+    return this.title;
+  }
+  
+  });
+  Horn.Field.regFieldType("div.hc_treetable",Horn.Treetable);
+  Horn.treetable_Pagebar = function(config,_gridid,_grid){
+  var pagebar = {
+      //表格对象
+      gridId:null,
+      //首页页码
+      INDEX_PAGE:1,
+      //当前页码
+      currentPage : 1,
+      //页面大小，每页显示多少条
+      pageSize : 10,
+       //总条数
+      pageCount : 0,
+       //总页数
+      pages : 0,
+       //起始条数
+      startRow:0,
+      isNotTotal:false,
+      /**
+       * @ignore
+       */
+      init : function(config,_gridid,_grid){
+        if(config){
+        //14700 【TS:201511060024-JRESPlus-财富管理事业部-王瑞明-对于DataGrid 控件的“pageConfig”属性，目】
+          setDefaultValue(config,"pageSize",10);
+          setDefaultValue(config,"pageNo",1);
+          setDefaultValue(config,"startRow",0);
+          setDefaultValue(config,"pageCount",0);
+          setDefaultValue(config,"currentPage",0);
+          this.currentPage = parseInt(config["currentPage"]);
+          this.pageCount = parseInt(config["pageCount"]);
+          this.pageSize = parseInt(config["pageSize"]);
+          this.pageNo = parseInt(config["pageNo"]);
+          this.startRow = parseInt(config["startRow"]);
+          this.pages = 0;
+        }
+        this.gridId = _gridid;
+        this.grid = _grid;
+        this.grid.reqPageSize = this.pageSize;
+        this.grid.reqPageNo = this.pageNo;
+        this.el = $("#page_"+this.gridId);
+        var notTotal = this.el.attr("isNotTotal");
+        if(notTotal=="true"){
+          this.isNotTotal = true;
+        }
+      },
+      /**
+       * @ignore
+       */
+      initEvents : function(){
+        var _pageBar = this;
+        $("#page_"+this.gridId).children("li").find('a').each(function(idx,a){
+          var item = $(a);
+          var regClick = function(item,f,arg){
+            item.click(function(){
+              if(item.hasClass('disabled')){
+                return;
+              }
+              //IE下debug的时候报错
+              arg=arg||[];
+              f.apply(_pageBar,arg);
+            });
+          };
+          if(!item.hasClass("disabled")){
+            if(item.hasClass("first_page_btn")){
+              regClick(item,_pageBar.first);
+            }else if(item.hasClass("pre_page_btn")){
+              regClick(item,_pageBar.pre);
+            }else if(item.hasClass("next_page_btn")){
+              regClick(item,_pageBar.next);
+            }else if(item.hasClass("last_page_btn")){
+              regClick(item,_pageBar.last);
+            }else if(item.hasClass("refresh_btn")){
+              regClick(item,_pageBar.refresh);
+            }
+          }
+        });
+        //绑定分页按钮事件
+        this.perPage = false;
+        $("#_recPerPage"+this.gridId).on('click',function(){
+          optGridId = $(this).attr("id");
+          optGridId =optGridId.substring(11)
+          var currPage = $(this).children("strong").text();
+          if(_pageBar.perPage){
+            $(this).next().hide();
+            _pageBar.perPage = false;
+          }else{
+            $(this).next().show();
+            $(this).next().find("li").each(function(idx,a){
+              var _page = $(this).children("a").text();
+              if(currPage==_page){
+                $(this).addClass("active");
+              }else{
+                $(this).removeClass("active");
+              }
+            });
+            _pageBar.perPage = true;
+          }
+        });
+        
+        $("#_recPerPage"+this.gridId).bind('blur',function(e){
+          var t = e;
+          if(_pageBar.perPage){
+            $(".dropdown-menu-datagrid").hide();
+            _pageBar.perPage = false;
+            return true;
+          }
+        });
+        $(".dropdown-menu-datagrid").bind('mouseover',function(){
+          $("#_recPerPage"+_pageBar.gridId).unbind('blur');
+        });
+        $(".dropdown-menu-datagrid").bind('mouseout',function(){
+          $("#_recPerPage"+_pageBar.gridId).bind('blur',function(e){
+            var t = e;
+            if(_pageBar.perPage){
+              $(".dropdown-menu-datagrid").hide();
+              _pageBar.perPage = false;
+              return true;
+            }
+          });
+        });
+        
+        this.activeLi = $(".dropdown-menu-datagrid").find('li.active');
+        //注册事件
+        var thatgrid = this.grid;
+
+        $("#toPage_"+thatgrid.id).on('blur',function(){
+          _pageBar.callToPage($(this));
+        });
+
+        $("#pageSize_"+thatgrid.id).on('blur',function(){
+          _pageBar.callToPageSize($(this));
+        });
+
+        $("#toPage_"+thatgrid.id).bind('keypress',function(event){
+                if(event.keyCode == "13")    
+                {
+                  _pageBar.callToPage($(this));
+                }
+            });
+        $("#pageSize_"+thatgrid.id).bind('keypress',function(event){
+                if(event.keyCode == "13")    
+                {
+                  _pageBar.callToPageSize($(this));
+                }
+            });
+      },
+      callToPage : function(obj){
+        var thatgrid = this.grid;
+        var pageNum = obj.val();
+        if (!pageNum || isNaN(pageNum)){
+          pageNum = thatgrid.reqPageNo;
+        }
+        pageNum = parseInt(pageNum,10);
+        if(pageNum<=0)
+          pageNum=1;
+        else if(pageNum>thatgrid.pagebar.pages) 
+          pageNum = 1;
+        obj.val(pageNum);
+        thatgrid.reqPage(obj.val(), $("#pageSize_"+thatgrid.id).html());
+      },
+      callToPageSize : function(obj){
+        var _pageBar = this;
+        var pageSize = obj.val();
+        if(pageSize==""){
+          var tmpPageSize = _pageBar.pageSize;
+          if(tmpPageSize&&tmpPageSize!=""){
+            pageSize = tmpPageSize;
+          }else{
+            pageSize =10;
+          }
+        }
+        if (!pageSize || isNaN(pageSize)){
+          pageSize = thatgrid.pageSize;
+        }
+        pageSize = parseInt(pageSize,10);
+        if(pageSize<=0)
+          pageSize=1;
+
+        obj.val(pageSize);
+        
+        _pageBar.grid.reqPage(parseInt($("#toPage_"+_pageBar.grid.id).val()), pageSize);
+      },
+      /**
+       * @ignore
+       */ 
+      calPage_:function(reqPageNo,reqPageSize,totalCount){
+        this.pageSize = parseInt(reqPageSize);
+        this.pageCount = parseInt(totalCount);
+        this.pages = Math.ceil(this.pageCount/this.pageSize);
+        if(!this.isNotTotal){
+          if((reqPageNo*this.pageSize) > this.totalCount){
+            this.currentPage = this.pages;
+          }else{
+            this.currentPage = reqPageNo;
+          }
+        }else{
+          if(this.currentPage==0){
+            this.currentPage =1;
+          }
+        }
+        
+      },
+      /**
+       * @ignore
+       */
+      pre:function(){
+        if(this.isNotTotal){
+          var tmpPageNo = this.currentPage - 1;
+          this.currentPage = tmpPageNo;
+          this.grid.reqPage(tmpPageNo,this.pageSize);
+        }else{
+          if(this.currentPage <= 1 || this.pageCount == 0) {
+            this.grid.reqPage(1,this.pageSize);
+          }else{
+            this.grid.reqPage((this.currentPage - 1),this.pageSize);
+          }
+        }
+      },
+      /**
+       * @ignore
+       */
+      next:function(){
+        if(!this.isNotTotal){
+          if(this.pages == this.currentPage){
+            return;
+          }
+        }
+        //需求 #14790 【TS:201511120068-JRESPlus-财富管理事业部-虞凯 重新选择每页显示条数，点击下一页，页码出错
+        var tmpPageNo = 0;
+        if(this.currentPage!=""){
+          tmpPageNo = parseInt(this.currentPage)+1;
+        }
+        if(this.isNotTotal){
+          tmpPageNo = this.currentPage+1;
+          this.currentPage = tmpPageNo;
+        }
+        
+        this.grid.reqPage(tmpPageNo,this.pageSize);
+      },
+      /**
+       * @ignore
+       */
+      last:function(){
+        if(this.pages == 0) 
+          return ;
+        else
+          this.grid.reqPage(this.pages,this.pageSize);
+      },
+      /**
+       * @ignore
+       */
+      first :function(){
+        this.grid.reqPage(this.INDEX_PAGE,this.pageSize);
+      },
+      /**
+       * @ignore
+       */
+      refresh : function(){
+//        this.grid.load();
+        var gridpageNo = this.grid.reqPageNo - 1;
+        if(this.grid.loadFlag == "autoLoad"){
+          gridpageNo = this.grid.reqPageNo
+        }
+        this.grid.reqPage(gridpageNo,this.pageSize);
+      },
+      /**
+       * @ignore
+       */
+      getPageInfo:function(){
+        var info;
+        var startNo = 0,endNo = 0;
+        if(this.pageCount > 0){
+          startNo = this.pageSize*(this.currentPage-1) + 1;
+          if((this.pageSize*this.currentPage) >= this.pageCount){
+            endNo = this.pageCount;
+          }else{
+            endNo = this.pageSize*this.currentPage;
+          }
+        }
+        info = "显示"+startNo+"到"+endNo+"条,共"+this.pageCount+"条记录";
+        return info;
+      },
+      /**
+       * @ignore
+       */
+      setTotalCount:function(total){
+        this.totalCount = parseInt(total);
+      }
+      
+  };
+  pagebar.init(config,_gridid,_grid);
+  pagebar.initEvents();
+  return pagebar;
+}
+/**
  * 修改记录
  * 2015-09-09               zhangsu        STORY #12305 TS:201507290161-JRESPlus-资产管理事业部-张翔-Typefield组件的验证会错位
  * 2015-10-30               周智星         STORY #14592 【TS:201510300234-JRESPlus-财富管理事业部-虞凯 添加支持负数金额
@@ -22950,6 +29053,11 @@ Horn.Field.regFieldType("div.hc_inputsearch",Horn.TargetSelect) ;
  * 2016-1-14                刘龙             bug 13928 typefield控件inputType属性设置为cardNo后，建议不能输入小数点
  * 2016-3-7                 刘龙             需求#17546 【TS:201603010010-JRESPlus-财富管理事业部-王一俊-【项目名称】HUNDSUN另类投资管理系统软件V4.0<br】
  * 2016-3-11                刘龙             需求#17802 【TS:201603100429-JRESPlus-财富管理事业部-虞凯-<br><br><br><br>【项目名称】HUNDSUN
+ * 2016-12-15               王亚男           bug#29440 window中typefield组件配置bigTips：true，大字提示不能随滚动条一起滚动
+ * 2016-12-20               刘蒙            bug#29258 【TS:201612150305-JRESPlus-财富业委会-沈进-【BUG描述】当输入负号时，直接显示undefined
+ * 2016-12-23               王兰            bug#29752 【TS:201612230366-JRESPlus-财富业委会-沈进-【BUG描述】组件 typefiled金额组件需要过滤掉'-'号在数字中间的情况
+ * 2016-12-26               王兰	            bug#36974 typefield控件，设置为金额格式，设置value初始值，调用getvalue获取值中带有逗号
+ * 2017-1-12                王兰            需求#30506 【TS:201701100492-JRES UI-财富业委会-江志伟-【需求描述】2、金额控件希望能居右显示，因为财务数字都是居右
  */
 /**
  * @name Horn.TypeField
@@ -23286,6 +29394,15 @@ Horn.Field.regFieldType("div.hc_inputsearch",Horn.TargetSelect) ;
   * @example
   * #typefield({"name":"test11f", "label":"textarea", "defValue": "textarea默认值", "cols": 3, "check": "required", "disabled":true,"emptyText":"请输入..."})
   */
+/**
+ * 内容是否居右显示（position为right时，内容居右显示）
+ * @name Horn.TypeField#position
+ * @type String
+ * @default ""
+ * @example
+ * #typefield({"name":"test", "label":"typefield", "position":"right"})
+ */
+
 Horn.TypeField = Horn.extend(Horn.Field, {
 		regChars : "-0123456789",
 		suffixNumber:2,
@@ -23313,6 +29430,11 @@ Horn.TypeField = Horn.extend(Horn.Field, {
 				this.integerNum = this.params.integerNum;
 			}
 			var that = this;
+			//需求#30506 【TS:201701100492-JRES UI-财富业委会-江志伟-【需求描述】2、金额控件希望能居右显示，因为财务数字都是居右
+			var position = this.params.position+"";
+			if(position=="right"){
+				this.field.css("text-align","right");
+			}
 			$.each(that.params.events || [], function(i, o){
 				that[o.event.toLowerCase()] = o["function"];
 				 });
@@ -23357,7 +29479,13 @@ Horn.TypeField = Horn.extend(Horn.Field, {
 					this.field.val(this.params.emptyText);
 				}
 			}
-			
+			if(Horn.TypeField.IS_INIT){//这个是兼容非标2.0系统,页面初始化时就开始格式化金额  2016.11.01 add by zhouzx
+				if(this.params.value&&this.params.value!=""){
+					if(this.params.inputType == "money"){
+						this.setValue(this.params.value);
+					}
+				}
+			}
 			// typefield组件分隔符不计入字符计数 【BUG】23014 金额控件设置maxlength为10后，输入1234567890，失去焦点后显示1234567890,获得焦点后显示1234567890
 			this.field.blur(function(){ 
 				var area=$(this); 
@@ -23367,9 +29495,20 @@ Horn.TypeField = Horn.extend(Horn.Field, {
 				if(isTypefiled && area.attr("inputType")== "money"){////typefield组件分隔符不计入字符计数
 					var formatValue = spliteByChar(value,that.config.split,that.suffixNumber,that.integerNum);
 					if(firstChar=="-"){
-						formatValue = firstChar+formatValue;
+						// bug#29258 【TS:201612150305-JRESPlus-财富业委会-沈进-【BUG描述】当输入负号时，直接显示undefined
+						if(formatValue!==undefined){
+							formatValue = firstChar+formatValue;
+						}else{
+							formatValue = firstChar;
+						}
+						
 					}
 					area.val(formatValue);
+					if(formatValue&&formatValue!=""){
+						//去除分隔符逗号
+						var hiddenval=formatValue.replace(/,/g, '');
+						area.prev().attr("value",hiddenval);
+					}
 				}
 			});
 		},
@@ -23410,9 +29549,20 @@ Horn.TypeField = Horn.extend(Horn.Field, {
 					//调用setvalue设置值，未能设置为金额格式 bug#27224 typefield控件
 					formatValue = spliteByChar(value,this.config.split,this.suffixNumber,this.integerNum);
 					if(firstChar=="-"){
-						formatValue = firstChar+formatValue;
+						// bug#29258 【TS:201612150305-JRESPlus-财富业委会-沈进-【BUG描述】当输入负号时，直接显示undefined
+						if(formatValue!==undefined){
+							formatValue = firstChar+formatValue;
+						}else{
+							formatValue = firstChar;
+						}
+						
 					}
 					field.val(formatValue);
+					if(formatValue&&formatValue!=""){
+						var hiddenval=formatValue.replace(/,/g, '');
+						hidden.attr("value",hiddenval);
+						field.attr("title",formatValue);
+					}
 					//field.val(value);
 				}else if(this.params.inputType == "cardNo"){
 					if(value!=null&&value!=""){
@@ -23483,6 +29633,10 @@ Horn.TypeField = Horn.extend(Horn.Field, {
 								formatValue = firstChar+formatValue;
 							}
 					this.field.val(formatValue);
+					if(formatValue&&formatValue!=""){
+						var hiddenval=formatValue.replace(/,/g, '');
+						this.hidden.attr("value",hiddenval);
+					}
 	    		}else{
 	    			this.setValue(this.params.value);
 	    		}
@@ -23503,11 +29657,48 @@ Horn.TypeField = Horn.extend(Horn.Field, {
 				if(that.params.bigTips==true &&  that.hidden.val() && that.hidden.val()!="") {
 					that.showBigtips();	
 				};
+				//bug#29440 window中typefield组件配置bigTips：true，大字提示不能随滚动条一起滚动
+				$(".h_floatdiv-con").scroll(function(){				
+					if(that.hidden.val() && that.hidden.val()!=""){
+						that.showBigtips();
+						var pTop = that.tipLabel.position().top;
+						var floatDivTop = $(this).parent(".h_floatdiv").position().top;
+						var floatDivHeaderHeight = $(this).siblings(".m-message-header").outerHeight(); 
+						var floatDivHeight = $(this).parent(".h_floatdiv").outerHeight();
+						var scrollTopMin = floatDivTop + floatDivHeaderHeight;	
+						var scrollTopMax = floatDivTop + floatDivHeight;				
+						if(pTop< scrollTopMin || pTop > scrollTopMax){
+							 that.hideBigtips();
+						}
+					}
+				});
+				$(".h_floatdiv-con").mousewheel(function(){
+					if(that.hidden.val() && that.hidden.val()!=""){
+						that.showBigtips();
+						var pTop = that.tipLabel.position().top;
+						var floatDivTop = $(this).parent(".h_floatdiv").position().top;
+						var floatDivHeaderHeight = $(this).siblings(".m-message-header").outerHeight(); 
+						var floatDivHeight = $(this).parent(".h_floatdiv").outerHeight();
+						var scrollTopMin = floatDivTop + floatDivHeaderHeight;	
+						var scrollTopMax = floatDivTop + floatDivHeight;
+						if(pTop< scrollTopMin || pTop > scrollTopMax){
+							 that.hideBigtips();
+						}
+					}
+				});
+
 			});
 			
 			this.field.focusout(function(){
 				that.hideBigtips();
 				that.setValue(that.hidden.val());
+				//bug#29440 window中typefield组件配置bigTips：true，大字提示不能随滚动条一起滚动
+				$(".h_floatdiv-con").bind("scroll",function(){
+					 that.hideBigtips();
+	 	        });
+	 	        $(".h_floatdiv-con").bind("mousewheel",function(){
+	 	        	 that.hideBigtips();
+	 	        });
 			});
 			
 			this.field.keyup(function(e){
@@ -23894,6 +30085,8 @@ Horn.TypeField = Horn.extend(Horn.Field, {
  * 2016-3-17    刘龙            需求#17900 【TS:201603160506-JRESPlus-财富管理事业部-江志伟-【项目名称】恒生信托综合管理平台（TCMP）<br><br>】
  * 2016-3-22    刘龙            bug#17104 需求17814--canEditable属性与focusShowCalendar属性组合失败
  * 2016-3-29    刘龙           bug#17348 需求17788--focusShowCalendar为false时，未自动根据yyyyMMdd格式进行日期校验
+ * 2016-11-8    王兰           需求#27494 [研发中心/内部需求]Calendar组件，配置value为0，或者setValue()为0时，显示为空即可，并且日历获取焦点时，不要显示20000101
+ * 2016-12-23   周智星          需求#29764 【TS:201612230525-JRESPlus-财富业委会-沈进-【BUG描述】<br>组件 calendar组件当存在format时，组件选择完成后，双击组件，报时间格式错误
  * ----------------------------------------------------------------------- 
  */
 
@@ -24194,6 +30387,19 @@ Horn.TypeField = Horn.extend(Horn.Field, {
  * @name Horn.Calendar#isValid
  * @return {Boolean} true表示校验通过，false表示校验失败
  */
+/**
+  * 国际化语言 (注！必须是2.0.9或以上版本)
+  * 目前只支持中文和因为，值分别为zh_CN和en_US,默认zh_CN
+  * @name Horn.Calendar#language
+  * @type String
+  * @default "zh_CN"
+  * @example
+  * * 注！如果想全局页面国际化，就在default.vm里写上：
+  * #jscode()
+  * Horn.Validate.language = "en_US";
+  * #end 
+  * #calendar_group({"label":"日期区间", "name1":"d1","id":"calendarGroupId", "name2":"d2","check":"","value1":"","value2":"","config":"{format:'yyyyMMdd'}","emptyText":["开始日期","结束日期"],"language":"en_US"})
+  */
 ;(function($){
 	$.fn.datetimepicker.dates['zh-CN'] = {
 			days: ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日"],
@@ -24259,12 +30465,19 @@ Horn.Calendar = Horn.extend(Horn.Field,{
 			}
 			
 			var that = this;
-
+			var language = "zh-CN";
+			if((this.params.language&&this.params.language=="en_US")||(Horn.Validate.language&&Horn.Validate.language=="en_US")){
+				if(this.params.language){
+					language = this.params.language.replace("_","-");
+				}else{
+					language = Horn.Validate.language.replace("_","-");
+				}
+			}
 			this.calobj = input.datetimepicker({
 				format: conf.format,
 				startDate:that.minDate,
 				endDate:that.maxDate,
-				language:"zh-CN",
+				language:language,
 				autoclose:true,
 				minView:viewNo,
 //				autoclose:false,
@@ -24319,6 +30532,7 @@ Horn.Calendar = Horn.extend(Horn.Field,{
 		input.focus(function(){
 			var _org = $(this).val();
 			if (_org&&_org.indexOf("/") == -1 && _org.indexOf("-") == -1 ){
+				
 				var _ttt = Horn.Util.Format.date(_org,"yyyy-MM-dd");
 				$(this).val(_ttt);
 			}
@@ -24372,7 +30586,14 @@ Horn.Calendar = Horn.extend(Horn.Field,{
         }
         var val = hidden.val();
 		if(val!=""){
-			this.setValue(val);
+			//需求#27494 [研发中心/内部需求]Calendar组件，配置value为0，或者setValue()为0时，显示为空即可，并且日历获取焦点时，不要显示20000101
+			if(val==0||val=="0"){
+				hidden.val("");
+				this.setValue("");
+				input.attr("value","");
+			}else{
+				this.setValue(val);
+			}
 		}
 	},
 	getEventTarget : function() {
@@ -24388,6 +30609,10 @@ Horn.Calendar = Horn.extend(Horn.Field,{
 		if(val=="null"||val=="NULL"||val=="undefined"){
 			return;
     	}
+		//需求#27494 [研发中心/内部需求]Calendar组件，配置value为0，或者setValue()为0时，显示为空即可，并且日历获取焦点时，不要显示20000101
+		if(val==0||val=="0"){
+			val="";
+		}
 		this.field.val(val);
 		this.hidden.val(val);
 		//this.field.blur();
@@ -24454,10 +30679,16 @@ Horn.Calendar = Horn.extend(Horn.Field,{
     	
 		
     	if(_field.calobj.val()!=""){
-	    	if(!Horn.Util.Format.validateFmt(_field.calobj.val(),_field.settings.format)){
+    		//需求#29764 【TS:201612230525-JRESPlus-财富业委会-沈进-【BUG描述】<br>组件 calendar组件当存在format时，组件选择完成后，双击组件，报时间格式错误
+	    	if(!Horn.Util.Format.validateFmt(_field.hidden.val(),_field.settings.format)){
 	    		valid = false;
 				this.err = true;
-				_field.showError("日期格式不正确,格式为："+_field.settings.format);
+				if((_field.params.language&&_field.params.language=="en_US")||(Horn.Validate.language&&Horn.Validate.language=="en_US")){
+					_field.showError("Date format error,it should be："+_field.settings.format);
+				}else{
+					_field.showError("日期格式不正确,格式为："+_field.settings.format);
+				}
+				
 				return;
 			}
     	}else{
@@ -24465,7 +30696,12 @@ Horn.Calendar = Horn.extend(Horn.Field,{
     		if(check&&check.indexOf(Horn.Validate.REQUIRED) > -1){
     			valid = false;
 				this.err = true;
-    			_field.showError("该输入不能为空！");
+				if((_field.params.language&&_field.params.language=="en_US")||(Horn.Validate.language&&Horn.Validate.language=="en_US")){
+					_field.showError("Not empty！");
+				}else{
+					_field.showError("该输入不能为空！");
+				}
+    			
     			return;
     		}
     	}
@@ -24496,7 +30732,7 @@ Horn.Calendar = Horn.extend(Horn.Field,{
 			return true;
     		}
 		}else{
-		return (Horn.Util.Format.validateFmt(this.calobj.val(),this.settings.format) && !this.err)?true:false;
+		return (Horn.Util.Format.validateFmt(this.hidden.val(),this.settings.format) && !this.err)?true:false;
 		}
 	},
     initEvents : function(){
@@ -24538,8 +30774,13 @@ Horn.Calendar = Horn.extend(Horn.Field,{
     			}
     	    	
     			if(_field.calobj.val()!=""){
-		    		if(!Horn.Util.Format.validateFmt(_field.calobj.val(),_field.settings.format)){
-		    			_field.showError("日期格式不正确,格式为："+_field.settings.format);
+    				//需求#29764 【TS:201612230525-JRESPlus-财富业委会-沈进-【BUG描述】<br>组件 calendar组件当存在format时，组件选择完成后，双击组件，报时间格式错误
+		    		if(!Horn.Util.Format.validateFmt(_field.hidden.val(),_field.settings.format)){
+		    			if((_field.params.language&&_field.params.language=="en_US")||(Horn.Validate.language&&Horn.Validate.language=="en_US")){
+							_field.showError("Date format error,it should be："+_field.settings.format);
+						}else{
+							_field.showError("日期格式不正确,格式为："+_field.settings.format);
+						}
 		    		}else{
 		    			_field.removeError();
 		    			Horn.Validate.onValid({data:[Horn.Validate,_field]});
@@ -24548,7 +30789,11 @@ Horn.Calendar = Horn.extend(Horn.Field,{
     				_field.removeError();
     				var check =_field.hidden.attr("check");
 		    		if(check&&check.indexOf(Horn.Validate.REQUIRED) > -1){
-		    			_field.showError("该输入不能为空！");
+		    			if((_field.params.language&&_field.params.language=="en_US")||(Horn.Validate.language&&Horn.Validate.language=="en_US")){
+							_field.showError("Not empty！");
+						}else{
+							_field.showError("该输入不能为空！");
+						}
 		    		}
     			}
     		},10);
@@ -24802,6 +31047,20 @@ Horn.Field.regFieldType("div.hc_calendar",Horn.Calendar) ;
   * 无
   * @ignore
   */
+/**
+  * 国际化语言 (注！必须是2.0.9或以上版本)
+  * 目前只支持中文和因为，值分别为zh_CN和en_US,默认zh_CN
+  * @name Horn.CalendarGroup#language
+  * @type String
+  * @default "zh_CN"
+  * @example
+  * * 注！如果想全局页面国际化，就在default.vm里写上：
+  * 
+  * #jscode()
+  * Horn.Validate.language = "en_US";
+  * #end 
+  * #calendar({"label":"日期", "name":"d1","check":"required;test()","emptyText":"日期类型","focusShowCalendar":false,"language":"en_US"})
+  */
 	Horn.CalendarGroup = Horn.extend(Horn.Field,{
 		COMPONENT_CLASS:"CalendarGroup",
 		cal1 : null,
@@ -24819,6 +31078,7 @@ Horn.Field.regFieldType("div.hc_calendar",Horn.Calendar) ;
         //日期组的第几个元素验证无效
         inValidEle:null,
         tmpValide : "",
+        language : "zh-CN",
 		/**
 		 * @ignore
 		 */
@@ -24829,7 +31089,14 @@ Horn.Field.regFieldType("div.hc_calendar",Horn.Calendar) ;
 			var cal2 = $(this.el.find("input:text")[1]) ;
 			var hidden1 = $(this.el.find("input[type=hidden]")[0]);
 			var hidden2 = $(this.el.find("input[type=hidden]")[1]);
-			
+			if((this.params.language&&this.params.language=="en_US")||(Horn.Validate.language&&Horn.Validate.language=="en_US")){
+				if(this.params.language){
+					this.language = this.params.language.replace("_","-");
+				}else{
+					this.language = Horn.Validate.language.replace("_","-");
+				}
+				
+			}
 			this.name1 =  hidden1.attr("name") ;
 			this.name2 =  hidden2.attr("name") ;
 			this.name = this.name1 ;
@@ -24978,7 +31245,7 @@ Horn.Field.regFieldType("div.hc_calendar",Horn.Calendar) ;
 							format: conf.format,
 							startDate:conf.minDate,
 							endDate:conf.maxDate,
-							language:"zh-CN",
+							language:_this.language,
 							autoclose:true,
 							minView:viewNo,
 							startView:viewNo === 3?4:2,
@@ -25068,7 +31335,11 @@ Horn.Field.regFieldType("div.hc_calendar",Horn.Calendar) ;
 						if(_this.cal2.val()==""){
 							var rule2 = _this.cal2.attr("check");
 			    			if(rule2 && rule2.indexOf(Horn.Validate.REQUIRED) > -1){
-			    				_this.showError("当前输入不能为空");
+			    				if((_this.params.language&&_this.params.language=="en_US")||(Horn.Validate.language&&Horn.Validate.language=="en_US")){
+			    					_this.showError("Not empty！");
+								}else{
+									_this.showError("当前输入不能为空");
+								}
 			    				return;
 			    			}
 						}
@@ -25091,7 +31362,11 @@ Horn.Field.regFieldType("div.hc_calendar",Horn.Calendar) ;
 						var rule1 = _this.cal1.attr("check");
 		    			//var rule1 =_this.params.check;
 		    			if(rule1 && rule1.indexOf(Horn.Validate.REQUIRED) > -1 && (!_this.cal1.val() || !_this.cal2.val())){
-		    				_this.showError("当前输入不能为空");
+		    				if((_this.params.language&&_this.params.language=="en_US")||(Horn.Validate.language&&Horn.Validate.language=="en_US")){
+		    					_this.showError("Not empty！");
+							}else{
+								_this.showError("当前输入不能为空");
+							}
 		    				return;
 		    			}
 					}
@@ -25158,7 +31433,7 @@ Horn.Field.regFieldType("div.hc_calendar",Horn.Calendar) ;
 					if(cal2.evented==undefined){
 						_this.calobj2 = cal2.datetimepicker({
 							format: conf.format,
-							language:"zh-CN",
+							language:_this.language,
 							autoclose:true,
 							minView:viewNo,
 							startView:viewNo === 3?4:2,
@@ -25246,7 +31521,11 @@ Horn.Field.regFieldType("div.hc_calendar",Horn.Calendar) ;
 						if(_this.cal1.val()==""){
 							var rule1= _this.cal1.attr("check");
 			    			if(rule1 && rule1.indexOf(Horn.Validate.REQUIRED) > -1){
-			    				_this.showError("当前输入不能为空");
+			    				if((_this.params.language&&_this.params.language=="en_US")||(Horn.Validate.language&&Horn.Validate.language=="en_US")){
+			    					_this.showError("Not empty！");
+								}else{
+									_this.showError("当前输入不能为空");
+								}
 			    				return;
 			    			}
 						}
@@ -25270,7 +31549,11 @@ Horn.Field.regFieldType("div.hc_calendar",Horn.Calendar) ;
 					}else{
 						var rule2 = _this.cal2.attr("check");
 		    			if(rule2 && rule2.indexOf(Horn.Validate.REQUIRED) > -1  && (!_this.cal2.val() ||!_this.cal1.val())){
-		    				_this.showError("当前输入不能为空");
+		    				if((_this.params.language&&_this.params.language=="en_US")||(Horn.Validate.language&&Horn.Validate.language=="en_US")){
+		    					_this.showError("Not empty！");
+							}else{
+								_this.showError("当前输入不能为空");
+							}
 		    				return;
 		    			}
 					}
@@ -25371,7 +31654,11 @@ Horn.Field.regFieldType("div.hc_calendar",Horn.Calendar) ;
 			if(rule1&&rule1.length>0){
 				if(_this.calobj1.val()==""||_this.calobj2.val()==""){
 					if(rule1.indexOf(Horn.Validate.REQUIRED)>-1){
-						_this.showError("该输入不能为空");
+						if((_this.params.language&&_this.params.language=="en_US")||(Horn.Validate.language&&Horn.Validate.language=="en_US")){
+	    					_this.showError("Not empty！");
+						}else{
+							_this.showError("当前输入不能为空");
+						}
 						vaid = false
 						this.err = true;
 						return;
@@ -25413,13 +31700,22 @@ Horn.Field.regFieldType("div.hc_calendar",Horn.Calendar) ;
 				this.formatVal();
 			}
 			if(_this.calobj1.val()!=""&&!Horn.Util.Format.validateFmt(_this.calobj1.val(),_this.settings.format)){
-				_this.showError("日期格式不正确,格式为："+_this.settings.format);
+				if((_this.params.language&&_this.params.language=="en_US")||(Horn.Validate.language&&Horn.Validate.language=="en_US")){
+					_this.showError("Date format error,it should be:"+_this.settings.format);
+				}else{
+					_this.showError("日期格式不正确,格式为："+_this.settings.format);
+				}
 				vaid = false
 				this.err = true;
 				return;
 			}
 			if(_this.calobj2.val()!=""&&!Horn.Util.Format.validateFmt(_this.calobj2.val(),_this.settings.format)){
-				_this.showError("日期格式不正确,格式为："+_this.settings.format);
+				if((_this.params.language&&_this.params.language=="en_US")||(Horn.Validate.language&&Horn.Validate.language=="en_US")){
+					_this.showError("Date format error,it should be:"+_this.settings.format);
+				}else{
+					_this.showError("日期格式不正确,格式为："+_this.settings.format);
+				}
+				
 				vaid = false
 				this.err = true;
 				return;
@@ -25435,14 +31731,23 @@ Horn.Field.regFieldType("div.hc_calendar",Horn.Calendar) ;
 				}
 				vaid = false
 				this.err = true;
-				_this.showError("日期不在有效区间");
+				
+				if((_this.params.language&&_this.params.language=="en_US")||(Horn.Validate.language&&Horn.Validate.language=="en_US")){
+					_this.showError("The date is not in the valid range");
+				}else{
+					_this.showError("日期不在有效区间");
+				}
 				return;
 			} else if(_this.calobj1 && _this.calobj1.isValid(_this.calobj1.val(),_this.settings.format) && _this.calobj2 && _this.calobj2.isValid(_this.calobj2.val(),_this.settings.format) && _this.calobj1.getDate() && _this.calobj2.getDate()){
 				if(_this.calobj1.getDate() && _this.calobj2.getDate() &&!_this.compareDate(_this.calobj1.getDate(), _this.calobj2.getDate())){
 					vaid = false
 					this.err = true;
 					_this.inValidEle = _this.cal1;
-	    			_this.showError("开始日期不能大于结束日期");
+					if((_this.params.language&&_this.params.language=="en_US")||(Horn.Validate.language&&Horn.Validate.language=="en_US")){
+						_this.showError("The start date can not be later than the end date");
+					}else{
+						_this.showError("开始日期不能大于结束日期");
+					}
 	    			return;
 				}
 			}
@@ -25714,7 +32019,11 @@ Horn.Field.regFieldType("div.hc_calendar",Horn.Calendar) ;
 			var rule1 = this.cal1.attr("check");
 			if(rule1&& rule1.indexOf(Horn.Validate.REQUIRED) > -1){
 				if(_this.calobj1.val()==""||_this.calobj2.val()==""){
-					_this.showError("当前输入不能为空");
+					if((_this.params.language&&_this.params.language=="en_US")||(Horn.Validate.language&&Horn.Validate.language=="en_US")){
+						_this.showError("Not empty！");
+					}else{
+						_this.showError("当前输入不能为空");
+					}
 					vaid = false;
 					this.err = true;
 					return;
@@ -25776,7 +32085,11 @@ Horn.Field.regFieldType("div.hc_calendar",Horn.Calendar) ;
 				if( !Horn.Util.Format.validateFmt(_this.calobj1.val(),_this.settings.format)){
 					valid = false
 					this.err = true;
-	    			_this.showError("日期格式不正确，格式为："+_this.settings.format);
+	    			if((_this.params.language&&_this.params.language=="en_US")||(Horn.Validate.language&&Horn.Validate.language=="en_US")){
+						_this.showError("Date format error,it should be:"+_this.settings.format);
+					}else{
+						_this.showError("日期格式不正确,格式为："+_this.settings.format);
+					}
 					return;
 				}
 	    	}else{
@@ -25786,13 +32099,22 @@ Horn.Field.regFieldType("div.hc_calendar",Horn.Calendar) ;
 	    	    				|| !_this.compareDate(_this.minDate, _this.calobj2.getDate()))) {
 	    			valid = false
 					this.err = true;
-	    			_this.showError("日期不在有效区间");
+	    			if((_this.params.language&&_this.params.language=="en_US")||(Horn.Validate.language&&Horn.Validate.language=="en_US")){
+						_this.showError("The date is not in the valid range");
+					}else{
+						_this.showError("日期不在有效区间");
+					}
+	    			
 	    			return;
 	    		} else if(_this.calobj1 && _this.calobj1.isValid(_this.calobj1.val(),_this.settings.format) && _this.calobj2 && _this.calobj2.isValid(_this.calobj2.val(),_this.settings.format) && _this.calobj1.getDate() && _this.calobj2.getDate()){
 	    			if(_this.calobj1.getDate() && _this.calobj2.getDate() &&!_this.compareDate(_this.calobj1.getDate(), _this.calobj2.getDate())){
 	    				valid = false
 	    				this.err = true;
-	        			_this.showError("开始日期不能大于结束日期");
+	    				if((_this.params.language&&_this.params.language=="en_US")||(Horn.Validate.language&&Horn.Validate.language=="en_US")){
+							_this.showError("The start date can not be later than the end date");
+						}else{
+							_this.showError("开始日期不能大于结束日期");
+						}
 	        			return;
 	    			}
 	    		}else{
@@ -25805,7 +32127,11 @@ Horn.Field.regFieldType("div.hc_calendar",Horn.Calendar) ;
 				if( !Horn.Util.Format.validateFmt(_this.calobj2.val(),_this.settings.format)){
 					valid = false
 					this.err = true;
-	    			_this.showError("日期格式不正确，格式为："+_this.settings.format);
+					if((_this.params.language&&_this.params.language=="en_US")||(Horn.Validate.language&&Horn.Validate.language=="en_US")){
+						_this.showError("Date format error,it should be:"+_this.settings.format);
+					}else{
+						_this.showError("日期格式不正确,格式为："+_this.settings.format);
+					}
 					return;
 				}
 	    	}else{
@@ -25818,12 +32144,20 @@ Horn.Field.regFieldType("div.hc_calendar",Horn.Calendar) ;
 	    			}else if(_this.calobj2 && (!_this.compareDate(_this.calobj2.getDate(), _this.maxDate) || !_this.compareDate(_this.minDate, _this.calobj2.getDate()))){
 	    				_this.inValidEle = _this.cal2;
 	    			}
-	    			_this.showError("日期不在有效区间");
+	    			if((_this.params.language&&_this.params.language=="en_US")||(Horn.Validate.language&&Horn.Validate.language=="en_US")){
+						_this.showError("The date is not in the valid range");
+					}else{
+						_this.showError("日期不在有效区间");
+					}
 	    			return;
 	    		} else if(_this.calobj1 && _this.calobj1.isValid(_this.calobj1.val(),_this.settings.format) && _this.calobj2 && _this.calobj2.isValid(_this.calobj2.val(),_this.settings.format) && _this.calobj1.getDate() && _this.calobj2.getDate()){
 	    			if(_this.calobj1.getDate() && _this.calobj2.getDate() &&!_this.compareDate(_this.calobj1.getDate(), _this.calobj2.getDate())){
 	    				_this.inValidEle = _this.cal1;
-	        			_this.showError("开始日期不能大于结束日期");
+	    				if((_this.params.language&&_this.params.language=="en_US")||(Horn.Validate.language&&Horn.Validate.language=="en_US")){
+							_this.showError("The start date can not be later than the end date");
+						}else{
+							_this.showError("开始日期不能大于结束日期");
+						}
 	        			return;
 	    			}
 	    		}else{
@@ -25935,6 +32269,13 @@ Horn.Field.regFieldType("div.hc_calendar",Horn.Calendar) ;
 		 
 	}) ;
 	Horn.Field.regFieldType("div.hc_calendargroup",Horn.CalendarGroup) ;
+
+/*
+ * 修改日期                        修改人员        修改说明
+ * -----------------------------------------------------------------------
+ * 2016-11-04      刘蒙            #26858 【TS:201610280300-JRESPlus-经纪业委会（经纪）-施秀飞-【需求描述】1.控件checkbox 的方法getvalue】
+ * -----------------------------------------------------------------------
+ */
 
 /**
  * @name Horn.Checkbox
@@ -26048,8 +32389,13 @@ Horn.Field.regFieldType("div.hc_calendar",Horn.Calendar) ;
 		init : function(){
 			Horn.Checkbox.superclass.init.apply(this,arguments);
 			this.checkbox = this.el.find('input:checkbox');
+			this.checkbox.val('false');
 			if(this.params.disabled){
 				this.disabled = true;
+			}
+			//BUG33792 --设置属性value及checked值后，再调用getvalue方法，返回值不正确
+			if(this.params.checked&&this.params.checked.toString()==='true'){
+				this.checkbox.val('true');
 			}
 		},
 		getEventTarget : function() {
@@ -26065,6 +32411,7 @@ Horn.Field.regFieldType("div.hc_calendar",Horn.Calendar) ;
         initEvents : function(){
             var _checkboxgroup = this;
             var checkboxs = _checkboxgroup.el.find('input:checkbox[check*=required]');
+            var ck=this.el.find('input:checkbox');
             if(checkboxs && checkboxs.size()>0){
                 this.checkRegx = $(checkboxs[0]).attr("check").split(';');
                 checkboxs.each(function(idx,checkbox){
@@ -26079,6 +32426,13 @@ Horn.Field.regFieldType("div.hc_calendar",Horn.Calendar) ;
                     })
                 })
             }
+            ck.on('change',function(){
+            	if(this.checked){
+            		ck.val('true');
+            	}else{
+            		ck.val('false');
+            	}
+            })
         },
 		/**
          * @ignore
@@ -26233,11 +32587,13 @@ Horn.Field.regFieldType("div.hc_calendar",Horn.Calendar) ;
          * @description 获取checkbox的值
          * @function
          * @name Horn.Checkbox.getValue
-         * @return {int} 0,1
+         * @return {int/boolean} 0,1或true/false
          */
 		getValue : function(){
 			//return this.checkbox.val();
-        	return this.checkbox.filter(":checked").val() || "";
+			//#26858 【TS:201610280300-JRESPlus-经纪业委会（经纪）-施秀飞-【需求描述】1.控件checkbox 的方法getvalue】
+			var result=this.checkbox.val();
+			return JSON.parse(result);
 		},
 		/**
          * @description checkbox启用禁用
@@ -27027,7 +33383,7 @@ SWFUpload 2 is (c) 2007-2008 Jake Roberts and is released under the MIT License:
 http://www.opensource.org/licenses/mit-license.php
 */
 
-var SWFUpload;if(SWFUpload==undefined){SWFUpload=function(a){this.initSWFUpload(a)}}SWFUpload.prototype.initSWFUpload=function(b){try{this.customSettings={};this.settings=b;this.eventQueue=[];this.movieName="SWFUpload_"+SWFUpload.movieCount++;this.movieElement=null;SWFUpload.instances[this.movieName]=this;this.initSettings();this.loadFlash();this.displayDebugInfo()}catch(a){delete SWFUpload.instances[this.movieName];throw a}};SWFUpload.instances={};SWFUpload.movieCount=0;SWFUpload.version="2.2.0 2009-03-25";SWFUpload.QUEUE_ERROR={QUEUE_LIMIT_EXCEEDED:-100,FILE_EXCEEDS_SIZE_LIMIT:-110,ZERO_BYTE_FILE:-120,INVALID_FILETYPE:-130};SWFUpload.UPLOAD_ERROR={HTTP_ERROR:-200,MISSING_UPLOAD_URL:-210,IO_ERROR:-220,SECURITY_ERROR:-230,UPLOAD_LIMIT_EXCEEDED:-240,UPLOAD_FAILED:-250,SPECIFIED_FILE_ID_NOT_FOUND:-260,FILE_VALIDATION_FAILED:-270,FILE_CANCELLED:-280,UPLOAD_STOPPED:-290};SWFUpload.FILE_STATUS={QUEUED:-1,IN_PROGRESS:-2,ERROR:-3,COMPLETE:-4,CANCELLED:-5};SWFUpload.BUTTON_ACTION={SELECT_FILE:-100,SELECT_FILES:-110,START_UPLOAD:-120};SWFUpload.CURSOR={ARROW:-1,HAND:-2};SWFUpload.WINDOW_MODE={WINDOW:"window",TRANSPARENT:"transparent",OPAQUE:"opaque"};SWFUpload.completeURL=function(a){if(typeof(a)!=="string"||a.match(/^https?:\/\//i)||a.match(/^\//)){return a}var c=window.location.protocol+"//"+window.location.hostname+(window.location.port?":"+window.location.port:"");var b=window.location.pathname.lastIndexOf("/");if(b<=0){path="/"}else{path=window.location.pathname.substr(0,b)+"/"}return path+a};SWFUpload.prototype.initSettings=function(){this.ensureDefault=function(b,a){this.settings[b]=(this.settings[b]==undefined)?a:this.settings[b]};this.ensureDefault("upload_url","");this.ensureDefault("preserve_relative_urls",false);this.ensureDefault("file_post_name","Filedata");this.ensureDefault("post_params",{});this.ensureDefault("use_query_string",false);this.ensureDefault("requeue_on_error",false);this.ensureDefault("http_success",[]);this.ensureDefault("assume_success_timeout",0);this.ensureDefault("file_types","*.*");this.ensureDefault("file_types_description","All Files");this.ensureDefault("file_size_limit",0);this.ensureDefault("file_upload_limit",0);this.ensureDefault("file_queue_limit",0);this.ensureDefault("flash_url","swfupload.swf");this.ensureDefault("prevent_swf_caching",true);this.ensureDefault("button_image_url","");this.ensureDefault("button_width",1);this.ensureDefault("button_height",1);this.ensureDefault("button_text","");this.ensureDefault("button_text_style","color: #000000; font-size: 16pt;");this.ensureDefault("button_text_top_padding",0);this.ensureDefault("button_text_left_padding",0);this.ensureDefault("button_action",SWFUpload.BUTTON_ACTION.SELECT_FILES);this.ensureDefault("button_disabled",false);this.ensureDefault("button_placeholder_id","");this.ensureDefault("button_placeholder",null);this.ensureDefault("button_cursor",SWFUpload.CURSOR.ARROW);this.ensureDefault("button_window_mode",SWFUpload.WINDOW_MODE.WINDOW);this.ensureDefault("debug",false);this.settings.debug_enabled=this.settings.debug;this.settings.return_upload_start_handler=this.returnUploadStart;this.ensureDefault("swfupload_loaded_handler",null);this.ensureDefault("file_dialog_start_handler",null);this.ensureDefault("file_queued_handler",null);this.ensureDefault("file_queue_error_handler",null);this.ensureDefault("file_dialog_complete_handler",null);this.ensureDefault("upload_start_handler",null);this.ensureDefault("upload_progress_handler",null);this.ensureDefault("upload_error_handler",null);this.ensureDefault("upload_success_handler",null);this.ensureDefault("upload_complete_handler",null);this.ensureDefault("debug_handler",this.debugMessage);this.ensureDefault("custom_settings",{});this.customSettings=this.settings.custom_settings;if(!!this.settings.prevent_swf_caching){this.settings.flash_url=this.settings.flash_url+(this.settings.flash_url.indexOf("?")<0?"?":"&")+"preventswfcaching="+new Date().getTime()}if(!this.settings.preserve_relative_urls){this.settings.upload_url=SWFUpload.completeURL(this.settings.upload_url);this.settings.button_image_url=SWFUpload.completeURL(this.settings.button_image_url)}delete this.ensureDefault};SWFUpload.prototype.loadFlash=function(){var a,b;if(document.getElementById(this.movieName)!==null){throw"ID "+this.movieName+" is already in use. The Flash Object could not be added"}a=document.getElementById(this.settings.button_placeholder_id)||this.settings.button_placeholder;if(a==undefined){throw"Could not find the placeholder element: "+this.settings.button_placeholder_id}b=document.createElement("div");b.innerHTML=this.getFlashHTML();a.parentNode.replaceChild(b.firstChild,a);if(window[this.movieName]==undefined){window[this.movieName]=this.getMovieElement()}};SWFUpload.prototype.getFlashHTML=function(){return['<object id="',this.movieName,'" type="application/x-shockwave-flash" data="',this.settings.flash_url,'" width="',this.settings.button_width,'" height="',this.settings.button_height,'" class="swfupload">','<param name="wmode" value="',this.settings.button_window_mode,'" />','<param name="movie" value="',this.settings.flash_url,'" />','<param name="quality" value="high" />','<param name="menu" value="false" />','<param name="allowScriptAccess" value="always" />','<param name="flashvars" value="'+this.getFlashVars()+'" />',"</object>"].join("")};SWFUpload.prototype.getFlashVars=function(){var b=this.buildParamString();var a=this.settings.http_success.join(",");return["movieName=",encodeURIComponent(this.movieName),"&amp;uploadURL=",encodeURIComponent(this.settings.upload_url),"&amp;useQueryString=",encodeURIComponent(this.settings.use_query_string),"&amp;requeueOnError=",encodeURIComponent(this.settings.requeue_on_error),"&amp;httpSuccess=",encodeURIComponent(a),"&amp;assumeSuccessTimeout=",encodeURIComponent(this.settings.assume_success_timeout),"&amp;params=",encodeURIComponent(b),"&amp;filePostName=",encodeURIComponent(this.settings.file_post_name),"&amp;fileTypes=",encodeURIComponent(this.settings.file_types),"&amp;fileTypesDescription=",encodeURIComponent(this.settings.file_types_description),"&amp;fileSizeLimit=",encodeURIComponent(this.settings.file_size_limit),"&amp;fileUploadLimit=",encodeURIComponent(this.settings.file_upload_limit),"&amp;fileQueueLimit=",encodeURIComponent(this.settings.file_queue_limit),"&amp;debugEnabled=",encodeURIComponent(this.settings.debug_enabled),"&amp;buttonImageURL=",encodeURIComponent(this.settings.button_image_url),"&amp;buttonWidth=",encodeURIComponent(this.settings.button_width),"&amp;buttonHeight=",encodeURIComponent(this.settings.button_height),"&amp;buttonText=",encodeURIComponent(this.settings.button_text),"&amp;buttonTextTopPadding=",encodeURIComponent(this.settings.button_text_top_padding),"&amp;buttonTextLeftPadding=",encodeURIComponent(this.settings.button_text_left_padding),"&amp;buttonTextStyle=",encodeURIComponent(this.settings.button_text_style),"&amp;buttonAction=",encodeURIComponent(this.settings.button_action),"&amp;buttonDisabled=",encodeURIComponent(this.settings.button_disabled),"&amp;buttonCursor=",encodeURIComponent(this.settings.button_cursor)].join("")};SWFUpload.prototype.getMovieElement=function(){if(this.movieElement==undefined){this.movieElement=document.getElementById(this.movieName)}if(this.movieElement===null){throw"Could not find Flash element"}return this.movieElement};SWFUpload.prototype.buildParamString=function(){var c=this.settings.post_params;var b=[];if(typeof(c)==="object"){for(var a in c){if(c.hasOwnProperty(a)){b.push(encodeURIComponent(a.toString())+"="+encodeURIComponent(c[a].toString()))}}}return b.join("&amp;")};SWFUpload.prototype.destroy=function(){try{this.cancelUpload(null,false);var a=null;a=this.getMovieElement();if(a&&typeof(a.CallFunction)==="unknown"){for(var c in a){try{if(typeof(a[c])==="function"){a[c]=null}}catch(e){}}try{a.parentNode.removeChild(a)}catch(b){}}window[this.movieName]=null;SWFUpload.instances[this.movieName]=null;delete SWFUpload.instances[this.movieName];this.movieElement=null;this.settings=null;this.customSettings=null;this.eventQueue=null;this.movieName=null;return true}catch(d){return false}};SWFUpload.prototype.displayDebugInfo=function(){this.debug(["---SWFUpload Instance Info---\n","Version: ",SWFUpload.version,"\n","Movie Name: ",this.movieName,"\n","Settings:\n","\t","upload_url:               ",this.settings.upload_url,"\n","\t","flash_url:                ",this.settings.flash_url,"\n","\t","use_query_string:         ",this.settings.use_query_string.toString(),"\n","\t","requeue_on_error:         ",this.settings.requeue_on_error.toString(),"\n","\t","http_success:             ",this.settings.http_success.join(", "),"\n","\t","assume_success_timeout:   ",this.settings.assume_success_timeout,"\n","\t","file_post_name:           ",this.settings.file_post_name,"\n","\t","post_params:              ",this.settings.post_params.toString(),"\n","\t","file_types:               ",this.settings.file_types,"\n","\t","file_types_description:   ",this.settings.file_types_description,"\n","\t","file_size_limit:          ",this.settings.file_size_limit,"\n","\t","file_upload_limit:        ",this.settings.file_upload_limit,"\n","\t","file_queue_limit:         ",this.settings.file_queue_limit,"\n","\t","debug:                    ",this.settings.debug.toString(),"\n","\t","prevent_swf_caching:      ",this.settings.prevent_swf_caching.toString(),"\n","\t","button_placeholder_id:    ",this.settings.button_placeholder_id.toString(),"\n","\t","button_placeholder:       ",(this.settings.button_placeholder?"Set":"Not Set"),"\n","\t","button_image_url:         ",this.settings.button_image_url.toString(),"\n","\t","button_width:             ",this.settings.button_width.toString(),"\n","\t","button_height:            ",this.settings.button_height.toString(),"\n","\t","button_text:              ",this.settings.button_text.toString(),"\n","\t","button_text_style:        ",this.settings.button_text_style.toString(),"\n","\t","button_text_top_padding:  ",this.settings.button_text_top_padding.toString(),"\n","\t","button_text_left_padding: ",this.settings.button_text_left_padding.toString(),"\n","\t","button_action:            ",this.settings.button_action.toString(),"\n","\t","button_disabled:          ",this.settings.button_disabled.toString(),"\n","\t","custom_settings:          ",this.settings.custom_settings.toString(),"\n","Event Handlers:\n","\t","swfupload_loaded_handler assigned:  ",(typeof this.settings.swfupload_loaded_handler==="function").toString(),"\n","\t","file_dialog_start_handler assigned: ",(typeof this.settings.file_dialog_start_handler==="function").toString(),"\n","\t","file_queued_handler assigned:       ",(typeof this.settings.file_queued_handler==="function").toString(),"\n","\t","file_queue_error_handler assigned:  ",(typeof this.settings.file_queue_error_handler==="function").toString(),"\n","\t","upload_start_handler assigned:      ",(typeof this.settings.upload_start_handler==="function").toString(),"\n","\t","upload_progress_handler assigned:   ",(typeof this.settings.upload_progress_handler==="function").toString(),"\n","\t","upload_error_handler assigned:      ",(typeof this.settings.upload_error_handler==="function").toString(),"\n","\t","upload_success_handler assigned:    ",(typeof this.settings.upload_success_handler==="function").toString(),"\n","\t","upload_complete_handler assigned:   ",(typeof this.settings.upload_complete_handler==="function").toString(),"\n","\t","debug_handler assigned:             ",(typeof this.settings.debug_handler==="function").toString(),"\n"].join(""))};SWFUpload.prototype.addSetting=function(b,c,a){if(c==undefined){return(this.settings[b]=a)}else{return(this.settings[b]=c)}};SWFUpload.prototype.getSetting=function(a){if(this.settings[a]!=undefined){return this.settings[a]}return""};SWFUpload.prototype.callFlash=function(functionName,argumentArray){argumentArray=argumentArray||[];var movieElement=this.getMovieElement();var returnValue,returnString;try{returnString=movieElement.CallFunction('<invoke name="'+functionName+'" returntype="javascript">'+__flash__argumentsToXML(argumentArray,0)+"</invoke>");returnValue=eval(returnString)}catch(ex){throw"Call to "+functionName+" failed"}if(returnValue!=undefined&&typeof returnValue.post==="object"){returnValue=this.unescapeFilePostParams(returnValue)}return returnValue};SWFUpload.prototype.selectFile=function(){this.callFlash("SelectFile")};SWFUpload.prototype.selectFiles=function(){this.callFlash("SelectFiles")};SWFUpload.prototype.startUpload=function(a){this.callFlash("StartUpload",[a])};SWFUpload.prototype.cancelUpload=function(a,b){if(b!==false){b=true}this.callFlash("CancelUpload",[a,b])};SWFUpload.prototype.stopUpload=function(){this.callFlash("StopUpload")};SWFUpload.prototype.getStats=function(){return this.callFlash("GetStats")};SWFUpload.prototype.setStats=function(a){this.callFlash("SetStats",[a])};SWFUpload.prototype.getFile=function(a){if(typeof(a)==="number"){return this.callFlash("GetFileByIndex",[a])}else{return this.callFlash("GetFile",[a])}};SWFUpload.prototype.addFileParam=function(a,b,c){return this.callFlash("AddFileParam",[a,b,c])};SWFUpload.prototype.removeFileParam=function(a,b){this.callFlash("RemoveFileParam",[a,b])};SWFUpload.prototype.setUploadURL=function(a){this.settings.upload_url=a.toString();this.callFlash("SetUploadURL",[a])};SWFUpload.prototype.setPostParams=function(a){this.settings.post_params=a;this.callFlash("SetPostParams",[a])};SWFUpload.prototype.addPostParam=function(a,b){this.settings.post_params[a]=b;this.callFlash("SetPostParams",[this.settings.post_params])};SWFUpload.prototype.removePostParam=function(a){delete this.settings.post_params[a];this.callFlash("SetPostParams",[this.settings.post_params])};SWFUpload.prototype.setFileTypes=function(a,b){this.settings.file_types=a;this.settings.file_types_description=b;this.callFlash("SetFileTypes",[a,b])};SWFUpload.prototype.setFileSizeLimit=function(a){this.settings.file_size_limit=a;this.callFlash("SetFileSizeLimit",[a])};SWFUpload.prototype.setFileUploadLimit=function(a){this.settings.file_upload_limit=a;this.callFlash("SetFileUploadLimit",[a])};SWFUpload.prototype.setFileQueueLimit=function(a){this.settings.file_queue_limit=a;this.callFlash("SetFileQueueLimit",[a])};SWFUpload.prototype.setFilePostName=function(a){this.settings.file_post_name=a;this.callFlash("SetFilePostName",[a])};SWFUpload.prototype.setUseQueryString=function(a){this.settings.use_query_string=a;this.callFlash("SetUseQueryString",[a])};SWFUpload.prototype.setRequeueOnError=function(a){this.settings.requeue_on_error=a;this.callFlash("SetRequeueOnError",[a])};SWFUpload.prototype.setHTTPSuccess=function(a){if(typeof a==="string"){a=a.replace(" ","").split(",")}this.settings.http_success=a;this.callFlash("SetHTTPSuccess",[a])};SWFUpload.prototype.setAssumeSuccessTimeout=function(a){this.settings.assume_success_timeout=a;this.callFlash("SetAssumeSuccessTimeout",[a])};SWFUpload.prototype.setDebugEnabled=function(a){this.settings.debug_enabled=a;this.callFlash("SetDebugEnabled",[a])};SWFUpload.prototype.setButtonImageURL=function(a){if(a==undefined){a=""}this.settings.button_image_url=a;this.callFlash("SetButtonImageURL",[a])};SWFUpload.prototype.setButtonDimensions=function(c,a){this.settings.button_width=c;this.settings.button_height=a;var b=this.getMovieElement();if(b!=undefined){b.style.width=c+"px";b.style.height=a+"px"}this.callFlash("SetButtonDimensions",[c,a])};SWFUpload.prototype.setButtonText=function(a){this.settings.button_text=a;this.callFlash("SetButtonText",[a])};SWFUpload.prototype.setButtonTextPadding=function(b,a){this.settings.button_text_top_padding=a;this.settings.button_text_left_padding=b;this.callFlash("SetButtonTextPadding",[b,a])};SWFUpload.prototype.setButtonTextStyle=function(a){this.settings.button_text_style=a;this.callFlash("SetButtonTextStyle",[a])};SWFUpload.prototype.setButtonDisabled=function(a){this.settings.button_disabled=a;this.callFlash("SetButtonDisabled",[a])};SWFUpload.prototype.setButtonAction=function(a){this.settings.button_action=a;this.callFlash("SetButtonAction",[a])};SWFUpload.prototype.setButtonCursor=function(a){this.settings.button_cursor=a;this.callFlash("SetButtonCursor",[a])};SWFUpload.prototype.queueEvent=function(b,c){if(c==undefined){c=[]}else{if(!(c instanceof Array)){c=[c]}}var a=this;if(typeof this.settings[b]==="function"){this.eventQueue.push(function(){this.settings[b].apply(this,c)});setTimeout(function(){a.executeNextEvent()},0)}else{if(this.settings[b]!==null){throw"Event handler "+b+" is unknown or is not a function"}}};SWFUpload.prototype.executeNextEvent=function(){var a=this.eventQueue?this.eventQueue.shift():null;if(typeof(a)==="function"){a.apply(this)}};SWFUpload.prototype.unescapeFilePostParams=function(c){var e=/[$]([0-9a-f]{4})/i;var f={};var d;if(c!=undefined){for(var a in c.post){if(c.post.hasOwnProperty(a)){d=a;var b;while((b=e.exec(d))!==null){d=d.replace(b[0],String.fromCharCode(parseInt("0x"+b[1],16)))}f[d]=c.post[a]}}c.post=f}return c};SWFUpload.prototype.testExternalInterface=function(){try{return this.callFlash("TestExternalInterface")}catch(a){return false}};SWFUpload.prototype.flashReady=function(){var a=this.getMovieElement();if(!a){this.debug("Flash called back ready but the flash movie can't be found.");return}this.cleanUp(a);this.queueEvent("swfupload_loaded_handler")};SWFUpload.prototype.cleanUp=function(a){try{if(this.movieElement&&typeof(a.CallFunction)==="unknown"){this.debug("Removing Flash functions hooks (this should only run in IE and should prevent memory leaks)");for(var c in a){try{if(typeof(a[c])==="function"){a[c]=null}}catch(b){}}}}catch(d){}window.__flash__removeCallback=function(e,f){try{if(e){e[f]=null}}catch(g){}}};SWFUpload.prototype.fileDialogStart=function(){this.queueEvent("file_dialog_start_handler")};SWFUpload.prototype.fileQueued=function(a){a=this.unescapeFilePostParams(a);this.queueEvent("file_queued_handler",a)};SWFUpload.prototype.fileQueueError=function(a,c,b){a=this.unescapeFilePostParams(a);this.queueEvent("file_queue_error_handler",[a,c,b])};SWFUpload.prototype.fileDialogComplete=function(b,c,a){this.queueEvent("file_dialog_complete_handler",[b,c,a])};SWFUpload.prototype.uploadStart=function(a){a=this.unescapeFilePostParams(a);this.queueEvent("return_upload_start_handler",a)};SWFUpload.prototype.returnUploadStart=function(a){var b;if(typeof this.settings.upload_start_handler==="function"){a=this.unescapeFilePostParams(a);b=this.settings.upload_start_handler.call(this,a)}else{if(this.settings.upload_start_handler!=undefined){throw"upload_start_handler must be a function"}}if(b===undefined){b=true}b=!!b;this.callFlash("ReturnUploadStart",[b])};SWFUpload.prototype.uploadProgress=function(a,c,b){a=this.unescapeFilePostParams(a);this.queueEvent("upload_progress_handler",[a,c,b])};SWFUpload.prototype.uploadError=function(a,c,b){a=this.unescapeFilePostParams(a);this.queueEvent("upload_error_handler",[a,c,b])};SWFUpload.prototype.uploadSuccess=function(b,a,c){b=this.unescapeFilePostParams(b);this.queueEvent("upload_success_handler",[b,a,c])};SWFUpload.prototype.uploadComplete=function(a){a=this.unescapeFilePostParams(a);this.queueEvent("upload_complete_handler",a)};SWFUpload.prototype.debug=function(a){this.queueEvent("debug_handler",a)};SWFUpload.prototype.debugMessage=function(c){if(this.settings.debug){var a,d=[];if(typeof c==="object"&&typeof c.name==="string"&&typeof c.message==="string"){for(var b in c){if(c.hasOwnProperty(b)){d.push(b+": "+c[b])}}a=d.join("\n")||"";d=a.split("\n");a="EXCEPTION: "+d.join("\nEXCEPTION: ");SWFUpload.Console.writeLine(a)}else{SWFUpload.Console.writeLine(c)}}};SWFUpload.Console={};SWFUpload.Console.writeLine=function(d){var b,a;try{b=document.getElementById("SWFUpload_Console");if(!b){a=document.createElement("form");document.getElementsByTagName("body")[0].appendChild(a);b=document.createElement("textarea");b.id="SWFUpload_Console";b.style.fontFamily="monospace";b.setAttribute("wrap","off");b.wrap="off";b.style.overflow="auto";b.style.width="700px";b.style.height="350px";b.style.margin="5px";a.appendChild(b)}b.value+=d+"\n";b.scrollTop=b.scrollHeight-b.clientHeight}catch(c){alert("Exception: "+c.name+" Message: "+c.message)}};
+var SWFUpload;if(SWFUpload==undefined){SWFUpload=function(a){this.initSWFUpload(a)}}SWFUpload.prototype.initSWFUpload=function(b){try{this.customSettings={};this.settings=b;this.eventQueue=[];this.movieName="SWFUpload_"+SWFUpload.movieCount++;this.movieElement=null;SWFUpload.instances[this.movieName]=this;this.initSettings();this.loadFlash();this.displayDebugInfo()}catch(a){delete SWFUpload.instances[this.movieName];throw a}};SWFUpload.instances={};SWFUpload.movieCount=0;SWFUpload.version="2.2.0 2009-03-25";SWFUpload.QUEUE_ERROR={QUEUE_LIMIT_EXCEEDED:-100,FILE_EXCEEDS_SIZE_LIMIT:-110,ZERO_BYTE_FILE:-120,INVALID_FILETYPE:-130};SWFUpload.UPLOAD_ERROR={HTTP_ERROR:-200,MISSING_UPLOAD_URL:-210,IO_ERROR:-220,SECURITY_ERROR:-230,UPLOAD_LIMIT_EXCEEDED:-240,UPLOAD_FAILED:-250,SPECIFIED_FILE_ID_NOT_FOUND:-260,FILE_VALIDATION_FAILED:-270,FILE_CANCELLED:-280,UPLOAD_STOPPED:-290};SWFUpload.FILE_STATUS={QUEUED:-1,IN_PROGRESS:-2,ERROR:-3,COMPLETE:-4,CANCELLED:-5};SWFUpload.BUTTON_ACTION={SELECT_FILE:-100,SELECT_FILES:-110,START_UPLOAD:-120};SWFUpload.CURSOR={ARROW:-1,HAND:-2};SWFUpload.WINDOW_MODE={WINDOW:"window",TRANSPARENT:"transparent",OPAQUE:"opaque"};SWFUpload.completeURL=function(a){if(typeof(a)!=="string"||a.match(/^https?:\/\//i)||a.match(/^\//)){return a}var c=window.location.protocol+"//"+window.location.hostname+(window.location.port?":"+window.location.port:"");var b=window.location.pathname.lastIndexOf("/");if(b<=0){path="/"}else{path=window.location.pathname.substr(0,b)+"/"}if(a!=""){return path+a}else{return a;}};SWFUpload.prototype.initSettings=function(){this.ensureDefault=function(b,a){this.settings[b]=(this.settings[b]==undefined)?a:this.settings[b]};this.ensureDefault("upload_url","");this.ensureDefault("preserve_relative_urls",false);this.ensureDefault("file_post_name","Filedata");this.ensureDefault("post_params",{});this.ensureDefault("use_query_string",false);this.ensureDefault("requeue_on_error",false);this.ensureDefault("http_success",[]);this.ensureDefault("assume_success_timeout",0);this.ensureDefault("file_types","*.*");this.ensureDefault("file_types_description","All Files");this.ensureDefault("file_size_limit",0);this.ensureDefault("file_upload_limit",0);this.ensureDefault("file_queue_limit",0);this.ensureDefault("flash_url","swfupload.swf");this.ensureDefault("prevent_swf_caching",true);this.ensureDefault("button_image_url","");this.ensureDefault("button_width",1);this.ensureDefault("button_height",1);this.ensureDefault("button_text","");this.ensureDefault("button_text_style","color: #000000; font-size: 16pt;");this.ensureDefault("button_text_top_padding",0);this.ensureDefault("button_text_left_padding",0);this.ensureDefault("button_action",SWFUpload.BUTTON_ACTION.SELECT_FILES);this.ensureDefault("button_disabled",false);this.ensureDefault("button_placeholder_id","");this.ensureDefault("button_placeholder",null);this.ensureDefault("button_cursor",SWFUpload.CURSOR.ARROW);this.ensureDefault("button_window_mode",SWFUpload.WINDOW_MODE.WINDOW);this.ensureDefault("debug",false);this.settings.debug_enabled=this.settings.debug;this.settings.return_upload_start_handler=this.returnUploadStart;this.ensureDefault("swfupload_loaded_handler",null);this.ensureDefault("file_dialog_start_handler",null);this.ensureDefault("file_queued_handler",null);this.ensureDefault("file_queue_error_handler",null);this.ensureDefault("file_dialog_complete_handler",null);this.ensureDefault("upload_start_handler",null);this.ensureDefault("upload_progress_handler",null);this.ensureDefault("upload_error_handler",null);this.ensureDefault("upload_success_handler",null);this.ensureDefault("upload_complete_handler",null);this.ensureDefault("debug_handler",this.debugMessage);this.ensureDefault("custom_settings",{});this.customSettings=this.settings.custom_settings;if(!!this.settings.prevent_swf_caching){this.settings.flash_url=this.settings.flash_url+(this.settings.flash_url.indexOf("?")<0?"?":"&")+"preventswfcaching="+new Date().getTime()}if(!this.settings.preserve_relative_urls){this.settings.upload_url=SWFUpload.completeURL(this.settings.upload_url);this.settings.button_image_url=SWFUpload.completeURL(this.settings.button_image_url)}delete this.ensureDefault};SWFUpload.prototype.loadFlash=function(){var a,b;if(document.getElementById(this.movieName)!==null){throw"ID "+this.movieName+" is already in use. The Flash Object could not be added"}a=document.getElementById(this.settings.button_placeholder_id)||this.settings.button_placeholder;if(a==undefined){throw"Could not find the placeholder element: "+this.settings.button_placeholder_id}b=document.createElement("div");b.innerHTML=this.getFlashHTML();a.parentNode.replaceChild(b.firstChild,a);if(window[this.movieName]==undefined){window[this.movieName]=this.getMovieElement()}};SWFUpload.prototype.getFlashHTML=function(){return['<object id="',this.movieName,'" type="application/x-shockwave-flash" data="',this.settings.flash_url,'" width="',this.settings.button_width,'" height="',this.settings.button_height,'" class="swfupload">','<param name="wmode" value="',this.settings.button_window_mode,'" />','<param name="movie" value="',this.settings.flash_url,'" />','<param name="quality" value="high" />','<param name="menu" value="false" />','<param name="allowScriptAccess" value="always" />','<param name="flashvars" value="'+this.getFlashVars()+'" />',"</object>"].join("")};SWFUpload.prototype.getFlashVars=function(){var b=this.buildParamString();var a=this.settings.http_success.join(",");return["movieName=",encodeURIComponent(this.movieName),"&amp;uploadURL=",encodeURIComponent(this.settings.upload_url),"&amp;useQueryString=",encodeURIComponent(this.settings.use_query_string),"&amp;requeueOnError=",encodeURIComponent(this.settings.requeue_on_error),"&amp;httpSuccess=",encodeURIComponent(a),"&amp;assumeSuccessTimeout=",encodeURIComponent(this.settings.assume_success_timeout),"&amp;params=",encodeURIComponent(b),"&amp;filePostName=",encodeURIComponent(this.settings.file_post_name),"&amp;fileTypes=",encodeURIComponent(this.settings.file_types),"&amp;fileTypesDescription=",encodeURIComponent(this.settings.file_types_description),"&amp;fileSizeLimit=",encodeURIComponent(this.settings.file_size_limit),"&amp;fileUploadLimit=",encodeURIComponent(this.settings.file_upload_limit),"&amp;fileQueueLimit=",encodeURIComponent(this.settings.file_queue_limit),"&amp;debugEnabled=",encodeURIComponent(this.settings.debug_enabled),"&amp;buttonImageURL=",encodeURIComponent(this.settings.button_image_url),"&amp;buttonWidth=",encodeURIComponent(this.settings.button_width),"&amp;buttonHeight=",encodeURIComponent(this.settings.button_height),"&amp;buttonText=",encodeURIComponent(this.settings.button_text),"&amp;buttonTextTopPadding=",encodeURIComponent(this.settings.button_text_top_padding),"&amp;buttonTextLeftPadding=",encodeURIComponent(this.settings.button_text_left_padding),"&amp;buttonTextStyle=",encodeURIComponent(this.settings.button_text_style),"&amp;buttonAction=",encodeURIComponent(this.settings.button_action),"&amp;buttonDisabled=",encodeURIComponent(this.settings.button_disabled),"&amp;buttonCursor=",encodeURIComponent(this.settings.button_cursor)].join("")};SWFUpload.prototype.getMovieElement=function(){if(this.movieElement==undefined){this.movieElement=document.getElementById(this.movieName)}if(this.movieElement===null){throw"Could not find Flash element"}return this.movieElement};SWFUpload.prototype.buildParamString=function(){var c=this.settings.post_params;var b=[];if(typeof(c)==="object"){for(var a in c){if(c.hasOwnProperty(a)){b.push(encodeURIComponent(a.toString())+"="+encodeURIComponent(c[a].toString()))}}}return b.join("&amp;")};SWFUpload.prototype.destroy=function(){try{this.cancelUpload(null,false);var a=null;a=this.getMovieElement();if(a&&typeof(a.CallFunction)==="unknown"){for(var c in a){try{if(typeof(a[c])==="function"){a[c]=null}}catch(e){}}try{a.parentNode.removeChild(a)}catch(b){}}window[this.movieName]=null;SWFUpload.instances[this.movieName]=null;delete SWFUpload.instances[this.movieName];this.movieElement=null;this.settings=null;this.customSettings=null;this.eventQueue=null;this.movieName=null;return true}catch(d){return false}};SWFUpload.prototype.displayDebugInfo=function(){this.debug(["---SWFUpload Instance Info---\n","Version: ",SWFUpload.version,"\n","Movie Name: ",this.movieName,"\n","Settings:\n","\t","upload_url:               ",this.settings.upload_url,"\n","\t","flash_url:                ",this.settings.flash_url,"\n","\t","use_query_string:         ",this.settings.use_query_string.toString(),"\n","\t","requeue_on_error:         ",this.settings.requeue_on_error.toString(),"\n","\t","http_success:             ",this.settings.http_success.join(", "),"\n","\t","assume_success_timeout:   ",this.settings.assume_success_timeout,"\n","\t","file_post_name:           ",this.settings.file_post_name,"\n","\t","post_params:              ",this.settings.post_params.toString(),"\n","\t","file_types:               ",this.settings.file_types,"\n","\t","file_types_description:   ",this.settings.file_types_description,"\n","\t","file_size_limit:          ",this.settings.file_size_limit,"\n","\t","file_upload_limit:        ",this.settings.file_upload_limit,"\n","\t","file_queue_limit:         ",this.settings.file_queue_limit,"\n","\t","debug:                    ",this.settings.debug.toString(),"\n","\t","prevent_swf_caching:      ",this.settings.prevent_swf_caching.toString(),"\n","\t","button_placeholder_id:    ",this.settings.button_placeholder_id.toString(),"\n","\t","button_placeholder:       ",(this.settings.button_placeholder?"Set":"Not Set"),"\n","\t","button_image_url:         ",this.settings.button_image_url.toString(),"\n","\t","button_width:             ",this.settings.button_width.toString(),"\n","\t","button_height:            ",this.settings.button_height.toString(),"\n","\t","button_text:              ",this.settings.button_text.toString(),"\n","\t","button_text_style:        ",this.settings.button_text_style.toString(),"\n","\t","button_text_top_padding:  ",this.settings.button_text_top_padding.toString(),"\n","\t","button_text_left_padding: ",this.settings.button_text_left_padding.toString(),"\n","\t","button_action:            ",this.settings.button_action.toString(),"\n","\t","button_disabled:          ",this.settings.button_disabled.toString(),"\n","\t","custom_settings:          ",this.settings.custom_settings.toString(),"\n","Event Handlers:\n","\t","swfupload_loaded_handler assigned:  ",(typeof this.settings.swfupload_loaded_handler==="function").toString(),"\n","\t","file_dialog_start_handler assigned: ",(typeof this.settings.file_dialog_start_handler==="function").toString(),"\n","\t","file_queued_handler assigned:       ",(typeof this.settings.file_queued_handler==="function").toString(),"\n","\t","file_queue_error_handler assigned:  ",(typeof this.settings.file_queue_error_handler==="function").toString(),"\n","\t","upload_start_handler assigned:      ",(typeof this.settings.upload_start_handler==="function").toString(),"\n","\t","upload_progress_handler assigned:   ",(typeof this.settings.upload_progress_handler==="function").toString(),"\n","\t","upload_error_handler assigned:      ",(typeof this.settings.upload_error_handler==="function").toString(),"\n","\t","upload_success_handler assigned:    ",(typeof this.settings.upload_success_handler==="function").toString(),"\n","\t","upload_complete_handler assigned:   ",(typeof this.settings.upload_complete_handler==="function").toString(),"\n","\t","debug_handler assigned:             ",(typeof this.settings.debug_handler==="function").toString(),"\n"].join(""))};SWFUpload.prototype.addSetting=function(b,c,a){if(c==undefined){return(this.settings[b]=a)}else{return(this.settings[b]=c)}};SWFUpload.prototype.getSetting=function(a){if(this.settings[a]!=undefined){return this.settings[a]}return""};SWFUpload.prototype.callFlash=function(functionName,argumentArray){argumentArray=argumentArray||[];var movieElement=this.getMovieElement();var returnValue,returnString;try{returnString=movieElement.CallFunction('<invoke name="'+functionName+'" returntype="javascript">'+__flash__argumentsToXML(argumentArray,0)+"</invoke>");returnValue=eval(returnString)}catch(ex){throw"Call to "+functionName+" failed"}if(returnValue!=undefined&&typeof returnValue.post==="object"){returnValue=this.unescapeFilePostParams(returnValue)}return returnValue};SWFUpload.prototype.selectFile=function(){this.callFlash("SelectFile")};SWFUpload.prototype.selectFiles=function(){this.callFlash("SelectFiles")};SWFUpload.prototype.startUpload=function(a){this.callFlash("StartUpload",[a])};SWFUpload.prototype.cancelUpload=function(a,b){if(b!==false){b=true}this.callFlash("CancelUpload",[a,b])};SWFUpload.prototype.stopUpload=function(){this.callFlash("StopUpload")};SWFUpload.prototype.getStats=function(){return this.callFlash("GetStats")};SWFUpload.prototype.setStats=function(a){this.callFlash("SetStats",[a])};SWFUpload.prototype.getFile=function(a){if(typeof(a)==="number"){return this.callFlash("GetFileByIndex",[a])}else{return this.callFlash("GetFile",[a])}};SWFUpload.prototype.addFileParam=function(a,b,c){return this.callFlash("AddFileParam",[a,b,c])};SWFUpload.prototype.removeFileParam=function(a,b){this.callFlash("RemoveFileParam",[a,b])};SWFUpload.prototype.setUploadURL=function(a){this.settings.upload_url=a.toString();this.callFlash("SetUploadURL",[a])};SWFUpload.prototype.setPostParams=function(a){this.settings.post_params=a;this.callFlash("SetPostParams",[a])};SWFUpload.prototype.addPostParam=function(a,b){this.settings.post_params[a]=b;this.callFlash("SetPostParams",[this.settings.post_params])};SWFUpload.prototype.removePostParam=function(a){delete this.settings.post_params[a];this.callFlash("SetPostParams",[this.settings.post_params])};SWFUpload.prototype.setFileTypes=function(a,b){this.settings.file_types=a;this.settings.file_types_description=b;this.callFlash("SetFileTypes",[a,b])};SWFUpload.prototype.setFileSizeLimit=function(a){this.settings.file_size_limit=a;this.callFlash("SetFileSizeLimit",[a])};SWFUpload.prototype.setFileUploadLimit=function(a){this.settings.file_upload_limit=a;this.callFlash("SetFileUploadLimit",[a])};SWFUpload.prototype.setFileQueueLimit=function(a){this.settings.file_queue_limit=a;this.callFlash("SetFileQueueLimit",[a])};SWFUpload.prototype.setFilePostName=function(a){this.settings.file_post_name=a;this.callFlash("SetFilePostName",[a])};SWFUpload.prototype.setUseQueryString=function(a){this.settings.use_query_string=a;this.callFlash("SetUseQueryString",[a])};SWFUpload.prototype.setRequeueOnError=function(a){this.settings.requeue_on_error=a;this.callFlash("SetRequeueOnError",[a])};SWFUpload.prototype.setHTTPSuccess=function(a){if(typeof a==="string"){a=a.replace(" ","").split(",")}this.settings.http_success=a;this.callFlash("SetHTTPSuccess",[a])};SWFUpload.prototype.setAssumeSuccessTimeout=function(a){this.settings.assume_success_timeout=a;this.callFlash("SetAssumeSuccessTimeout",[a])};SWFUpload.prototype.setDebugEnabled=function(a){this.settings.debug_enabled=a;this.callFlash("SetDebugEnabled",[a])};SWFUpload.prototype.setButtonImageURL=function(a){if(a==undefined){a=""}this.settings.button_image_url=a;this.callFlash("SetButtonImageURL",[a])};SWFUpload.prototype.setButtonDimensions=function(c,a){this.settings.button_width=c;this.settings.button_height=a;var b=this.getMovieElement();if(b!=undefined){b.style.width=c+"px";b.style.height=a+"px"}this.callFlash("SetButtonDimensions",[c,a])};SWFUpload.prototype.setButtonText=function(a){this.settings.button_text=a;this.callFlash("SetButtonText",[a])};SWFUpload.prototype.setButtonTextPadding=function(b,a){this.settings.button_text_top_padding=a;this.settings.button_text_left_padding=b;this.callFlash("SetButtonTextPadding",[b,a])};SWFUpload.prototype.setButtonTextStyle=function(a){this.settings.button_text_style=a;this.callFlash("SetButtonTextStyle",[a])};SWFUpload.prototype.setButtonDisabled=function(a){this.settings.button_disabled=a;this.callFlash("SetButtonDisabled",[a])};SWFUpload.prototype.setButtonAction=function(a){this.settings.button_action=a;this.callFlash("SetButtonAction",[a])};SWFUpload.prototype.setButtonCursor=function(a){this.settings.button_cursor=a;this.callFlash("SetButtonCursor",[a])};SWFUpload.prototype.queueEvent=function(b,c){if(c==undefined){c=[]}else{if(!(c instanceof Array)){c=[c]}}var a=this;if(typeof this.settings[b]==="function"){this.eventQueue.push(function(){this.settings[b].apply(this,c)});setTimeout(function(){a.executeNextEvent()},0)}else{if(this.settings[b]!==null){throw"Event handler "+b+" is unknown or is not a function"}}};SWFUpload.prototype.executeNextEvent=function(){var a=this.eventQueue?this.eventQueue.shift():null;if(typeof(a)==="function"){a.apply(this)}};SWFUpload.prototype.unescapeFilePostParams=function(c){var e=/[$]([0-9a-f]{4})/i;var f={};var d;if(c!=undefined){for(var a in c.post){if(c.post.hasOwnProperty(a)){d=a;var b;while((b=e.exec(d))!==null){d=d.replace(b[0],String.fromCharCode(parseInt("0x"+b[1],16)))}f[d]=c.post[a]}}c.post=f}return c};SWFUpload.prototype.testExternalInterface=function(){try{return this.callFlash("TestExternalInterface")}catch(a){return false}};SWFUpload.prototype.flashReady=function(){var a=this.getMovieElement();if(!a){this.debug("Flash called back ready but the flash movie can't be found.");return}this.cleanUp(a);this.queueEvent("swfupload_loaded_handler")};SWFUpload.prototype.cleanUp=function(a){try{if(this.movieElement&&typeof(a.CallFunction)==="unknown"){this.debug("Removing Flash functions hooks (this should only run in IE and should prevent memory leaks)");for(var c in a){try{if(typeof(a[c])==="function"){a[c]=null}}catch(b){}}}}catch(d){}window.__flash__removeCallback=function(e,f){try{if(e){e[f]=null}}catch(g){}}};SWFUpload.prototype.fileDialogStart=function(){this.queueEvent("file_dialog_start_handler")};SWFUpload.prototype.fileQueued=function(a){a=this.unescapeFilePostParams(a);this.queueEvent("file_queued_handler",a)};SWFUpload.prototype.fileQueueError=function(a,c,b){a=this.unescapeFilePostParams(a);this.queueEvent("file_queue_error_handler",[a,c,b])};SWFUpload.prototype.fileDialogComplete=function(b,c,a){this.queueEvent("file_dialog_complete_handler",[b,c,a])};SWFUpload.prototype.uploadStart=function(a){a=this.unescapeFilePostParams(a);this.queueEvent("return_upload_start_handler",a)};SWFUpload.prototype.returnUploadStart=function(a){var b;if(typeof this.settings.upload_start_handler==="function"){a=this.unescapeFilePostParams(a);b=this.settings.upload_start_handler.call(this,a)}else{if(this.settings.upload_start_handler!=undefined){throw"upload_start_handler must be a function"}}if(b===undefined){b=true}b=!!b;this.callFlash("ReturnUploadStart",[b])};SWFUpload.prototype.uploadProgress=function(a,c,b){a=this.unescapeFilePostParams(a);this.queueEvent("upload_progress_handler",[a,c,b])};SWFUpload.prototype.uploadError=function(a,c,b){a=this.unescapeFilePostParams(a);this.queueEvent("upload_error_handler",[a,c,b])};SWFUpload.prototype.uploadSuccess=function(b,a,c){b=this.unescapeFilePostParams(b);this.queueEvent("upload_success_handler",[b,a,c])};SWFUpload.prototype.uploadComplete=function(a){a=this.unescapeFilePostParams(a);this.queueEvent("upload_complete_handler",a)};SWFUpload.prototype.debug=function(a){this.queueEvent("debug_handler",a)};SWFUpload.prototype.debugMessage=function(c){if(this.settings.debug){var a,d=[];if(typeof c==="object"&&typeof c.name==="string"&&typeof c.message==="string"){for(var b in c){if(c.hasOwnProperty(b)){d.push(b+": "+c[b])}}a=d.join("\n")||"";d=a.split("\n");a="EXCEPTION: "+d.join("\nEXCEPTION: ");SWFUpload.Console.writeLine(a)}else{SWFUpload.Console.writeLine(c)}}};SWFUpload.Console={};SWFUpload.Console.writeLine=function(d){var b,a;try{b=document.getElementById("SWFUpload_Console");if(!b){a=document.createElement("form");document.getElementsByTagName("body")[0].appendChild(a);b=document.createElement("textarea");b.id="SWFUpload_Console";b.style.fontFamily="monospace";b.setAttribute("wrap","off");b.wrap="off";b.style.overflow="auto";b.style.width="700px";b.style.height="350px";b.style.margin="5px";a.appendChild(b)}b.value+=d+"\n";b.scrollTop=b.scrollHeight-b.clientHeight}catch(c){if(!Horn.Uploadify.isCloseAlert){alert("Exception: "+c.name+" Message: "+c.message);}}};
 
 /*
 Uploadify v3.2.1
@@ -27361,9 +33717,11 @@ Released under the MIT License <http://www.opensource.org/licenses/mit-license.p
 					swfuploadify.button.removeClass('disabled');
 					if (settings.onEnable) settings.onEnable.call(this);
 				}
-
+				//新增捕捉异常 20170105 add by 周智星
+				try{
 				// Enable/disable the browse button
 				swfuploadify.setButtonDisabled(isDisabled);
+				}catch(e){}
 			});
 
 		},
@@ -27549,7 +33907,9 @@ Released under the MIT License <http://www.opensource.org/licenses/mit-license.p
 			// Run the default event handler
 			if ($.inArray('onDialogClose', settings.overrideEvents) < 0) {
 				if (this.queueData.filesErrored > 0) {
-					alert(this.queueData.errorMsg);
+					if(!Horn.Uploadify.isCloseAlert){
+						alert(this.queueData.errorMsg);
+					}
 				}
 			}
 
@@ -27773,7 +34133,9 @@ Released under the MIT License <http://www.opensource.org/licenses/mit-license.p
 					errorString = 'Security Error';
 					break;
 				case SWFUpload.UPLOAD_ERROR.UPLOAD_LIMIT_EXCEEDED:
-					alert('The upload limit has been reached (' + errorMsg + ').');
+					if(!Horn.Uploadify.isCloseAlert){
+						alert('The upload limit has been reached (' + errorMsg + ').');
+					}
 					errorString = 'Exceeds Upload Limit';
 					break;
 				case SWFUpload.UPLOAD_ERROR.UPLOAD_FAILED:
@@ -27992,7 +34354,26 @@ Released under the MIT License <http://www.opensource.org/licenses/mit-license.p
  * 		#upload_panel({"name":"test1","id":"test1", "label":"个人资料", "check": "required;","cols":"3","url":"$appServer/upload","savePath":"E:/upload","fileSizeLimit":20,"progressData":"speed","fileTypeExts":"*.jpg;*.gif;*.jpeg;*.png;*.bmp;*.zip;*.rar;*.7z","multi":true})
  * #end
  */
-
+/**
+ * 初始值（此功能必须是2.0.8或以上版本）<br/>
+ * 支持此属性的组件(<b>upload_group</b>,<b>upload_panel</b>)
+ * @name Horn.Uploadify#<b>value</b>
+ * @type String
+ * @default ""
+ * @example
+ * #@screen({})
+ * 初始值格式：[{"fileName":"jetty插件.rar","oldFileName":"jetty插件.rar","filePath":"","isDownload":false}]
+ * 说明：如果返回的有isDownload属性，就跟外部的isDownload属性进行判断
+ * 1、如果外部设置了isDownload为true，文件列表都显示下载按钮(返回的列表有isDownload为false就不显示下载按钮）
+ * 2、如果外部没有设置isDownload或者设置了isDownload为false（返回的列表有isDownload为true就显示下载按钮）
+ * 
+ * 		#@panel()
+ * 			 ##upload_group的用法
+ *           #upload_group({"name":"test1","id":"test1", "label":"个人资料", "check": "required;","cols":"3","url":"$appServer/upload","savePath":"E:/upload","fileSizeLimit":20,"progressData":"speed","fileTypeExts":"*.jpg;*.gif;*.jpeg;*.png;*.bmp;*.zip;*.rar;*.7z","multi":true,"auto":false,"isUseNewName":false,"isDownload":true,"isDel":true,"onOpenFileWin":"onOpenFileWin","value":"[{&quot;fileName&quot;:&quot;jetty插件.rar&quot;,&quot;oldFileName&quot;:&quot;jetty插件.rar&quot;,&quot;filePath&quot;:&quot;&quot;}]"})
+ *           #textfield({"name":"test5", "label":"跨列展示","cols":1, "check": "testValid;"})
+ * 		#end
+ * #end
+ */
 /**
  * 上传servlet地址<br/>
  * 支持此属性的组件(<b>upload_group</b>,<b>upload_panel</b>)
@@ -28168,9 +34549,26 @@ Released under the MIT License <http://www.opensource.org/licenses/mit-license.p
  * @type int
  * @default 30
  */
-
 /**
- * 当文件上传成功时触发<br/>
+ * 查看列表是否有下载（默认为false，为true时，文件标题点击或点击下载按钮时会下载文件，注！此功能版本必须2.0.8或以上版本）<br/>
+ * @name Horn.Uploadify#<b>isDownload</b>
+ * @type boolean
+ * @default false
+ */
+/**
+ * 查看列表是否有删除（默认为true，为false不显示删除按钮,注！此功能版本必须2.0.8或以上版本）<br/>
+ * @name Horn.Uploadify#<b>isDel</b>
+ * @type boolean
+ * @default true
+ */
+/**
+ * 点击文件查看列表时会触发此事件,注！此功能版本必须2.0.8或以上版本<br/>
+ * @name Horn.Uploadify#<b>onOpenFileWin</b>
+ * @event
+ * 
+ */
+/**
+ * 当文件上传成功时触发(无论上传成功或失败都会触发此事件，返回的return_code为1000为成功，否则为失败)<br/>
  * @name Horn.Uploadify#<b>onUploadSuccess</b>
  * @param {object} file      文件对象
  * @param {object} data       服务端输出返回的信息
@@ -28188,7 +34586,15 @@ Released under the MIT License <http://www.opensource.org/licenses/mit-license.p
  *	#end
  *	#jscode()
  *	function onUploadSuccess(file, data, response){
- *		console.info(data);
+ *		var rs = $.parseJSON(data);
+ *		var returnCode = rs.return_code;
+ *		var returnMsg = rs.return_msg;
+ *		if(returnCode=="10000"){
+ *			//上传成功
+ *		}else{
+ *			//上传失败
+ *		}
+ *		
  *	}
  *	#end
  */
@@ -28220,6 +34626,7 @@ Released under the MIT License <http://www.opensource.org/licenses/mit-license.p
  * @param {String} errorMsg      返回错误信息
  * @param {String} errorString       返回错误信息字符串
  * @event
+ * @ignore
  * @example  无
  * 
  */
@@ -28236,7 +34643,7 @@ Released under the MIT License <http://www.opensource.org/licenses/mit-license.p
  * @param {object} file      文件对象
  * @param {String} errorCode       返回码 (QUEUE_LIMIT_EXCEEDED – 任务数量超出队列限制;FILE_EXCEEDS_SIZE_LIMIT – 文件大小超出限制;ZERO_BYTE_FILE – 文件大小为0;INVALID_FILETYPE – 文件类型不符合要求)
  * @param {String} errorMsg      返回错误信息
- * @param {String} errorString       返回错误信息字符串
+ * @param {object}  params 返回组件的输入参数
  * @event
  * @example  无
  * 
@@ -28353,6 +34760,7 @@ Horn.Uploadify = Horn.extend(Horn.Field, {
 	url:'',
 	buttonText:'选择文件',
 	buttonClass:'u-btn u-btn-primary u-btn-fileinput',
+	uploadParams:null,
 	init : function() {
 		Horn.Uploadify.superclass.init.apply(this, arguments);
 		this.height = this.params.height?this.params.height:30;
@@ -28393,12 +34801,23 @@ Horn.Uploadify = Horn.extend(Horn.Field, {
 		 this.hidden = this.el.children("div").children("input[type=hidden]");
 	     this.field = this.hidden.next();
 		var _this = this;
+		var url = "";
+		if(this.url&&this.url!=""){
+			if(this.url.indexOf("?")!=-1){
+				url = _this.url+'&savePath='+encodeURI(encodeURIComponent(_this.savePath))+'&isUseNewName='+_this.isUseNewName
+			}else{
+				url = _this.url+'?savePath='+encodeURI(encodeURIComponent(_this.savePath))+'&isUseNewName='+_this.isUseNewName;
+			}
+		}
+		if(_this.params.value&&_this.params.value!=""){
+			_this.createFileList();
+		}
 		$("#"+id).uploadify({
 					debug : false,
 					auto: _this.auto,
 					swf : appServer+'/components/uploadify/uploadify.swf', // swf文件路径
-					method : 'post', // 提交方式
-					uploader : _this.url+'?savePath='+_this.savePath+'&isUseNewName='+_this.isUseNewName, // 服务器端处理该上传请求的程序
+					method : 'get', // 提交方式
+					uploader :url, // 服务器端处理该上传请求的程序
 					preventCaching : true, // 加随机数到URL后,防止缓存
 					buttonCursor : 'hand', // 上传按钮Hover时的鼠标形状
 					buttonText : _this.buttonText, // 按钮上显示的文字，默认”SELECTFILES”
@@ -28470,6 +34889,7 @@ Horn.Uploadify = Horn.extend(Horn.Field, {
 			  		   	}
 					},
 					onDialogOpen : function() { 
+						$("#fileBody_"+_this.id).hide();
 						// 选择文件对话框打开时触发
 						if(_this.params.onDialogOpen){
 			  			   var  fnObj = Horn.Util.getFunObj(_this.params.onDialogOpen);
@@ -28543,7 +34963,7 @@ Horn.Uploadify = Horn.extend(Horn.Field, {
 			  	        	 tmpFn = fnObj.fn ;
 			  	           }
 			  	           if(tmpFn){
-			  	        	   tmpFn.apply(_this,[file, errorCode, errorMsg]);
+			  	        	   tmpFn.apply(_this,[file, errorCode, errorMsg,_this.params]);
 			  	           }
 			  		   	}
 					},
@@ -28574,64 +34994,25 @@ Horn.Uploadify = Horn.extend(Horn.Field, {
 			  		   	}
 					 },
 					onUploadComplete : function(file){
-						var filesStr = _this.hidden.val();
-						$("#fileBody").remove();
-						$(".g-screen").after("<div id='fileBody' class='hc_uploaddiv' style='display:none'><div class='u-uploaded-close'><span>已上传文件列表</span><i class='fa fa-close' title='关闭'></i></div><div class='u-uploaded-list'></div></div>");
-						var fileDiv = $("#fileBody");
-						var closeDiv = fileDiv.children("div.u-uploaded-close").children("i");
-						var fileBody = fileDiv.children("div.u-uploaded-list");
-						if(filesStr&&filesStr!=""){
-							var filesJson = $.parseJSON(filesStr);
-							var fileSpan = _this.el.children("div").children("span");
-							if(fileSpan){
-								fileSpan.html("<a href=\"javascript:void(0)\" style='text-decoration: underline;color: blue;'>已上传了<span id=\"allCount_"+id+"\">"+filesJson.length+"</span>个文件</a>");
-								fileSpan.bind("click",function(){
-									var pos = _this.field.offset();
-							    	if(pos&&pos.top==0){
-							    		pos = _this.el.offset();
-							    	}
-							    	if(pos&&pos.top>=0){
-								        var listOuterHeight = _this.field.outerHeight();
-									    // 显示位置
-								        fileDiv.css("left",pos.left + 'px') ;
-								        fileDiv.css("z-index",Horn.Window.getNextZIndex()) ;
-								        fileDiv.css("height",(filesJson.length*30)+30) ;
-								        fileDiv.css("top",(pos.top + listOuterHeight+40) + 'px') ;
-								        fileDiv.show();
-							    	}
-								});
-								closeDiv.bind("click",function(){
-									if(top.Horn&&top.Horn.Window){
-										 top.Horn.Window.MAX_ZINDEX = top.Horn.Window.MAX_ZINDEX-1;
-									}else{
-										Horn.Window.MAX_ZINDEX = Horn.Window.MAX_ZINDEX -1;
-									}
-									fileDiv.hide();
-								});
-							}
-							
-							var tmpStr = $("<ul>");
-							$.each( filesJson, function(index,item){ 
-								tmpStr.append("<li id='file_li_"+index+"'><span title='"+item.oldFileName+"'>"+(index+1)+"."+item.oldFileName+"</span><i class='fa fa-trash-o' style='float:right; margin-right: 5px;margin-top: 5px;' title='点击删除文件' onclick=\"delUploadFile('"+_this.url+"?delFile=true&savePath="+_this.savePath+"&fileName="+item.fileName+"','file_li_"+index+"','"+id+"','"+_this.params.name+"','"+item.fileName+"')\"></i></li>");
-						    }); 
-						    tmpStr.append("</ul>");
-						    fileBody.html(tmpStr);
-						}
-							
-							
-						// 上传文件处理完成后触发（每一个文件都触发一次）, 无论成功失败
-						 if(_this.params.onUploadComplete){
-			  			   var  fnObj = Horn.Util.getFunObj(_this.params.onUploadComplete);
-			  			   var tmpFn;
-			  	           if($.type(fnObj.fn) == "function"){
-			  	        	 tmpFn = fnObj.fn ;
-			  	           }
-			  	           if(tmpFn){
-			  	        	   tmpFn.apply(_this,[file]);
-			  	           }
-			  		   	}
-					},
+								
+							_this.createFileList();	
+							// 上传文件处理完成后触发（每一个文件都触发一次）, 无论成功失败
+							 if(_this.params.onUploadComplete){
+				  			   var  fnObj = Horn.Util.getFunObj(_this.params.onUploadComplete);
+				  			   var tmpFn;
+				  	           if($.type(fnObj.fn) == "function"){
+				  	        	 tmpFn = fnObj.fn ;
+				  	           }
+				  	           if(tmpFn){
+				  	        	   tmpFn.apply(_this,[file]);
+				  	           }
+				  		   	}
+						},
 					onUploadStart : function(file) {
+						if(_this.uploadParams!=null){
+							$("#"+id).uploadify("settings", "formData", _this.uploadParams);
+						}
+						
 						// 当文件即将开始上传时立即触发
 						if(_this.params.onUploadStart){
 			  			   var  fnObj = Horn.Util.getFunObj(_this.params.onUploadStart);
@@ -28697,13 +35078,112 @@ Horn.Uploadify = Horn.extend(Horn.Field, {
 			var cancel = this.el.children("div").children("button.cancelUpload");
 			start.bind("click",function(){
 				$('#'+id).uploadify('upload', '*');
+				return false;
 			});
 			stop.bind("click",function(){
-				$('#'+id).uploadify('stop');			
+				$('#'+id).uploadify('stop');
+				return false;
 			});
 			cancel.bind("click",function(){
-				$('#'+id).uploadify('cancel');			
+				$('#'+id).uploadify('cancel');
+				return false;
 			});
+		}
+	},
+	createFileList : function(){
+		var _this = this;
+		var filesStr = _this.hidden.val();
+		$("#fileBody_"+_this.id).remove();
+		$(".g-screen").after("<div id='fileBody_"+_this.id+"'class='hc_uploaddiv' style='display:none'><div class='u-uploaded-close'><span>已上传文件列表</span><i class='fa fa-close' title='关闭'></i></div><div class='u-uploaded-list'></div></div>");
+		var fileDiv = $("#fileBody_"+_this.id);
+		var closeDiv = fileDiv.children("div.u-uploaded-close").children("i");
+		var fileBody = fileDiv.children("div.u-uploaded-list");
+		if(filesStr&&filesStr!=""){
+			var filesJson = $.parseJSON(filesStr);
+			var fileSpan = _this.el.children("div").children("span");
+			if(fileSpan){
+				fileSpan.html("<a href=\"javascript:void(0)\" style='text-decoration: underline;color: blue;'>已上传了<span id=\"allCount_"+_this.id+"\">"+filesJson.length+"</span>个文件</a>");
+				fileSpan.bind("click",function(){
+					//BUG#36972	附件上传组件上传的文件删除后，再次点开文件列表已删除的文件还是显示
+					filesJson = $.parseJSON(_this.hidden.val());
+					// 点击查看列表时立即触发
+					if(_this.params.onOpenFileWin){
+		  			   var  fnObj = Horn.Util.getFunObj(_this.params.onOpenFileWin);
+		  			   var tmpFn;
+		  	           if($.type(fnObj.fn) == "function"){
+		  	        	 tmpFn = fnObj.fn ;
+		  	           }
+		  	           if(tmpFn){
+		  	        	   tmpFn.apply(_this);
+		  	           }
+		  		   	}
+					
+					var tmpStr = $("<ul>");
+					var tmpParams = "";
+					var tmpUrl = _this.url+"?";
+					if(_this.uploadParams){
+						$.each(_this.uploadParams,function(name,value) {
+							tmpParams+=name+"="+value+"&";
+							
+						});
+					}
+					
+					
+					$.each( filesJson, function(index,item){
+						var delDom = ""
+						var isDel = _this.params.isDel+"";
+						var isDownload = _this.params.isDownload+"";
+						var itemDownload = item.isDownload+"";
+						if(isDel!="false"){
+							var delUrl = "";
+							if(tmpParams!=""){
+								delUrl = _this.url+"?"+tmpParams;
+							}
+							delDom = "<i class='fa fa-trash-o u-delete'  title='点击删除文件' onclick=\"delUploadFile('"+delUrl+"&delFile=true&savePath="+_this.savePath+"&fileName="+encodeURI(encodeURIComponent(item.fileName))+"','file_li_"+index+"','"+_this.id+"','"+_this.params.name+"','"+item.fileName+"')\"></i>";
+						}
+						if(isDownload=="true"){
+							if(itemDownload=="false"){
+								tmpStr.append("<li id='file_li_"+index+"'><span title='"+item.oldFileName+"'>"+(index+1)+"."+item.oldFileName+"</span>"+delDom+"</li>");
+							}else{
+								tmpUrl = _this.url+"?"+tmpParams+"&downloadFile=true&fileName="+encodeURI(encodeURIComponent(item.fileName));
+								tmpStr.append("<li id='file_li_"+index+"'><a href='"+tmpUrl+"' target='_blank' title='点击这里进行下载'><span title='"+item.oldFileName+"'>"+(index+1)+"."+item.oldFileName+"</span></a><a href='"+tmpUrl+"' target='_blank' title='点击这里进行下载'><i class='fa fa-download u-download'></i></a>"+delDom+"</li>");
+							}
+						}else{
+							if(itemDownload=="true"){
+								tmpUrl = _this.url+"?"+tmpParams+"&downloadFile=true&fileName="+encodeURI(encodeURIComponent(item.fileName));
+								tmpStr.append("<li id='file_li_"+index+"'><a href='"+tmpUrl+"' target='_blank' title='点击这里进行下载'><span title='"+item.oldFileName+"'>"+(index+1)+"."+item.oldFileName+"</span></a><a href='"+tmpUrl+"' target='_blank' title='点击这里进行下载'><i class='fa fa-download u-download'></i></a>"+delDom+"</li>");
+							}else{
+								tmpStr.append("<li id='file_li_"+index+"'><span title='"+item.oldFileName+"'>"+(index+1)+"."+item.oldFileName+"</span>"+delDom+"</li>");
+							}
+						}
+				    }); 
+				    tmpStr.append("</ul>");
+				    fileBody.html(tmpStr);
+					var pos = _this.field.offset();
+			    	if(pos&&pos.top==0){
+			    		pos = _this.el.offset();
+			    	}
+			    	if(pos&&pos.top>=0){
+				        var listOuterHeight = _this.field.outerHeight();
+					    // 显示位置
+				        fileDiv.css("left",pos.left + 'px') ;
+				        fileDiv.css("z-index",Horn.Window.getNextZIndex()) ;
+				        fileDiv.css("height",(filesJson.length*30)+30) ;
+				        fileDiv.css("top",(pos.top + listOuterHeight+40) + 'px') ;
+				        fileDiv.show();
+			    	}
+			    	
+				});
+				closeDiv.bind("click",function(){
+					if(top.Horn&&top.Horn.Window){
+						 top.Horn.Window.MAX_ZINDEX = top.Horn.Window.MAX_ZINDEX-1;
+					}else{
+						Horn.Window.MAX_ZINDEX = Horn.Window.MAX_ZINDEX -1;
+					}
+					fileDiv.hide();
+					
+				});
+			}
 		}
 	},
 	/**
@@ -28718,6 +35198,7 @@ Horn.Uploadify = Horn.extend(Horn.Field, {
 	    */
 	cancel :function(){
 		$("#"+this.id).uploadify("cancel","*");
+		return false;
 	},
 	/**
 	    * @description 暂停所上传的文件
@@ -28731,6 +35212,7 @@ Horn.Uploadify = Horn.extend(Horn.Field, {
 	    */
 	stop :function(){
 		$("#"+this.id).uploadify("stop","*");
+		return false;
 	}
 	,
 	/**
@@ -28745,6 +35227,7 @@ Horn.Uploadify = Horn.extend(Horn.Field, {
 	    */
 	upload :function(){
 		$("#"+this.id).uploadify("upload","*");
+		return false;
 	},
 	/**
 	    * @description 销毁Uploadify实例并将文件上传按钮恢复到原始状态
@@ -28773,7 +35256,66 @@ Horn.Uploadify = Horn.extend(Horn.Field, {
 	    */
 	disable :function(setDisabled){
 		$("#"+this.id).uploadify("disable",setDisabled);
-	}
+	},
+	/**
+	    * @description 清空值，同时清空已上传显示文字(<font color=red>注!该功能要求版本号必须为2.0.7或以上版本</font>)
+	    * @function
+	    * @name Horn.Uploadify#<b>clearValue</b>
+	    * @return void
+	    * @example
+	    * #jscode()
+	    * 	Horn.getComp("Name").clearValue();
+	    * #end
+	    */
+    clearValue : function() {
+		this.hidden.val("");
+		var fileDiv = this.el.children("div.u-upload-btn").children("span");
+		var fileBody = $(".hc_uploaddiv");
+		fileDiv.html("");
+		fileBody.html("");
+		fileBody.hide();
+    },
+    /**
+	    * @description 清空值，同时清空已上传显示文字(<font color=red>注!该功能要求版本号必须为2.0.8或以上版本</font>)
+	    * @function
+	    * @name Horn.Uploadify#<b>reset</b>
+	    * @return void
+	    * @example
+	    * #jscode()
+	    * 	Horn.getComp("Name").reset();
+	    * #end
+	    */
+		 reset : function() {
+			this.hidden.val("");
+			var fileDiv = this.el.children("div.u-upload-btn").children("span");
+			var fileBody = $(".hc_uploaddiv");
+			fileDiv.html("");
+			fileBody.html("");
+			fileBody.hide();
+		 },
+		 /**
+	    * @description 自定义参数(<font color=red>注!该功能要求版本号必须为2.0.8或以上版本</font>)
+	    * @function
+	    * @name Horn.Uploadify#<b>setParams</b>
+	    * @param {Array} params   自定义参数(json对象)<br>
+	    * @return void
+	    * @example
+	    * #jscode()
+	    * 	##注意中文的参数值必须用encodeURI加密，然后在后台解密
+	    *   ##前端加密
+	    * 	$(function(){
+		*		Horn.getComp("test1").setParams({"userName":encodeURI("周智星"),"userId":"zhouzx"});
+		*	})
+		*  ##java后台解密：
+		*  String userName = URLDecoder.decode(request.getParameter("userName"), "utf-8");
+	    * #end
+	    */
+    setParams : function(params){
+    	if(params&&params!=""){
+    		this.uploadParams = params;
+    	}
+    	
+    }
 });
 Horn.regUI("div.hc_upload-group", Horn.Uploadify);
 Horn.regUI("div.hc_upload-panel", Horn.Uploadify);
@@ -29050,6 +35592,7 @@ $(function(){
  * 2015-10-30       刘龙                需求14582 【TS:201510300212-JRESPlus-资产管理事业部-张翔-jreur框架高度有设置最小高度，这样的宽度设定之后，高度最】
  * 2015-12-02       周智星           需求 #15006 【TS:201511230299-JRESPlus-资产管理事业部-张翔-3.Window滚动条第一次用show方法显示出现滚动条，然后把滚动条拉到最下方，hide关闭或者点击右方叉叉关闭，再通过show方法打开滚动条还是在最下方，滚动条没有复位
  * 2016-2-17        刘龙               需求16304 【TS:201601070245-JRESPlus-财富管理事业部-陈为-12.弹出窗口 不能自动 缩放，进行浏览器缩小，弹出窗口缩小】
+ * 2016-12-6        王兰               需求#28180 【TS:201611240038-JRESPlus-资管业委会（资管）-张翔-【BUG】2.弹出一个window的页面a，然后有滚动条，把动条滚动到最下面，点击按钮弹出一个window的页面b，页面a 的滚动条置顶了(页面b打开不影响页面a)
   -----------------------------------------------------------------------
  */
 /**
@@ -29451,9 +35994,12 @@ Horn.Window = Horn.extend(Horn.Base,{
 					resize:function(w,h){
 						var win = $(window), el = this.el, subHeightRange = 0, subWidthRange = 0;
 						//需求 #15006 【TS:201511230299-JRESPlus-资产管理事业部-张翔-3.Window滚动条第一次用show方法显示出现滚动条，然后把滚动条拉到最下方，hide关闭或者点击右方叉叉关闭，再通过show方法打开滚动条还是在最下方，滚动条没有复位
-						var winScrollTop = $(".h-overflow-auto").scrollTop();
+						//需求#28180 【TS:201611240038-JRESPlus-资管业委会（资管）-张翔-【BUG】2.弹出一个window的页面a，然后有滚动条，把动条滚动到最下面，点击按钮弹出一个window的页面b，页面a 的滚动条置顶了(页面b打开不影响页面a)
+						//var winScrollTop = $(".h-overflow-auto").scrollTop();
+						var winScrollTop = $(this.el).find(".h-overflow-auto").scrollTop();
 						if(winScrollTop!=null&&winScrollTop!=0){
-							$(".h-overflow-auto").scrollTop(0);
+							//$(".h-overflow-auto").scrollTop(0);
+							$(this.el).find(".h-overflow-auto").scrollTop(0);
 						}
 						var tHeight = win.height();
 						var tWidth = win.width();
@@ -29638,14 +36184,89 @@ Horn.Window = Horn.extend(Horn.Base,{
 					 *            按钮名称
 					 * @param {boolean}disabled
 					 *            启用(false)/禁用(true)
+					 * @param {boolean}isUseId 是否使用id,默认false
 					 * @function
 					 * @return void
+					 * @example 
+					 * #@window({"title":"编辑窗口", "name":"w1", "width":"750", "height":"250",
+					 *			    "buttons":[
+					 *	            	{"label":"提交","name":"submitBtn","id":"submitBtnId","event":"saveData()","className":"u-btn-primary"},
+					 *	            	{"label":"重置","name":"resetBtn","event":"resetDataForm()"}
+					 *	            ]})
+					 *	    	
+					 *	#end
+					 *  #jscode()
+					 *    Horn.getComp("w1").setButtonDisabled("submitBtn",true);
+					 *    Horn.getComp("w1").setButtonDisabled("submitBtnId",true,true);
+					 *  #end
 					 */
-					setButtonDisabled : function(name,disabled) {
+					setButtonDisabled : function(name,disabled,isUseId) {
+						var tmpUseId = isUseId+"";
 						this.el.children(".m-message-footer").children("button").each(function(index,element){
-							var btnName = $(this).attr("name");
+							var btnName = tmpUseId=="true"?$(this).attr("id"):$(this).attr("name");
 							if(btnName==name){
 								$(this).attr("disabled",disabled);
+							}
+						});
+					},
+					/**
+					 * 显示窗口某个按钮(注意！按钮的name属性必须填写)
+					 * 
+					 * @name Horn.Window#showButton
+					 * @param {String}name
+					 *            按钮名称
+					 * @param {boolean}isUseId 是否使用id,默认false
+					 * @function
+					 * @return void
+					 * @example 
+					 * #@window({"title":"编辑窗口", "name":"w1", "width":"750", "height":"250",
+					 *			    "buttons":[
+					 *	            	{"label":"提交","name":"submitBtn","id":"submitBtnId","event":"saveData()","className":"u-btn-primary"},
+					 *	            	{"label":"重置","name":"resetBtn","event":"resetDataForm()"}
+					 *	            ]})
+					 *	    	
+					 *	#end
+					 *  #jscode()
+					 *    Horn.getComp("w1").showButton("submitBtn");
+					 *    Horn.getComp("w1").showButton("submitBtnId",true);
+					 *  #end
+					 */
+					showButton : function(name,isUseId) {
+						var tmpUseId = isUseId+"";
+						this.el.children(".m-message-footer").children("button").each(function(index,element){
+							var btnName = tmpUseId=="true"?$(this).attr("id"):$(this).attr("name");
+							if(btnName==name){
+								$(this).show();
+							}
+						});
+					},/**
+					 * 隐藏窗口某个按钮(注意！按钮的name属性必须填写)
+					 * 
+					 * @name Horn.Window#setButtonDisabled
+					 * @param {String}name
+					 *            按钮名称
+					 * @param {boolean}isUseId 是否使用id,默认false
+					 * @function
+					 * @return void
+					 * @example 
+					 * #@window({"title":"编辑窗口", "name":"w1", "width":"750", "height":"250",
+					 *			    "buttons":[
+					 *	            	{"label":"提交","name":"submitBtn","id":"submitBtnId","event":"saveData()","className":"u-btn-primary"},
+					 *	            	{"label":"重置","name":"resetBtn","event":"resetDataForm()"}
+					 *	            ]})
+					 *	    	
+					 *	#end
+					 *  #jscode()
+					 *    Horn.getComp("w1").hideButton("submitBtn");
+					 *    Horn.getComp("w1").hideButton("submitBtnId",true);
+					 *  #end
+					 */
+					hideButton : function(name,isUseId) {
+						var tmpUseId = isUseId+"";
+						this.el.children(".m-message-footer").children("button").each(function(index,element){
+							var btnName = tmpUseId=="true"?$(this).attr("id"):$(this).attr("name");
+							if(btnName==name){
+								$(this).hide();
 							}
 						});
 					}
@@ -29716,6 +36337,10 @@ Horn.regUI("div.h_floatdiv", Horn.Window);
  * 2016-10-10       刘蒙         需求26202 【TS:201610080152-JRESPlus-经纪业委会（经纪）-施秀飞-【需求描述】增加combox的multiple属性设置的方法】
  * 2016-10-14       王兰        bug执行additems方法，当配置showLabel为true时，key值没有显示出来
  * 2016-10-25       刘蒙        bug 31444combox多选下拉框配置hasSelectAll：true，调用setMultiple（false）多选变单选后，下拉框中的全选/反选还是存在
+ * 2016-11-10       王兰       需求#27512 【TS:201611090191-JRESPlus-财富业委会-江志伟-【需求】combox的调用addItem方法时，label和value均有显示，期望增加参数控制label是否显示
+ * 2016-11-24       王兰      bug#34326 combox控件，addItems方法参数clear参数值为true时，调用后，下拉框中值未选中
+ * 2016-12-2        王兰            需求#28756 【TS:201612020108-JRESPlus-财富业委会-沈进-【现象描述】缺陷：combox组件changeDict失效
+ * 2017-1-18        王兰      bug#39086 combox控件，设置value为不存在的值（却是additems将要添加进去的值），再通过additems添加数据的值为value，此时获取值不正确,重复了
  * -----------------------------------------------------------------------
  */
 /**
@@ -29752,10 +36377,24 @@ Horn.regUI("div.h_floatdiv", Horn.Window);
  * 无
  */
 /**
- * 数据字典名
- * @name Horn.Combox#<b>dictName</b>
- * @type String
+ * 下拉菜单下拉项请求地址(注！版本必须是2.0.8或以上版本，jresplus-ui-runtime包的版本也一样。dictName、items和url只能存在一个)
+ * @name Horn.Combox#<b>url</b>
+ * @type Array
  * @default ""
+ * @example
+ * 说明：
+ * 1.返回结果格式为：[{"text":"葡萄","code":"0"},{"text":"苹果","code":"1"} ...]
+ * 2.url地址不要写上$appServer或者自己的应用名
+ * 3.要确保提供的url有权限访问,JRESUI是在后台通过httpClient去请求url的（如果有权限拦截的，就请排除权限拦截）
+ * 4.一个页面如果使用相同的url，就必须在url添加不同的参数（url是唯一的,后面的参数随便写即可），如：/demo/dict/dictList.json?params=test1
+ * 实例：
+ * #combox({"name":"test1","label":"单选","multiple": true,  "check": "required","headItem":{"value":"请选择...","label":""},"showLabel":false,"url":"/demo/dict/dictList.json"})
+ */
+/**
+ * 静态显示值 格式："items":[{"text":"葡萄","code":"0"},{"text":"苹果","code":"1"}]
+ * @name Horn.Combox#<b>items</b>
+ * @type Array
+ * @default 无
  * @example
  * 无
  */
@@ -29864,7 +36503,7 @@ Horn.regUI("div.h_floatdiv", Horn.Window);
  */
 
 /**
- * @description 更改引用的数据字典(传入的字典参数必须在当前页面已经使用过，例如changeDict("province")，则字典province已经在页面其他combox组件中调用过)
+ * @description 更改引用的数据字典(传入的字典参数必须在当前页面已经使用过,并且单选/多选也需保持一致，例如changeDict("province")，则字典province已经在页面其他combox组件中调用过)
  * @function
  * @name Horn.Combox#changeDict
  * @param {string} name 字典名
@@ -30070,6 +36709,22 @@ Horn.regUI("div.h_floatdiv", Horn.Window);
  * @example
  * 无
  */
+/**
+ * 增加配置项filterDicts(过滤掉不需要显示的字典项),注意showDicts和filterDicts不能同时存在
+ * @name Horn.Combox#<b>filterDicts</b>
+ * @type Object
+ * @default value
+ * @example
+ * #combox({"name":"test1","filterDicts":['1','2'],"label":"单选","dictName": "province",  "check": "required","headItem":{"value":"请选择...","label":""},"showLabel":true})
+ */
+/**
+ * 增加配置项showDicts(只显示想要的字典项),注意showDicts和filterDicts不能同时存在
+ * @name Horn.Combox#<b>showDicts</b>
+ * @type Object
+ * @default value
+ * @example
+ * #combox({"name":"test1","showDicts":['1','2'],"label":"单选","dictName": "province",  "check": "required","headItem":{"value":"请选择...","label":""},"showLabel":true})
+ */
  /**
   * 是否隐藏组件
   * @name Horn.Combox#hidden
@@ -30200,6 +36855,33 @@ Horn.regUI("div.h_floatdiv", Horn.Window);
      * @return object data为所有节点的值,dom为该节点的jquery对象
      */
 
+/**
+	 * @description 事件属性，所有的事件都需要在此配置
+	 * @name Horn.Combox#<b>events</b>
+	 * @type Array 
+	 * @default 无
+	 * @example
+	 *  "events":[
+	 *			  {"event":"onchange","function":"changed"}]
+	 */
+	
+
+	/**
+	 * @description 选中项发生改变的时候触发<br/>
+	 * @name Horn.Combox#<b>onchange</b>
+	 * @param {object} param     使用该事件时外部要传递的参数
+	 * @param {jquery object} comp     控件对象
+	 * @return  
+	 * @event
+	 * @example
+	 * "events":[
+	 *			  {"event":"onchange","function":"changed('aaa')"}]
+	 *
+	 *  function changed(params,horn){
+	 *     alert(params)  //aaa;
+	 *   }
+	 */
+
 Horn.Combox = Horn.extend(Horn.Select,{
 	COMPONENT_CLASS:"Combox",
 	pLabel : "",
@@ -30237,7 +36919,7 @@ Horn.Combox = Horn.extend(Horn.Select,{
 //		this.setValue(this.defaultValue,true);
 		
 		//BUG #6838 combo_设置为只读的任然可以选择更改 设置为只读的任然可以选中后按退格键清除
-		if(this.params.readonly) {
+		if(this.params.readonly===true || this.params.readonly==="true") {
         	//this.setReadonly(true);
 			this.el.attr("readonly", true);
     		this.readonly = true;
@@ -30278,11 +36960,13 @@ Horn.Combox = Horn.extend(Horn.Select,{
 		if((this.field.get(0)).getAttribute("multiple")=="true"){
 			name+="_m";
 			$hc_checkboxdiv.attr("multiple_line","true");
+			$hc_checkboxdiv.attr("ref_target",name);
+			var $li="";
 			$.each(dict, function(i, n){
 			  if(_this.params.showLabel){
-			  	var $li=$('<li title='+n+' key='+i+'><label><input type="checkbox" class="combox_input"><span class="hce_dictlabel" >'+i+':</span>'+n+'</label></li>');
+				  $li=$('<li title='+n+' key='+i+'><label><input type="checkbox" class="combox_input"><span class="hce_dictlabel" >'+i+':</span>'+n+'</label></li>');
 			  }else{
-			  	var $li=$('<li title='+n+' key='+i+'><label><input type="checkbox" class="combox_input">'+n+'</label></li>');
+			  	  $li=$('<li title='+n+' key='+i+'><label><input type="checkbox" class="combox_input">'+n+'</label></li>');
 			  }
 			  
 			  $ul.append($li);
@@ -30290,11 +36974,13 @@ Horn.Combox = Horn.extend(Horn.Select,{
 		}else{
 			name+="_s";
 			$hc_checkboxdiv.attr("multiple_line","false");
+			$hc_checkboxdiv.attr("ref_target",name);
+			var $li="";
 			$.each(dict, function(i, n){
 			  if(_this.params.showLabel){
-			  	var $li=$('<li title='+n+' key='+i+'><label><span class="hce_dictlabel" >'+i+':</span>'+n+'</label></li>');
+				  $li=$('<li title='+n+' key='+i+'><label><span class="hce_dictlabel" >'+i+':</span>'+n+'</label></li>');
 			  }else{
-			  	var $li=$('<li title='+n+' key='+i+'><label>'+n+'</label></li>');
+			  	  $li=$('<li title='+n+' key='+i+'><label>'+n+'</label></li>');
 			  }
 			  
 			  $ul.append($li);
@@ -30503,8 +37189,8 @@ Horn.Combox = Horn.extend(Horn.Select,{
 		this.reset(true);
 		this.listEl.children("ul").children("li[key]").remove();
 	},
-	addItems : function(data, isClear) {
-		this.addDatas(data, isClear);
+	addItems : function(data, isClear, displayLabel) {
+		this.addDatas(data, isClear, displayLabel);
 		//bug #25082 combox在调用additem方法，添加值，tip未修改还是之前的内容
 		this.clearOrResetTitle();
 	},
@@ -30514,12 +37200,13 @@ Horn.Combox = Horn.extend(Horn.Select,{
 	 * @name Horn.Combox#addDatas
      * @param data {Json or Array} [{"code":"33","text":"测试33"},{"code":"34","text":"测试34"}]　
      * @param isClear 是否清空原来的列表项
+     * @param displayLabel 是否显示code值
      * @ignore
 	 */
-	addDatas : function(data, isClear) {
+	addDatas : function(data, isClear, displayLabel) {
 		var list = [], listDiv = this.listEl, keyAttr = this.keyAttr, valueAttr = this.valueAttr, showLabel = this.showLabel;
 		//screen配置showLabel
-		if(screenShowLabel == "true") showLabel=true;
+		if(screenShowLabel&&screenShowLabel == "true") showLabel=true;
 		var hidden = this.hidden ;
 		var field=this.field;
 		var _this = this ;
@@ -30569,11 +37256,16 @@ Horn.Combox = Horn.extend(Horn.Select,{
 								+ val
 								+ "'></li>");
 						var label = $("<label></label>");
-						label
-								.text((showLabel ? key
-										+ ":"
-										: "")
-										+ val);
+						//需求#27512 【TS:201611090191-JRESPlus-财富业委会-江志伟-【需求】combox的调用addItem方法时，label和value均有显示，期望增加参数控制label是否显示
+						if(displayLabel === "false" || displayLabel === false){
+							label.text(val);
+						}else{
+							label
+							.text((showLabel ? key
+									+ ":"
+									: "")
+									+ val);
+						}
 						if (multipleline) {
 							label.prepend('<input type="checkbox" class="combox_input"/>');
 						}
@@ -30615,7 +37307,15 @@ Horn.Combox = Horn.extend(Horn.Select,{
 					  		if(!arryItem.indexOf(obj.code)<0){
 					  	 		arryItem.push(obj.code);
 					  	 	}
+					  		//bug#34326 combox控件，addItems方法参数clear参数值为true时，调用后，下拉框中值未选中
 						  	//addItemsValue =addItemsValue+(addItemsValue?",":"")+obj.code;
+					  		//bug#39086 combox控件，设置value为不存在的值（却是additems将要添加进去的值），再通过additems添加数据的值为value，此时获取值不正确,重复了
+					  		var arr = addItemsValue.split(splitChar);
+					  		var y=0;
+	        				for(;y<arr.length;y++){
+	        					if(obj.code==arr[y]) break;
+	        				}
+	        				if(y==arr.length) addItemsValue =addItemsValue+(addItemsValue?",":"")+obj.code;
 						  	addItemslable = addItemslable+(addItemslable?splitChar:"")+(showLabel ? obj.code+ ":": "")+obj.text;
 						  }
 					  }
@@ -30737,6 +37437,7 @@ Horn.Field.regFieldType("div.hc_combox",Horn.Combox);
  * 2016-9-17        周智星              需求#24858 【TS:201608260153-JRESPlus-经纪业委会（经纪）-施秀飞-【需求描述】ztree插件使用时出现bug 搜索框即时查询失效，必须一次性输入才能搜索正确，输入完之前就停止了查询
  * 2016-9-17        周智星              需求#24922 【TS:201608290110-JRESPlus-内部客户-胡文淑-1。ZTREE需求：希望在组件内部添加“上一个”、“下一个”】
  * 2016-9-27        周智星              bug#28408 ztree配置search为true，isShowPreOrNextBtn为true，在搜索框输入多个节点都有的信息后，再输入确定的某一个节点信息，点击‘下一个’能够切换到前面信息的搜索节点上
+ * 2016-11-02       周智星            放开setting.check属性
  * -----------------------------------------------------------------------
  */
 /**
@@ -30815,7 +37516,32 @@ Horn.Field.regFieldType("div.hc_combox",Horn.Combox);
  *	"async":true,
  *   "url":"$appServer.get('/test/ztree/asynTree.htm')"})
  */
-	
+/**
+ * setting.check 配置详解(<font color=red>注!该功能要求版本号必须为2.0.7或以上版本</font>)<br/>
+ * 注：如果配置了check，checkMode属性失效，checkMode要自己在check里填写<br/>
+ *   
+ * @name Horn.ZtreePanel#<b>check</b>
+ * @type array 
+ * @default ""
+ * @example
+ * #ztree({  
+ *  "id":"tree1",  
+ *  "name":"ztree1",
+ *	"check":{'enable': true,'chkStyle': 'checkbox','chkboxType': { 'Y': 'p', 'N': 's' }},
+ *	"async":true,
+ *   "url":"$appServer.get('/test/ztree/asynTree.htm')"})
+ *   
+ *   check参数说明：
+ *   "check":{
+ *   	'autoCheckTrigger':false,//设置自动关联勾选时是否触发 beforeCheck / onCheck 事件回调函数。[setting.check.enable = true 且 setting.check.chkStyle = "checkbox" 时生效]
+ *   	'chkboxType':{'Y': 'ps', 'N': 'ps' },//勾选 checkbox 对于父子节点的关联关系。[setting.check.enable = true 且 setting.check.chkStyle = "checkbox" 时生效]默认值：{ "Y": "ps", "N": "ps" }
+ *   	'chkStyle':'checkbox',//勾选框类型(checkbox 或 radio）[setting.check.enable = true 时生效]默认值："checkbox"
+ *   	'enable':false,//设置 zTree 的节点上是否显示 checkbox / radio默认值: false
+ *   	'nocheckInherit':false,//当父节点设置 nocheck = true 时，设置子节点是否自动继承 nocheck = true 。[setting.check.enable = true 时生效]
+ *   	'chkDisabledInherit':false,//当父节点设置 chkDisabled = true 时，设置子节点是否自动继承 chkDisabled = true 。[setting.check.enable = true 时生效]
+ *   	'radioType':'level'//adio 的分组范围。[setting.check.enable = true 且 setting.check.chkStyle = "radio" 时生效]默认值："level"
+ *   	}
+ */	
 /**
  * 页面加载时，树组件默认是否展开
  * @name Horn.ZtreePanel#<b>expandFirst</b>
@@ -30964,7 +37690,7 @@ Horn.Field.regFieldType("div.hc_combox",Horn.Combox);
  * 	return (treeNode.id !== 1);
  * };
  *  #end
- */
+ */ 
 /**
  * 用于捕获 勾选 或 取消勾选 之前的事件回调函数，并且根据返回值确定是否允许 勾选 或 取消勾选
  * @name Horn.ZtreePanel#<b>beforeCheck</b>
@@ -31497,6 +38223,20 @@ Horn.Field.regFieldType("div.hc_combox",Horn.Combox);
  *   }
  *  #end
  */
+/**
+  * 国际化语言 (注！必须是2.0.9或以上版本)
+  * 目前只支持中文和因为，值分别为zh_CN和en_US,默认zh_CN
+  * @name Horn.ZtreePanel#language
+  * @type String
+  * @default "zh_CN"
+  * @example
+  * * 注！如果想全局页面国际化，就在default.vm里写上：
+  * #jscode()
+  * Horn.Validate.language = "en_US";
+  * #end 
+  * 在xx.properties文件里配置
+  * horn.ui.language=en_US
+  */
 var expandfirst=false;
 Horn.ZtreePanel = Horn.extend(Horn.Base,{
 	COMPONENT_CLASS:"ZtreePanel",
@@ -31524,6 +38264,7 @@ Horn.ZtreePanel = Horn.extend(Horn.Base,{
      * @ignore
      */
 	params:{},
+	check:null,
     /**
      * 静态载入时使用的Data,或用作初始化使用
      * @field
@@ -31544,7 +38285,6 @@ Horn.ZtreePanel = Horn.extend(Horn.Base,{
 		
 	},
 	onExpand : function(){},
-	check : false,
 	chkStyle : 'checkbox',
 	init : function(dom) {
 		Horn.ZtreePanel.superclass.init.apply(this,arguments) ;
@@ -31590,6 +38330,9 @@ Horn.ZtreePanel = Horn.extend(Horn.Base,{
 		var async = false;
 		if(this.params.async&&this.params.async==true){
 			async = true;
+		}
+		if(this.params.check&&this.params.check!=""){
+			this.check = this.params.check;
 		}
        	var setting = {
 			data: {
@@ -31652,13 +38395,17 @@ Horn.ZtreePanel = Horn.extend(Horn.Base,{
 				onClick : this.onClick
 			}
 		};
-		var checkMode = this.el.attr('checkMode');
-		if(checkMode&&checkMode=="checkbox"){
-			setting.check = {
-				enable : true,
-				chkStyle : checkMode
-			};
-		}
+       	if(this.check==null){
+			var checkMode = this.el.attr('checkMode');
+			if(checkMode&&checkMode=="checkbox"){
+				setting.check = {
+					enable : true,
+					chkStyle : checkMode
+				};
+			}
+       	}else{
+       		setting.check = this.check;
+       	}
        	var data =  this.el.attr("items");
 		if(data){
 			data = $.parseJSON(data);

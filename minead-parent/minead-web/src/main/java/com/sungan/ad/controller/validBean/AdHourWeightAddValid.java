@@ -19,6 +19,11 @@ public class AdHourWeightAddValid  extends AdHourWeight{
 		return super.getThrowRate();
 	}
 	
+	@NotNull(message="请选择组")
+	public Long getGroupId() {
+		return super.getGroupId();
+	}
+
 	@NotNull(message="权重为空")
 	public Integer getWght() {
 		return super.getWght();

@@ -1,0 +1,6 @@
+package ${package}.vo;
+/**
+ * 说明:
+ */
+public class ${domain}Vo  extends ${domain}{
+}

@@ -1,4 +1,5 @@
 #@screen({"title":"客户端查询"})  
+<div class="g-grid-9">  
     #@form({"name":"searchForm"})  
         #@panel({"title":"查询条件"})  
            #textfield({"label":"名称", "name":"name","value":"","defValue":""})  
@@ -22,8 +23,19 @@
             "tAlign":"center",  
             "hidden":true  
             },  
+            {"name":"groupId",  
+            "text":"groupId",  
+            "hAlign":"center",  
+            "tAlign":"center",  
+            "hidden":true  
+            },  
             {"name":"wght",  
             "text":"权重",  
+            "hAlign":"center",  
+            "tAlign":"center"  
+            },  
+            {"name":"groupName",  
+            "text":"组名",  
             "hAlign":"center",  
             "tAlign":"center"  
             },  
@@ -71,6 +83,7 @@
                 #textfield({"label":"权重", "name":"wght","value":"","defValue":"","check":"required"})  
                 #textfield({"label":"通过率", "name":"throwRate","value":"","defValue":"","check":"required"})  
                 #textfield({"label":"钟点", "name":"hour","value":"","defValue":"","check":"required"})  
+				#combox({"name":"groupId","id":"groupIdEdit","label":"选择组","defValue":"","check":"required", "dictName": "weightGroupTree"})
 				#textarea({"label":"描述","name":"descript", "cols":3}) 
 			  #end  
         #end  
@@ -87,14 +100,186 @@
                 #textfield({"label":"权重", "name":"wght","value":"","defValue":"","check":"required"})  
                 #textfield({"label":"通过率", "name":"throwRate","value":"","defValue":"","check":"required"})  
                 #textfield({"label":"钟点", "name":"hour","value":"","defValue":"","check":"required"})  
+				#combox({"name":"groupId","id":"groupIdAdd","label":"选择组","defValue":"","check":"required", "dictName": "weightGroupTree"})
 				#textarea({"label":"描述","name":"descript", "cols":3}) 
             #end  
         #end  
     #end  
+</div>  
+
+
+<div class="g-grid-3">  
+#@panel({"name":"mainPanel","title":"树结构"})  
+           #mieadZtree({  
+             "id":"tree1",  
+             "name":"ztree1",
+			 "enableCheck":true,
+			 "toolbar":true,
+			 "search":true,
+			 "autoParam":'["id", "name"]',    
+             "async":true,
+			 "buttons":[{"id":"treeAdd","name":"添加","click":"treeAddclick()"},{"id":"treeUpdate","name":"修改名称","click":"treeUpdateClick()"},{"id":"treeDel","name":"删除","click":"deleteTreeNode()"}],
+             "url":"$appServer.get('/adweightgroup/root')"})
 #end  
-  
+            
+    #@window({"title":"编辑窗口", "name":"adweightgroupEdit", "width":"750", "height":"250",  
+            "buttons":[  
+                {"label":"提交","event":"updateGroupData()","className":"u-btn-primary"},  
+                {"label":"重置","event":"resetDataForm()"}  
+            ]})  
+        #@form({"name":"adweightgroupEditForm","url":""})  
+            #@panel({})  
+			                  #textfield({"label":"id","id":"editTreeId", "name":"id","value":"","defValue":"","check":"required","hidden":true})  
+			                  #textfield({"label":"节点名称","id":"editGroupName",  "name":"groupName","value":"","defValue":"","check":"required"})  
+			                  #textfield({"label":"任务数","id":"editTaskCount",  "name":"taskCount","value":"","defValue":""})  
+							  #combox({"name":"isDefault","id":"editGroupIsDefault","label":"是否默认","defValue":"",  "dictName": "000102"})
+            #end  
+        #end  
+    #end  
+	
+	
+	    #@window({"title":"添加", "name":"adweightgroupAdd", "width":"750", "height":"250",  
+            "buttons":[  
+                {"label":"提交","event":"addGroupData()","className":"u-btn-primary"},  
+                {"label":"重置","event":"resetDataForm()"}  
+            ]})  
+        #@form({"name":"adweightgroupAddForm","url":""})  
+            #@panel({})  
+			                  #textfield({"label":"节点名称", "name":"groupName","value":"","defValue":"","check":"required"})  
+			                  #textfield({"label":"任务数", "name":"taskCount","value":"","defValue":""})  
+			                  #textfield({"label":"parentId","id":"addParentId","name":"parentId","value":"","defValue":"", "hidden":true})  
+			                  #textfield({"label":"父节点", "id":"addParentName","name":"parentName","value":"","defValue":""})  
+			              #end  
+        #end  
+    #end  
+
+</div>
+ #end 
   
 #jscode()  
+	function deleteTreeNode(){
+	  Horn.Msg.confirm("确认","这是一条确认信息",function(){  
+		 sureDeleteTree();
+        },function(){  
+            log("确认框的取消执行了")  
+        }); 
+	}
+	function sureDeleteTree(){
+		var treeObj=$.fn.zTree.getZTreeObj("tree1");
+            var nodes=treeObj.getCheckedNodes(true);
+			if(nodes&&nodes.length>0){
+				if(nodes.lenght>1){
+					 Horn.Tip.info("只能选择一个节点");  
+					return ;
+				}
+			    var checkedNode = nodes[0];
+				var treeNodeId = checkedNode.id;
+				$.post("${imageServer}/adweightgroup/deleteadweightgroup",{"id":treeNodeId},function(backData){
+            		if(backData){
+            			if(backData.success){
+            				   Horn.Tip.info("删除成功");
+        					   window.location.reload();
+            			 }else{
+            				Horn.Tip.warn(backData.errorMesg); 
+            			 }
+            		 }
+            	},"json")
+			}else{
+			    Horn.Tip.info("请选择父节点");  
+			}
+	}
+	
+	function addGroupData(){
+		Horn.getComp("adweightgroupAdd").hide();  
+		var data = $("form[name='adweightgroupAddForm']").serializeJSON();
+    	$.post("${imageServer}/adweightgroup/addadweightgroup",data,function(backData){
+    		if(backData){
+    			if(backData.success){
+    				 Horn.Tip.success("添加成功"); 
+					 window.location.reload();
+    			 }else{
+    				Horn.Tip.warn(backData.errorMesg); 
+    			 }
+    		 }
+    	},"json")
+	}
+	
+
+    function updateGroupData() {  
+		Horn.getComp("adweightgroupEdit").hide();  
+    		//JSON.stringify($("form[name='adweightgroupEditForm']").serializeJSON());
+    	var data = $("form[name='adweightgroupEditForm']").serializeJSON();
+    	$.post("${imageServer}/adweightgroup/updateadweightgroup",data,function(backData){
+    		if(backData){
+    			if(backData.success){
+    				 Horn.Tip.success("更新成功");
+					 window.location.reload();
+    			 }else{
+    				Horn.Tip.warn(backData.errorMesg); 
+    			 }
+    		 }
+    	},"json")
+    }  
+      
+	
+		function beforeAsync(treeId, treeNode) {
+        	return true;
+        };
+		
+		function treeNodeClick(id){
+			Horn.getComp("dataTable").baseParams={"groupId":id};
+       		Horn.getComp("dataTable").load();  
+			Horn.getComp("dataTable").baseParams={};
+		}
+		
+		function treeclick(){
+		   Horn.Tip.info("树....");  
+		}
+	
+		// 树节点修改
+		function treeUpdateClick(){
+			Horn.getComp("adweightgroupEditForm").reset();  
+			var treeObj=$.fn.zTree.getZTreeObj("tree1");
+            var nodes=treeObj.getCheckedNodes(true);
+			if(nodes&&nodes.length>0){
+				if(nodes.lenght>1){
+					 Horn.Tip.info("只能选择一个父节点");  
+					return ;
+				}
+			    var checkedNode = nodes[0];
+				 Horn.getCompById("editTreeId").setValue(checkedNode.id); 
+				 Horn.getCompById("editGroupName").setValue(checkedNode.name);
+				  //Horn.Tip.info(""+checkedNode.isDefault);  
+				 if(checkedNode.isDefault!=null&&checkedNode.isDefault!="null"){
+					Horn.getCompById("editGroupIsDefault").setValue(checkedNode.isDefault); 
+				 }
+				 if(checkedNode.taskCount!=null&&checkedNode.taskCount!="null"){
+					Horn.getCompById("editTaskCount").setValue(checkedNode.taskCount); 
+				 }
+				 Horn.getComp("adweightgroupEdit").show();  
+			}else{
+			    Horn.Tip.info("请选择父节点");  
+			}
+		}
+		  //树节点添加
+		function treeAddclick(){
+		    Horn.getComp("adweightgroupAddForm").reset();  
+            Horn.getComp("adweightgroupAdd").show();  
+			var treeObj=$.fn.zTree.getZTreeObj("tree1");
+            var nodes=treeObj.getCheckedNodes(true);
+			if(nodes&&nodes.length>0){
+    			if(nodes.lenght>1){
+    					 Horn.Tip.info("只能选择一个父节点");  
+    					return ;
+    			}
+			    var checkedNode = nodes[0];
+				 Horn.getCompById("addParentId").setValue(checkedNode.id); 
+				 Horn.getCompById("addParentName").setValue(checkedNode.name); 
+			}
+		
+		}
+	
+
     var action = "";  
   
       
@@ -105,12 +290,13 @@
       
     function edit(rowData){  
         rowDatarowData = rowData || Horn.getComp('dataTable').getSelecteds().length && (Horn.getComp('dataTable').getSelecteds())[0];  
-        Horn.getComp("dataForm").setValues(rowData.rowdata);  
+		Horn.getComp("dataForm").setValues(rowData.rowdata);  
         Horn.getComp("w1").show();  
     }  
       
     function del(rowData){  
-	 rowDatarowData = rowData || Horn.getComp('dataTable').getSelecteds().length && (Horn.getComp('dataTable').getSelecteds())[0];  
+	  Horn.Msg.confirm("确认","确认要删除记录吗？",function(){  
+		 rowDatarowData = rowData || Horn.getComp('dataTable').getSelecteds().length && (Horn.getComp('dataTable').getSelecteds())[0];  
        var id =  rowData.rowdata.id;  
 	   	$.post("${imageServer}/task/deleteweight",{"id":id},function(backData){
     		if(backData){
@@ -122,6 +308,9 @@
     			 }
     		 }
     	},"json")
+        },function(){  
+            log("确认框的取消执行了")  
+        }); 
     }  
 	
 	function addTask(){

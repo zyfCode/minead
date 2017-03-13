@@ -1,5 +1,6 @@
 package com.sungan.ad.wx.access.impl;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,7 +8,9 @@ import org.springframework.stereotype.Service;
 
 import com.sungan.ad.commons.AdCommonsUtil;
 import com.sungan.ad.dao.AdPager;
+import com.sungan.ad.dao.base.AdClientDAO;
 import com.sungan.ad.dao.base.AdWeightGroupDAO;
+import com.sungan.ad.domain.AdClient;
 import com.sungan.ad.domain.AdWeightGroup;
 import com.sungan.ad.exception.AdRuntimeException;
 import com.sungan.ad.expand.common.annotation.parser.AnnotationParser;
@@ -24,7 +27,16 @@ public class AdWeightGroupServiceImpl implements AdWeightGroupService{
 	
 	@Autowired
 	private AdWeightGroupDAO adWeightGroupDAO;
+	@Autowired
+	private AdClientDAO clientDao;
 	
+	public AdClientDAO getClientDao() {
+		return clientDao;
+	}
+
+	public void setClientDao(AdClientDAO clientDao) {
+		this.clientDao = clientDao;
+	}
 
 	public AdWeightGroupDAO getAdWeightGroupDAO() {
 		return adWeightGroupDAO;
@@ -36,6 +48,26 @@ public class AdWeightGroupServiceImpl implements AdWeightGroupService{
 
 	@Override
 	public Long insert(AdWeightGroup record) {
+		AdWeightGroup t = new AdWeightGroup();
+		t.setGroupName(record.getGroupName());
+		List<AdWeightGroup> recoreList = (List<AdWeightGroup>) adWeightGroupDAO.query(t );
+		if(recoreList!=null&&recoreList.size()>0){
+			throw new AdRuntimeException("节点名字不能重复");
+		}
+		if(record.getParentId()!=null){
+			AdWeightGroup find = adWeightGroupDAO.find(record.getParentId());
+			AdClient client = new AdClient();
+			client.setGroupId(find.getId());
+			Collection<AdClient> query = clientDao.query(client );
+			if(query!=null&&query.size()>0){
+				throw new AdRuntimeException(find.getGroupName()+"已使用，不允许添加子节点");
+			}
+			if(find.getIsLeaf()==null||AdWeightGroup.ISLEAF.equals(find.getIsLeaf())){
+				find.setIsLeaf(AdWeightGroup.ISNOTLEAF);
+			   adWeightGroupDAO.update(find);
+			}
+		}
+		record.setIsLeaf(AdWeightGroup.ISLEAF);
 		Long insert = (Long) adWeightGroupDAO.insert(record);
 		return insert;
 	}
@@ -51,6 +83,18 @@ public class AdWeightGroupServiceImpl implements AdWeightGroupService{
 	public void delete(Long id) {
 		AdWeightGroup find = this.adWeightGroupDAO.find(id);
 		if (find != null) {
+			AdClient client = new AdClient();
+			client.setGroupId(find.getId());
+			Collection<AdClient> query = clientDao.query(client );
+			if(query!=null&&query.size()>0){
+				throw new AdRuntimeException(find.getGroupName()+"已使用，不允许删除");
+			}
+			AdWeightGroup t = new AdWeightGroup();
+			t.setParentId(find.getId());
+			List<AdWeightGroup> recoreList = (List<AdWeightGroup>) adWeightGroupDAO.query(t );
+			if(recoreList!=null&&recoreList.size()>0){
+				throw new AdRuntimeException(find.getGroupName()+"存在子节点，不允许删除");
+			}
 			adWeightGroupDAO.delete(find);
 		}
 	}
@@ -84,6 +128,30 @@ public class AdWeightGroupServiceImpl implements AdWeightGroupService{
 		if(find==null){
 			throw new AdRuntimeException("记录不存在");
 		}
+		AdWeightGroup t = new AdWeightGroup();
+		t.setGroupName(record.getGroupName());
+		List<AdWeightGroup> recoreList = (List<AdWeightGroup>) adWeightGroupDAO.query(t );
+		if(recoreList!=null&&recoreList.size()>0){
+			for(AdWeightGroup gruop:recoreList){
+				if(gruop.getId().equals(find.getId())){
+					continue;
+				}
+				throw new AdRuntimeException("节点名字不能重复");
+			}
+		}
+		//只能设置一个默认的组
+		t = new AdWeightGroup();
+		t.setIsDefault(AdWeightGroup.ISDEFAULT);
+		List<AdWeightGroup> query = (List<AdWeightGroup>) adWeightGroupDAO.query(t);
+		if(query!=null&&query.size()>0){
+			for(AdWeightGroup gruop:recoreList){
+				if(gruop.getId().equals(find.getId())){
+					continue;
+				}
+				throw new AdRuntimeException("已存在默认组:"+gruop.getGroupName());
+			}
+			
+		}
 		try {
 			AdCommonsUtil.beanCopyWithoutNull(record, find);
 		} catch (Exception e) {
@@ -91,6 +159,13 @@ public class AdWeightGroupServiceImpl implements AdWeightGroupService{
 		}
  		adWeightGroupDAO.update(find);
 		
+	}
+
+	@Override
+	public List<AdWeightGroupVo> queryRoot() {
+		List<AdWeightGroup> list = this.adWeightGroupDAO.queryRoot();
+		List<AdWeightGroupVo> parseToVoList = AnnotationParser.parseToVoList(AdWeightGroupVo.class, list);
+		return parseToVoList;
 	}
 }
 

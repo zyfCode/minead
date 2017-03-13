@@ -28,7 +28,7 @@
 			{"id":"101","title":"客户端详细","icon":"user fa fa-laptop","items":[
 				{"id":"10101","title":"客户端列表","url":"${appServer}/app/listclient.htm"}
 				,{"id":"10102","title":"任务列表","url":"${appServer}/task/listtask.htm"}
-				,{"id":"10102","title":"任务权重","url":"${appServer}/task/listweight.htm"}
+				,{"id":"10103","title":"任务权重","url":"${appServer}/task/listweight.htm"}
 			]}
 			,{"id":"102","title":"报表","icon":"th-list fa fa-suitcase","items":[
 				{"id":"10201","title":"表单与校验","url":"${appServer}/demo/view/form/validForm.htm"}

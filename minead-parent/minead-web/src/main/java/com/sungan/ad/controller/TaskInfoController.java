@@ -1,20 +1,13 @@
 package com.sungan.ad.controller;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.List;
-
 import javax.validation.Valid;
 
-import org.apache.commons.beanutils.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.sungan.ad.commons.AdCommonsUtil;
-import com.sungan.ad.commons.AdConstants;
 import com.sungan.ad.commons.AdResponse;
 import com.sungan.ad.controller.validBean.AdHourWeightAddValid;
 import com.sungan.ad.controller.validBean.AdTaskAddValid;
@@ -38,6 +31,10 @@ public class TaskInfoController {
 	
 	@Autowired
 	private AdHourWeightService hourService;
+	
+	
+	
+	
 	
 	@RequestMapping("/deleteweight")
 	@ResponseBody

@@ -5,7 +5,6 @@ import ${domainPackage}.domain.${domain};
 
 /**
  * 说明:
- * @version V1.1
  */
 public interface ${domain}DAO extends DAO<${domain}> {
 
