@@ -86,6 +86,18 @@ public class AdTaskServiceImpl implements AdTaskService{
 		result.setRows(parseToVoList);
 		return result;
 	}
+
+	@Override
+	public void delete(Long id) {
+		if(id==null){
+			return;
+		}
+		AdTask find = adTaskDAO.find(id);
+		if(find==null){
+			return;
+		}
+		adTaskDAO.delete(find);
+	}
 }
 
 

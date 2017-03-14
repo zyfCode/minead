@@ -17,6 +17,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
+
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
@@ -28,9 +33,14 @@ import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.junit.Test;
 
 import com.sungan.ad.commons.AdCommonsUtil;
+import com.sungan.ad.controller.validBean.AdClientValid;
+import com.sungan.ad.controller.validBean.AdTaskAddValid;
+import com.sungan.ad.controller.validBean.AdWeightGroupValid;
 import com.sungan.ad.domain.AdClient;
+import com.sungan.ad.domain.AdContent;
 import com.sungan.ad.domain.AdHourWeight;
 import com.sungan.ad.domain.AdWeightGroup;
+import com.sungan.ad.exception.AdRuntimeException;
 
 import net.sf.json.JSONObject;
 
@@ -101,6 +111,20 @@ public class TaskMain {
 		
 	}
 	
+	@Test
+	public void test3(){
+		AdTaskAddValid adWeightGroup = new AdTaskAddValid();
+//		adWeightGroup.setName("11");
+		Object object = adWeightGroup;
+		ValidatorFactory buildDefaultValidatorFactory = Validation.buildDefaultValidatorFactory();
+		Validator validator = buildDefaultValidatorFactory.getValidator();
+		Set<ConstraintViolation<Object>> validate = validator.validate(object);
+		for(ConstraintViolation<?> ct:validate){
+			String message = ct.getMessage();
+			System.out.println(message);
+		}
+		
+	}
 	
 	@Test
 	public void test1() throws URISyntaxException, UnsupportedEncodingException{
@@ -116,7 +140,7 @@ public class TaskMain {
 			 
 			 String pk = "com.sungan.ad";
 			 String daminPk = "com.sungan.ad";
-			 Class clazz = AdClient.class;
+			 Class clazz = AdContent.class;
 			 String[] split = clazz.getName().split("\\.");
 			 String domainName = split[split.length-1];
 			 String domainLow = domainName.substring(0,1).toLowerCase() + domainName.substring(1); ;//"adWeightGroup" ;

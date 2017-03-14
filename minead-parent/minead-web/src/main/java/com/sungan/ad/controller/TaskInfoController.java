@@ -44,7 +44,7 @@ public class TaskInfoController {
 	}
 	@RequestMapping("/addweight")
 	@ResponseBody
-	public Object addWeight(AdHourWeightAddValid weight){
+	public Object addWeight(@Valid  AdHourWeightAddValid weight){
 		AdHourWeight w = new AdHourWeight();
 		AdCommonsUtil.copyProperties(w, weight);
 		hourService.insert(w);
@@ -52,7 +52,7 @@ public class TaskInfoController {
 	}
 	@RequestMapping("/updateweight")
 	@ResponseBody
-	public Object updateWeight(AdHourWeightAddValid weight){
+	public Object updateWeight(@Valid  AdHourWeightAddValid weight){
 		AdHourWeight w = new AdHourWeight();
 		AdCommonsUtil.copyProperties(w, weight);
 		hourService.update(w);
@@ -80,7 +80,7 @@ public class TaskInfoController {
 	
 	@RequestMapping(value="/update",produces={"application/json"})
 	@ResponseBody
-	public Object update(AdTask task){
+	public Object update(@Valid  AdTask task){
 		if(task!=null){
 			AdCommonsUtil.proStrEmpytToNull(task);
 		}
@@ -96,6 +96,12 @@ public class TaskInfoController {
 		AdTask adTask = new AdTask();
 		AdCommonsUtil.copyProperties(adTask, task);
 		service.insert(adTask);
+		return new AdResponse();
+	}
+	@RequestMapping(value="/delete",produces={"application/json"})
+	@ResponseBody
+	public Object delete(Long id){
+		service.delete(id);
 		return new AdResponse();
 	}
 	

@@ -38,7 +38,7 @@
 		]}
 		,{"id":"20","title":"微信","items":[
 			{"id":"201","title":"微信报文","icon":"file fa fa-laptop","items":[
-				{"id":"20101","title":"报文列表","url":"${appServer}/doc/symbols/Horn.html"}
+				{"id":"20101","title":"微信内容","url":"${appServer}/wx/adcontent.htm"}
 				,{"id":"20102","title":"说明","url":"${appServer}/doc/symbols/Horn.Validate.html"}
 			]}
 			,{"id":"202","title":"微信用户","icon":"inbox fa fa-suitcase","items":[

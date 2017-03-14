@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -83,7 +84,7 @@ public class AdWeightGroupController {
 	}
 	@RequestMapping("/addadweightgroup")
 	@ResponseBody
-	public Object addadweightgroup (AdWeightGroupValid record){
+	public Object addadweightgroup (@Valid AdWeightGroupValid record){
 		AdWeightGroup w = new AdWeightGroup();
 		AdCommonsUtil.copyProperties(w, record);
 		service.insert(w);
@@ -92,7 +93,7 @@ public class AdWeightGroupController {
 	
 	@RequestMapping("/updateadweightgroup")
 	@ResponseBody
-	public Object updateadweightgroup(AdWeightGroupValid record){
+	public Object updateadweightgroup(@Valid  AdWeightGroupValid record){
 		AdWeightGroup w = new AdWeightGroup();
 		AdCommonsUtil.copyProperties(w, record);
 		service.update(w);

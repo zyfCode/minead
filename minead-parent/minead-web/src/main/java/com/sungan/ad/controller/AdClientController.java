@@ -12,6 +12,7 @@ import java.util.Date;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -89,7 +90,7 @@ public class AdClientController {
 	}
 	@RequestMapping("/addadclient")
 	@ResponseBody
-	public Object addadclient (AdClientValid record){
+	public Object addadclient (@Valid  AdClientValid record){
 		AdClient w = new AdClient();
 		AdCommonsUtil.copyProperties(w, record);
 		adClientService.insert(w);
@@ -129,7 +130,7 @@ public class AdClientController {
 	}
 	@RequestMapping("/updateadclient")
 	@ResponseBody
-	public Object updateadclient(AdClientValid record,String effectTimeStr){
+	public Object updateadclient(@Valid  AdClientValid record,String effectTimeStr){
 		AdClient w = new AdClient();
 		AdCommonsUtil.copyProperties(w, record);
 		if(StringUtil.isNotBlank(effectTimeStr)){

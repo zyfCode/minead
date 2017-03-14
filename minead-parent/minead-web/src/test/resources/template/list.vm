@@ -61,7 +61,7 @@ ${vcKey}@screen({"title":"客户端查询"})
 	
 	    ${vcKey}@window({"title":"添加", "name":"${contollerMapping}Add", "width":"750", "height":"250",  
             "buttons":[  
-                {"label":"提交","event":"add()","className":"u-btn-primary"},  
+                {"label":"提交","event":"addSubmit()","className":"u-btn-primary"},  
                 {"label":"重置","event":"resetDataForm()"}  
             ]})  
         ${vcKey}@form({"name":"${contollerMapping}AddForm","url":""})  
@@ -109,7 +109,7 @@ ${vcKey}jscode()
         });
     }  
 	
-	function add(){
+	function addSubmit(){
 		Horn.getComp("${contollerMapping}Add").hide();  
 		var data = $("form[name='${contollerMapping}AddForm']").serializeJSON();
     	$.post("${imageServer}/${contollerMapping}/add${suffix}",data,function(backData){

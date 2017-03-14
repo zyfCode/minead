@@ -163,9 +163,24 @@
         Horn.getComp("w1").show();  
     }  
       
-    function del(rowData){  
-       Horn.Tip.info("删除成功");  
-    }  
+       function del(rowData){  
+			  Horn.Msg.confirm("确认","这是一条确认信息",function(){  
+			  	 rowDatarowData = rowData || Horn.getComp('dataTable').getSelecteds().length && (Horn.getComp('dataTable').getSelecteds())[0];  
+                   var id =  rowData.rowdata.id;  
+            	   	$.post("${imageServer}/task/delete",{"id":id},function(backData){
+                		if(backData){
+                			if(backData.success){
+                				 Horn.getComp("dataTable").load();  
+                				   Horn.Tip.sccess("删除成功");  
+                			 }else{
+                				Horn.Tip.warn(backData.errorMesg); 
+                			 }
+                		 }
+                	},"json")
+            },function(){  
+                log("确认框的取消执行了")  
+            });
+    }
 	
 	function addTask(){
 		Horn.getComp("addtask").hide();  

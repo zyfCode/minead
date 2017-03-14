@@ -1,6 +1,7 @@
 package com.sungan.ad.service.ext;
 
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -21,6 +22,7 @@ import com.sungan.ad.service.AdClientService;
 import com.sungan.ad.service.AdHourWeightService;
 import com.sungan.ad.service.AdSysParamService;
 import com.sungan.ad.service.AdTaskService;
+import com.sungan.ad.service.AdWeightGroupService;
 import com.sungan.ad.service.AppTaskServivce;
 import com.sungan.ad.service.ext.handler.AppCycleTskHandler;
 import com.sungan.ad.service.ext.handler.AppHourTaskHandler;
@@ -48,10 +50,20 @@ public class AdTaskManagerImpl implements AdTaskManager {
 	private AdHourWeightService adHourWeightService;
 	@Autowired
 	private AdSysParamService adSysParamService;
+	@Autowired
+	private AdWeightGroupService adWeightGroupService;
 	@Value(value = "${ad.mock}")
 	private String isMock;
 	
 	
+	public AdWeightGroupService getAdWeightGroupService() {
+		return adWeightGroupService;
+	}
+
+	public void setAdWeightGroupService(AdWeightGroupService adWeightGroupService) {
+		this.adWeightGroupService = adWeightGroupService;
+	}
+
 	public AdClientService getAdClientService() {
 		return adClientService;
 	}
@@ -250,6 +262,19 @@ public class AdTaskManagerImpl implements AdTaskManager {
 		AdClient adclientContition = new AdClient(); 
 		adclientContition.setStatus(AdClient.ADCLIENT_STATUS_RUNNING);
 		List<AdClientVo> clients = adClientService.query(adclientContition);
+		if(clients==null||clients.size()<0){
+			log.info("[生成客户端任务]无客户端列表");
+			return;
+		}
+		//过虑掉 	生效时间<当前时间 的客户端
+		Iterator<AdClientVo> iterator = clients.iterator();
+		while(iterator.hasNext()){
+			AdClientVo next = iterator.next();
+			if(next.getEffectTime()==null||next.getEffectTime().getTime()>System.currentTimeMillis()){
+				iterator.remove();
+			}
+		}
+		
 		for(AdTaskVo vo:queryList){
 			for(AdClientVo client:clients){
 				try {
@@ -270,7 +295,7 @@ public class AdTaskManagerImpl implements AdTaskManager {
 						List<AppTask> genAppTask = taskHandler.genAppTask(vo, client);
 						appTaskServivce.insert(genAppTask);
 					}else if(vo.getType().equals(AdTask.ADTASK_TYPE_HOUR)){
-						TaskHandler taskHandler = new AppHourTaskHandler(adClientService, adHourWeightService);
+						TaskHandler taskHandler = new AppHourTaskHandler(adClientService, adHourWeightService,adWeightGroupService);
 						List<AppTask> genAppTask = taskHandler.genAppTask(vo, client);
 						appTaskServivce.insert(genAppTask);
 					} 

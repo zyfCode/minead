@@ -3,6 +3,8 @@ package com.sungan.ad.controller.validBean;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.validator.constraints.NotEmpty;
+
 import com.sungan.ad.domain.AdTask;
 
 /**
@@ -18,19 +20,19 @@ public class AdTaskAddValid extends AdTask{
 	}
 
 	@Override
-	@NotNull(message="任务组不能为空")
+	@NotEmpty(message="任务组不能为空")
 	public String getTaskGroup() {
 		return super.getTaskGroup();
 	}
 
 	@Override
-	@NotNull(message="实例不能为空")
+	@NotEmpty(message="实例不能为空")
 	public String getClazzName() {
 		return super.getClazzName();
 	}
 
 	@Override
-	@NotNull(message="任务名不能为空")
+	@NotEmpty(message="任务名不能为空")
 	public String getName() {
 		return super.getName();
 	}

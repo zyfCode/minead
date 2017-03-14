@@ -17,5 +17,6 @@ public interface AdTaskService  extends MadService{
 	List<AdTaskVo> queryList(AdTask adTask);
 	 AdTaskVo queryById(Long id);
 	 void update(AdTask adTask);
+	 void delete(Long id);
 	 AdPager<AdTaskVo> queryPager(AdTask adTask,int pageIndex,int rows);
 }

@@ -17,7 +17,7 @@ public class ${domain}Controller {
 	}
 	@RequestMapping("/add${suffix}")
 	@ResponseBody
-	public Object add${suffix} (${domain}Valid record){
+	public Object add${suffix} (@Valid ${domain}Valid record){
 		${domain} w = new ${domain}();
 		AdCommonsUtil.copyProperties(w, record);
 		service.insert(w);
@@ -26,7 +26,7 @@ public class ${domain}Controller {
 	
 	@RequestMapping("/update${suffix}")
 	@ResponseBody
-	public Object update${suffix}(${domain}Valid record){
+	public Object update${suffix}(@Valid ${domain}Valid record){
 		${domain} w = new ${domain}();
 		AdCommonsUtil.copyProperties(w, record);
 		service.update(w);

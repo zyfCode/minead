@@ -220,7 +220,7 @@
             	   	$.post("${imageServer}/client/deleteadclient",{"id":id},function(backData){
                 		if(backData){
                 			if(backData.success){
-                				 Horn.getComp("adclientTable").load();  
+                				 Horn.getComp("dataTable").load();  
                 				   Horn.Tip.info("删除成功");  
                 			 }else{
                 				Horn.Tip.warn(backData.errorMesg); 

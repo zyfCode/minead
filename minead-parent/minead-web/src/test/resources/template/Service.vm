@@ -10,7 +10,7 @@ import ${package}.vo.${domain}Vo;
 /**
  * 说明:
  */
-public interface ${domain}Servivce extends  MadService{
+public interface ${domain}Service extends  MadService{
 	${domain}Vo find(Long id);
 	Long insert(${domain} record);
 	void delete(Long id);
