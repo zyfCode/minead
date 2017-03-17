@@ -1,0 +1,266 @@
+#@screen({"title":"客户端查询"})  
+    #@form({"name":"apptasksearchForm"})  
+        #@panel({"title":"查询条件"})  
+		   	           #textfield({"label":"客户端id ", "name":"clientId ","value":"","defValue":""})  
+		   	           #textfield({"label":"任务名", "name":"name ","value":"","defValue":""})  
+		   	           #textfield({"label":"通过率 ", "name":"throwRate ","value":"","defValue":""}) 
+					   #combox({"name":"status","label":"状态","value":"","items":[{"key":"","val":"默认值"}],  "dictName": "000103",  "check": "required"})
+		   	           #textfield({"label":"执行时间 ", "name":"taskRunTime ","value":"","defValue":""})  
+		   	            #button_group({"buttons":[  
+							{"label":"查询","event":"queryData()","className":"u-btn-primary"},
+							{"label":"重置查询","event":"resetSearch()","className":"u-btn-primary"}  
+							]})  
+        #end  
+    #end  
+    #datagrid({  
+        "id":"apptaskTable",  
+        "name":"apptaskTable",  
+        "bindFormName":"apptasksearchForm",  
+        "title":"查询列表",    
+        "autoLoad":true,  
+        "url":"/apptask/listapptask.json",  
+        "items":[ 
+            {"name":"id",  
+            "text":"id",  
+            "hAlign":"center",  
+            "tAlign":"center",
+			"hidden":true
+            },
+
+            {"name":"clientId",  
+            "text":"clientId",  
+            "hAlign":"center",  
+            "tAlign":"center" ,
+			"hidden":true
+            },
+
+            {"name":"clientIpid",  
+            "text":"clientIpid",  
+            "hAlign":"center",  
+            "tAlign":"center",  
+			"hidden":true
+            },
+
+            {"name":"adTaskid",  
+            "text":"adTaskid",  
+            "hAlign":"center",  
+            "tAlign":"center" ,
+			"hidden":true
+            },
+			{"name":"clientName",  
+            "text":"客户名称",  
+            "hAlign":"center",  
+            "tAlign":"center"  
+            },
+			{"name":"clientIp",  
+            "text":"客户名称IP",  
+            "hAlign":"center",  
+            "tAlign":"center"  
+            },
+            {"name":"name",  
+            "text":"名称",  
+            "hAlign":"center",  
+            "tAlign":"center"  
+            },
+            {"name":"throwRate",  
+            "text":"throwRate",  
+            "hAlign":"center",  
+            "tAlign":"center"  
+            },
+
+            {"name":"type",  
+            "text":"type",  
+            "hAlign":"center",  
+            "tAlign":"center",
+			"hidden":true
+            },
+            {"name":"typeCn",  
+            "text":"类型",  
+            "hAlign":"center",  
+            "tAlign":"center"  
+            },
+
+            {"name":"status",  
+            "text":"status",  
+            "hAlign":"center",  
+            "tAlign":"center",  
+			"hidden":true
+            },
+            {"name":"statusCn",  
+            "text":"状态",  
+            "hAlign":"center",  
+            "tAlign":"center"  
+            },
+
+            {"name":"count",  
+            "text":"count",  
+            "hAlign":"center",  
+            "tAlign":"center"  
+            },
+
+            {"name":"doneCount",  
+            "text":"doneCount",  
+            "hAlign":"center",  
+            "tAlign":"center"  
+            },
+
+            {"name":"failCount",  
+            "text":"failCount",  
+            "hAlign":"center",  
+            "tAlign":"center"  
+            },
+
+            {"name":"throwCount",  
+            "text":"throwCount",  
+            "hAlign":"center",  
+            "tAlign":"center"  
+            },
+
+            {"name":"taskRunTimeStr",  
+            "text":"taskRunTime",  
+            "hAlign":"center",  
+            "tAlign":"center"  
+            },
+
+            {"name":"crateTimeStr",  
+            "text":"crateTime",  
+            "hAlign":"center",  
+            "tAlign":"center"  
+            },
+
+            {"name":"updateTimeStr",  
+            "text":"updateTime",  
+            "hAlign":"center",  
+            "tAlign":"center"  
+            },
+            {"name":"descript",  
+            "text":"descript",  
+            "hAlign":"center",  
+            "tAlign":"center"  
+            },
+
+			{  
+                "name":"operation",  
+                "text":"操作",  
+                "hAlign":"center",  
+                "tAlign":"center",  
+                "hidden":false,  
+                "width":"100",  
+                "buttons":[{"label":"修改","event":"edit"},{"label":"删除","event":"del"}]
+			}
+        ],  
+        "numbercolumn":"true",  
+        "pageConfig":{"pageSize":10,"pageNo":1},  
+        "rowSelect":"false",  
+        "hasPage":"true",  
+        "events":[{"event":"rowClick","function":"queryTableClick"},  
+                 {"event":"rowDblclick","function":"queryTableDbClick"}]  
+       })  
+            
+    #@window({"title":"编辑窗口", "name":"apptaskEdit", "width":"750", "height":"250",  
+            "buttons":[  
+                {"label":"提交","event":"saveData()","className":"u-btn-primary"},  
+                {"label":"重置","event":"resetDataForm()"}  
+            ]})  
+        #@form({"name":"apptaskEditForm","url":""})  
+            #@panel({})  
+			                  #textfield({"label":"id", "name":"id","value":"","defValue":"","check":"required","hidden":true})  
+							    #combox({"name":"status","label":"状态","defValue":"",  "dictName": "000103",  "check": "required"})
+							  #textfield({"label":"count", "name":"count","value":"","defValue":"","check":"required"})  
+							  #textarea({"label":"备注","name":"descript", "cols":3}) 
+			 #end  
+        #end  
+    #end  
+	
+	
+	    #@window({"title":"添加", "name":"apptaskAdd", "width":"750", "height":"250",  
+            "buttons":[  
+                {"label":"提交","event":"addSubmit()","className":"u-btn-primary"},  
+                {"label":"重置","event":"resetDataForm()"}  
+            ]})  
+        #@form({"name":"apptaskAddForm","url":""})  
+            #@panel({})  
+			                  #textfield({"label":"id", "name":"id","value":"","defValue":"","check":"required","hidden":true})  
+			                  #textfield({"label":"status", "name":"status","value":"","defValue":"","check":"required"})  
+			                  #textfield({"label":"count", "name":"count","value":"","defValue":"","check":"required"})  
+			                  #textfield({"label":"descript", "name":"descript","value":"","defValue":"","check":"required"})  
+			              #end  
+        #end  
+    #end  
+#end  
+  
+  
+#jscode()  
+    var action = "";  
+  
+      
+    function add(rowData){  
+        Horn.getComp("apptaskAddForm").reset();  
+        Horn.getComp("apptaskAdd").show();  
+    }  
+      
+    function edit(rowData){  
+        rowDatarowData = rowData || Horn.getComp('apptaskTable').getSelecteds().length && (Horn.getComp('apptaskTable').getSelecteds())[0];  
+        Horn.getComp("apptaskEditForm").setValues(rowData.rowdata);  
+        Horn.getComp("apptaskEdit").show();  
+    }  
+      
+    function del(rowData){  
+	  Horn.Msg.confirm("确认","这是一条确认信息",function(){  
+		 	 rowDatarowData = rowData || Horn.getComp('apptaskTable').getSelecteds().length && (Horn.getComp('apptaskTable').getSelecteds())[0];  
+               var id =  rowData.rowdata.id;  
+        	   	$.post("${imageServer}/apptask/deleteapptask",{"id":id},function(backData){
+            		if(backData){
+            			if(backData.success){
+            				 Horn.getComp("apptaskTable").load();  
+            				   Horn.Tip.info("删除成功");  
+            			 }else{
+            				Horn.Tip.warn(backData.errorMesg); 
+            			 }
+            		 }
+            	},"json")
+        },function(){  
+            log("确认框的取消执行了")  
+        });
+    }  
+	
+	function addSubmit(){
+		Horn.getComp("apptaskAdd").hide();  
+		var data = $("form[name='apptaskAddForm']").serializeJSON();
+    	$.post("${imageServer}/apptask/addapptask",data,function(backData){
+    		if(backData){
+    			if(backData.success){
+    				 Horn.getComp("apptaskTable").load();  
+    				 Horn.Tip.success("添加成功"); 
+    			 }else{
+    				Horn.Tip.warn(backData.errorMesg); 
+    			 }
+    		 }
+    	},"json")
+	}
+	
+		function resetSearch(){
+			Horn.getComp("apptaskTable").baseParams={};
+			 Horn.getComp("apptaskTable").load();  
+		}
+    function saveData() {  
+		Horn.getComp("apptaskEdit").hide();  
+    		//JSON.stringify($("form[name='apptaskEditForm']").serializeJSON());
+    	var data = $("form[name='apptaskEditForm']").serializeJSON();
+    	$.post("${imageServer}/apptask/updateapptask",data,function(backData){
+    		if(backData){
+    			if(backData.success){
+    				 Horn.getComp("apptaskTable").load();  
+    				 Horn.Tip.success("更新成功"); 
+    			 }else{
+    				Horn.Tip.warn(backData.errorMesg); 
+    			 }
+    		 }
+    	},"json")
+    }  
+      
+      
+    function queryData() {  
+   		 Horn.getComp("apptaskTable").load();  
+    }  
+#end  

@@ -12,7 +12,7 @@
 	]}
 	,"screen":{
 		"limit":10,
-		"homePage":{"title":"欢迎使用","icon":"home fa fa-home","url":"${appServer}/home/index.htm"}
+		"homePage":{"title":"欢迎使用","icon":"home fa fa-home","url":"${appServer}/task/listapptask.htm"}
 		,"tools":[{"title":"宽松版","url":"${appServer}/home.htm?theme=horn"},{"title":"经典灰","url":"${appServer}/home.htm?theme=classic"},{"title":"紧凑版","url":"${appServer}/home.htm?theme=mini"}]
 	}
 	,"navigation":{"items":[
@@ -22,7 +22,7 @@
 	]}
 	,"menu":{"items":[
 		{"id":"30","title":"主页","items":[
-			{"id":"301","title":"获取UI资源","url":"${appServer}/home/use/getUI.htm"}
+			{"id":"301","title":"信息","url":""}
 		]}
 		,{"id":"10","title":"客户端","items":[
 			{"id":"101","title":"客户端详细","icon":"user fa fa-laptop","items":[
@@ -38,13 +38,16 @@
 		]}
 		,{"id":"20","title":"微信","items":[
 			{"id":"201","title":"微信报文","icon":"file fa fa-laptop","items":[
-				{"id":"20101","title":"微信内容","url":"${appServer}/wx/adcontent.htm"}
-				,{"id":"20102","title":"说明","url":"${appServer}/doc/symbols/Horn.Validate.html"}
+				{"id":"20100","title":"微信内含列表","url":"${appServer}/wx/list/usermsg"}
+				,{"id":"20101","title":"微信内容","url":"${appServer}/wx/adcontent.htm"}
+				,{"id":"20102","title":"添加","url":"${appServer}/wx/tousermsg"}
+				,{"id":"20103","title":"appid列表","url":"${appServer}/wx/appid/list"}
+				,{"id":"20104","title":"微信号添加","url":"${appServer}/wx/appid/toput"}
+				,{"id":"20105","title":"说明","url":"${appServer}/doc/symbols/Horn.Validate.html"}
 			]}
 			,{"id":"202","title":"微信用户","icon":"inbox fa fa-suitcase","items":[
-				{"id":"20201","title":"面板Panel","url":"${appServer}/doc/symbols/Horn.Panel.html"}
-				,{"id":"20202","title":"标签面板TabPanel","url":"${appServer}/doc/symbols/Horn.TabPanel.html"}
-				,{"id":"20203","title":"窗口Window","url":"${appServer}/doc/symbols/Horn.Window.html"}
+				{"id":"20201","title":"面板Panel","url":""}
+				,{"id":"20202","title":"标签面板TabPanel","url":""}
 			]}
 			
 		]}

@@ -6,6 +6,7 @@ ${vcKey}@screen({"title":"客户端查询"})
 		   	#end
             ${vcKey}button_group({"buttons":[  
                 {"label":"查询","event":"queryData()","className":"u-btn-primary"}  
+				{"label":"重置查询","event":"resetSearch()","className":"u-btn-primary"}  
             ]})  
         ${vcKey}end  
     ${vcKey}end  
@@ -15,7 +16,7 @@ ${vcKey}@screen({"title":"客户端查询"})
         "bindFormName":"${contollerMapping}searchForm",  
         "title":"查询列表",    
         "autoLoad":true,  
-        "url":"//${contollerMapping}//list${suffix}.json",  
+        "url":"/${contollerMapping}/list${suffix}.json",  
 		   "buttons":[{"label":"新增","cls":"add","event":"add()"} ],
         "items":[ 
 #foreach( $something in $beanPro )            {"name":"$something",  
@@ -139,7 +140,10 @@ ${vcKey}jscode()
     		 }
     	},"json")
     }  
-      
+      	function resetSearch(){
+			Horn.getComp("${contollerMapping}Table").baseParams={};
+			 Horn.getComp("${contollerMapping}Table").load();  
+		}
       
     function queryData() {  
    		 Horn.getComp("${contollerMapping}Table").load();  

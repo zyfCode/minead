@@ -1,0 +1,207 @@
+#@screen({"title":"客户端查询"})  
+    #@form({"name":"adcontentsearchForm"})  
+        #@panel({"title":"查询条件"})  
+		   	           #textfield({"label":"id ", "name":"id ","value":"","defValue":""})  
+		   	           #textfield({"label":"name ", "name":"name ","value":"","defValue":""})  
+		   	           #textfield({"label":"appid ", "name":"appid ","value":"","defValue":""})  
+		   	           #textfield({"label":"content ", "name":"content ","value":"","defValue":""})  
+		   	           #textfield({"label":"status ", "name":"status ","value":"","defValue":""})  
+		   	           #textfield({"label":"createTime ", "name":"createTime ","value":"","defValue":""})  
+		   	           #textfield({"label":"updateTime ", "name":"updateTime ","value":"","defValue":""})  
+		   	           #textfield({"label":"descript ", "name":"descript ","value":"","defValue":""})  
+		   	           #textfield({"label":"type ", "name":"type ","value":"","defValue":""})  
+		   	            #button_group({"buttons":[  
+                {"label":"查询","event":"queryData()","className":"u-btn-primary"}  
+            ]})  
+        #end  
+    #end  
+    #datagrid({  
+        "id":"adcontentTable",  
+        "name":"adcontentTable",  
+        "bindFormName":"adcontentsearchForm",  
+        "title":"查询列表",    
+        "autoLoad":true,  
+        "url":"//adcontent//listadcontent.json",  
+		   "buttons":[{"label":"新增","cls":"add","event":"add()"} ],
+        "items":[ 
+            {"name":"id",  
+            "text":"id",  
+            "hAlign":"center",  
+            "tAlign":"center",
+            "hidden":true
+            },
+
+            {"name":"name",  
+            "text":"name",  
+            "hAlign":"center",  
+            "tAlign":"center"  
+            },
+
+            {"name":"appid",  
+            "text":"appid",  
+            "hAlign":"center",  
+            "tAlign":"center"  
+            },
+
+            {"name":"content",  
+            "text":"content",  
+            "hAlign":"center",  
+            "tAlign":"center"  
+            },
+
+            {"name":"statusCn",  
+            "text":"statusCn",  
+            "hAlign":"center",  
+            "tAlign":"center"  
+            },
+
+            {"name":"createTimeStr",  
+            "text":"createTimeStr",  
+            "hAlign":"center",  
+            "tAlign":"center"  
+            },
+
+            {"name":"updateTimeStr",  
+            "text":"updateTimeStr",  
+            "hAlign":"center",  
+            "tAlign":"center"  
+            },
+			
+		   {"name":"typeCn",  
+            "text":"typeCn",  
+            "hAlign":"center",  
+            "tAlign":"center"  
+            },
+			
+            {"name":"descript",  
+            "text":"descript",  
+            "hAlign":"center",  
+            "tAlign":"center"  
+            },
+
+			{  
+                "name":"operation",  
+                "text":"操作",  
+                "hAlign":"center",  
+                "tAlign":"center",  
+                "hidden":false,  
+                "width":"200",  
+                "buttons":[{"label":"修改","event":"edit"},{"label":"删除","event":"del"}]
+			}
+        ],  
+        "numbercolumn":"true",  
+        "pageConfig":{"pageSize":10,"pageNo":1},  
+        "rowSelect":"false",  
+        "hasPage":"true",  
+        "events":[{"event":"rowClick","function":"queryTableClick"},  
+                 {"event":"rowDblclick","function":"queryTableDbClick"}]  
+       })  
+            
+    #@window({"title":"编辑窗口", "name":"adcontentEdit", "width":"750", "height":"250",  
+            "buttons":[  
+                {"label":"提交","event":"saveData()","className":"u-btn-primary"},  
+                {"label":"重置","event":"resetDataForm()"}  
+            ]})  
+        #@form({"name":"adcontentEditForm","url":""})  
+            #@panel({})  
+			                  #textfield({"label":"id", "name":"id","value":"","defValue":"","check":"required","hidden":true})  
+			                  #textfield({"label":"name", "name":"name","value":"","defValue":"","check":"required"})  
+			                  #textfield({"label":"appid", "name":"appid","value":"","defValue":"","check":"required","disable":true})  
+			                  #textfield({"label":"content", "name":"content","value":"","defValue":"","check":"required"})  
+			                  #textfield({"label":"status", "name":"status","value":"","defValue":"","check":"required"})  
+			                  #textfield({"label":"descript", "name":"descript","value":"","defValue":"","check":"required"})  
+			                  #textfield({"label":"type", "name":"type","value":"","defValue":"","check":"required"})  
+			  			  #end  
+        #end  
+    #end  
+	
+	
+	    #@window({"title":"添加", "name":"adcontentAdd", "width":"750", "height":"250",  
+            "buttons":[  
+                {"label":"提交","event":"addSubmit()","className":"u-btn-primary"},  
+                {"label":"重置","event":"resetDataForm()"}  
+            ]})  
+        #@form({"name":"adcontentAddForm","url":""})  
+            #@panel({})  
+			                  #textfield({"label":"name", "name":"name","value":"","defValue":"","check":"required"})  
+			                  #textfield({"label":"appid", "name":"appid","value":"","defValue":"","check":"required"})  
+			                  #textfield({"label":"content", "name":"content","value":"","defValue":"","check":"required"})  
+			                  #textfield({"label":"status", "name":"status","value":"","defValue":"","check":"required"})  
+			                  #textfield({"label":"descript", "name":"descript","value":"","defValue":"","check":"required"})  
+			                  #textfield({"label":"type", "name":"type","value":"","defValue":"","check":"required"})  
+			              #end  
+        #end  
+    #end  
+#end  
+  
+  
+#jscode()  
+    var action = "";  
+  
+      
+    function add(rowData){  
+        Horn.getComp("adcontentAddForm").reset();  
+        Horn.getComp("adcontentAdd").show();  
+    }  
+      
+    function edit(rowData){  
+        rowDatarowData = rowData || Horn.getComp('adcontentTable').getSelecteds().length && (Horn.getComp('adcontentTable').getSelecteds())[0];  
+        Horn.getComp("adcontentEditForm").setValues(rowData.rowdata);  
+        Horn.getComp("adcontentEdit").show();  
+    }  
+      
+    function del(rowData){  
+	  Horn.Msg.confirm("确认","这是一条确认信息",function(){  
+		 	 rowDatarowData = rowData || Horn.getComp('adcontentTable').getSelecteds().length && (Horn.getComp('adcontentTable').getSelecteds())[0];  
+               var id =  rowData.rowdata.id;  
+        	   	$.post("${imageServer}/adcontent/deleteadcontent",{"id":id},function(backData){
+            		if(backData){
+            			if(backData.success){
+            				 Horn.getComp("adcontentTable").load();  
+            				   Horn.Tip.info("删除成功");  
+            			 }else{
+            				Horn.Tip.warn(backData.errorMesg); 
+            			 }
+            		 }
+            	},"json")
+        },function(){  
+            log("确认框的取消执行了")  
+        });
+    }  
+	
+	function addSubmit(){
+		Horn.getComp("adcontentAdd").hide();  
+		var data = $("form[name='adcontentAddForm']").serializeJSON();
+    	$.post("${imageServer}/adcontent/addadcontent",data,function(backData){
+    		if(backData){
+    			if(backData.success){
+    				 Horn.getComp("adcontentTable").load();  
+    				 Horn.Tip.success("添加成功"); 
+    			 }else{
+    				Horn.Tip.warn(backData.errorMesg); 
+    			 }
+    		 }
+    	},"json")
+	}
+	
+    function saveData() {  
+		Horn.getComp("adcontentEdit").hide();  
+    		//JSON.stringify($("form[name='adcontentEditForm']").serializeJSON());
+    	var data = $("form[name='adcontentEditForm']").serializeJSON();
+    	$.post("${imageServer}/adcontent/updateadcontent",data,function(backData){
+    		if(backData){
+    			if(backData.success){
+    				 Horn.getComp("adcontentTable").load();  
+    				 Horn.Tip.success("更新成功"); 
+    			 }else{
+    				Horn.Tip.warn(backData.errorMesg); 
+    			 }
+    		 }
+    	},"json")
+    }  
+      
+      
+    function queryData() {  
+   		 Horn.getComp("adcontentTable").load();  
+    }  
+#end  

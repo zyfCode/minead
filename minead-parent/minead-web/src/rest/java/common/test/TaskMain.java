@@ -40,6 +40,7 @@ import com.sungan.ad.domain.AdClient;
 import com.sungan.ad.domain.AdContent;
 import com.sungan.ad.domain.AdHourWeight;
 import com.sungan.ad.domain.AdWeightGroup;
+import com.sungan.ad.domain.AppTask;
 import com.sungan.ad.exception.AdRuntimeException;
 
 import net.sf.json.JSONObject;
@@ -140,7 +141,7 @@ public class TaskMain {
 			 
 			 String pk = "com.sungan.ad";
 			 String daminPk = "com.sungan.ad";
-			 Class clazz = AdContent.class;
+			 Class clazz = AppTask.class;
 			 String[] split = clazz.getName().split("\\.");
 			 String domainName = split[split.length-1];
 			 String domainLow = domainName.substring(0,1).toLowerCase() + domainName.substring(1); ;//"adWeightGroup" ;

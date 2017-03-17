@@ -23,6 +23,8 @@ public class AppTaskVo implements Serializable {
 	private Integer throwRate;
 	private Long throwCount;
 	private String name;
+	private String clientName;
+	private String clientIp;
 	private String type;
 	private String typeCn;
 	private String status;
@@ -37,8 +39,21 @@ public class AppTaskVo implements Serializable {
 	private Date updateTime;
 	private String updateTimeStr;
 
-	
-	
+	public String getClientIp() {
+		return clientIp;
+	}
+
+	public void setClientIp(String clientIp) {
+		this.clientIp = clientIp;
+	}
+
+	public String getClientName() {
+		return clientName;
+	}
+
+	public void setClientName(String clientName) {
+		this.clientName = clientName;
+	}
 
 	@Override
 	public String toString() {

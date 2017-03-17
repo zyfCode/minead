@@ -16,13 +16,9 @@
           <span class="logo"></span> 登录  
           <small></small>
         </div>
-        <div class="icon">
-          <i class="fa fa-sign-in"></i>
-        </div>
       </div>
       <div class="login-content">
         <form method="post" action="${imageServer}/cm/login" id="loginForm">
-        
            <div class="m-tip-box m-tip-error" #if("$!errorInfo"!="")style="display: block" #else style="display: none" #end>
             <span><i class="fa fa-close"></i></span> <span id="msg">$!{errorInfo}</span>
           </div>
@@ -84,7 +80,7 @@
 	});
 
 	function changeCode(){
-		$('#checkCode').attr('src','$appServer.get('/horn/checkCode/get.htm')?d='+ Math.random());
+		$('#checkCode').attr('src','$appServer.get('/cm/checkCode/get')?d='+ Math.random());
 	}
 	var flag = true;
 	function loginSubmit(){

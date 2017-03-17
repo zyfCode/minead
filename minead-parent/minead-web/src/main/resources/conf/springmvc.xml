@@ -62,6 +62,8 @@
 			<mvc:exclude-mapping path="/client/initconnector**" />
 			<mvc:exclude-mapping path="/client/info**" />
 			<mvc:exclude-mapping path="/login.htm**" />
+			<!--微信 相关  -->
+			<mvc:exclude-mapping path="/wx/sungan/**" />
 			
 			<mvc:exclude-mapping path="/static/**" />
 			<mvc:exclude-mapping path="/components/**" />
