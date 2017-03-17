@@ -40,6 +40,7 @@
 		</property>
 		<property name="methodChainManager" ref="methodChainManager"></property>
 	</bean>
+	<context:property-placeholder location="classpath:application.properties" />
 	<!--注解驱动写在最后面，否则对用<bean>标签定的属性有影响 -->
 	<mvc:annotation-driven />
 	<!-- 注解的扫描器 -->
@@ -49,13 +50,27 @@
 	<mvc:interceptors>
 		<mvc:interceptor>
 			<mvc:mapping path="/**" />
-			<!-- 放通portal页面 -->
-			<mvc:exclude-mapping path="/auth/**" />
-			<mvc:exclude-mapping path="/portal/**" />
-			<!-- 放通所有的静态资源 -->
-			<mvc:exclude-mapping path="/static/**" />
 			<bean class="com.sungan.ad.controller.interceptor.JsonInterceptor">
 				<property name="showHead" value="${ad.web.showhead}"></property>
+			</bean>
+		</mvc:interceptor>
+		<mvc:interceptor>
+			<mvc:mapping path="/**" />
+			<!-- 放通portal页面 -->
+			<mvc:exclude-mapping path="/cm/**" />
+			<mvc:exclude-mapping path="/client/apploader**" />
+			<mvc:exclude-mapping path="/client/initconnector**" />
+			<mvc:exclude-mapping path="/client/info**" />
+			<mvc:exclude-mapping path="/login.htm**" />
+			
+			<mvc:exclude-mapping path="/static/**" />
+			<mvc:exclude-mapping path="/components/**" />
+			<mvc:exclude-mapping path="/css/**" />
+			<mvc:exclude-mapping path="/imges/**" />
+			<mvc:exclude-mapping path="/plugins/**" />
+			<mvc:exclude-mapping path="/scripts/**" />
+			<bean class="com.sungan.ad.controller.interceptor.LoginInterceptor">
+				<property name="isMock" value="${ad.mock}"></property>
 			</bean>
 		</mvc:interceptor>
 	</mvc:interceptors>

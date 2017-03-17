@@ -1,6 +1,7 @@
 package com.sungan.ad.service.impl;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -11,10 +12,12 @@ import com.sungan.ad.commons.AdCommonsUtil;
 import com.sungan.ad.dao.AdPager;
 import com.sungan.ad.dao.base.AdClientDAO;
 import com.sungan.ad.dao.base.AdClientIpDAO;
+import com.sungan.ad.dao.base.AdHourWeightDAO;
 import com.sungan.ad.dao.base.AdTaskDAO;
 import com.sungan.ad.dao.base.AdWeightGroupDAO;
 import com.sungan.ad.domain.AdClient;
 import com.sungan.ad.domain.AdClientIp;
+import com.sungan.ad.domain.AdHourWeight;
 import com.sungan.ad.domain.AdTask;
 import com.sungan.ad.domain.AdWeightGroup;
 import com.sungan.ad.exception.AdRuntimeException;
@@ -47,7 +50,15 @@ public class AdClientServiceImpl implements AdClientService {
 	private AdClientIpDAO adClientIpDAO;
 	@Autowired
 	private AdWeightGroupDAO groupDAO;
+	@Autowired
+	private  AdHourWeightDAO adHourWeightDao;
 	
+	public AdHourWeightDAO getAdHourWeightDao() {
+		return adHourWeightDao;
+	}
+	public void setAdHourWeightDao(AdHourWeightDAO adHourWeightDao) {
+		this.adHourWeightDao = adHourWeightDao;
+	}
 	public AdWeightGroupDAO getGroupDAO() {
 		return groupDAO;
 	}
@@ -94,6 +105,14 @@ public class AdClientServiceImpl implements AdClientService {
 		if (find == null) {
 			throw new AdRuntimeException("记录不存在");
 		}
+//		if(client.getGroupId()!=null&&!client.getGroupId().equals(find.getGroupId())){
+//			AdHourWeight condition = new AdHourWeight();
+//			condition.setGroupId(client.getGroupId());
+//			Collection<AdHourWeight> query = adHourWeightDao.query(condition );
+//			if(query.size()<24){
+//				throw new AdRuntimeException("权重配置错误，不可选"); 
+//			}
+//		}
 		AdCommonsUtil.beanCopyWithoutNull(client, find);
 		this.adClientDAO.update(find);
 	}
@@ -110,6 +129,14 @@ public class AdClientServiceImpl implements AdClientService {
 	public void delete(Long id) {
 		AdClient find = this.adClientDAO.find(id);
 		if (find != null) {
+			AdClientIp condition = new AdClientIp();
+			condition.setClientId(find.getId());
+			Collection<AdClientIp> query = adClientIpDAO.query(condition );
+			if(query!=null&&query.size()>0){
+				for(AdClientIp ip:query){
+					adClientIpDAO.delete(ip);
+				}
+			}
 			adClientDAO.delete(find);
 		}
 	}

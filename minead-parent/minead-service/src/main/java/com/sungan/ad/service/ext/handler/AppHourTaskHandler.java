@@ -75,11 +75,6 @@ public class AppHourTaskHandler  extends TaskHandler {
 			count = Long.valueOf(currentGroup.getTaskCount());
 		}
 		
-		//获取24小时权重
-		if(query.size()!=24){
-			log.info("小时权重配置不足24小时，作用默认值");
-			query = HourUtil.getDefault();
-		}
 		int countWeight = HourUtil.countAllweight(query);
 		for(AdHourWeightVo hvo : query){
 			long taskamount = HourUtil.taskamount(hvo.getWght(), countWeight, count);

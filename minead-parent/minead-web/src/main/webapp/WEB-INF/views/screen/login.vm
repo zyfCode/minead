@@ -1,7 +1,8 @@
 <div class="p-login">
     <div class="news-feed">
+		<
       <div class="news-image">
-          <img src="css/login/img/bg-7.jpg" />
+          <img src="css/login/img/timg.jpg" />
       </div>
       <div class="news-caption">
         <h4 class="caption-title">成就所托，持之以恒！</h4>
@@ -20,13 +21,11 @@
         </div>
       </div>
       <div class="login-content">
-        <form method="post" action="submitLogin.htm" id="loginForm">
+        <form method="post" action="${imageServer}/cm/login" id="loginForm">
         
            <div class="m-tip-box m-tip-error" #if("$!errorInfo"!="")style="display: block" #else style="display: none" #end>
             <span><i class="fa fa-close"></i></span> <span id="msg">$!{errorInfo}</span>
           </div>
-        
-          
           <div class="form-group">
               <input type="text" id="user_name" type="text" name="user_name" class="form-control input-lg" placeholder="用户名" value="$!userName" />
           </div>
@@ -35,24 +34,23 @@
           </div>
           <div class="form-group">
               <input type="text" id="check_code" name="checkCode" class="form-control control-verify input-lg" placeholder="验证码" value="$!checkcode"/>
-              <img id='checkCode' onclick='changeCode()'src="$appServer.get('/horn/checkCode/get.htm')"  class="check-img"/>
+              <img id='checkCode' onclick='changeCode()'src="$appServer.get('/cm/checkCode/get')"  class="check-img"/>
           </div>
           <div class="form-group">
+			<!--
 			<select name="theme" class="form-control input-lg"  title="皮肤主题">
               <option value ="mini">紧凑版</option>
               <option value ="horn">宽松版</option>
               <option value="classic">经典灰</option>
             </select>
+			-->
 		  </div>
           <div class="login-buttons">
               <button type="button" onclick="loginSubmit()" class="btn-login" id="btnLogin">登　录</button>
           </div>
-          <div class="regedit">
-              <font size="3" color="red">温馨提示：直接点击登录按钮即可进入demo首页。</font>
-          </div>
           <hr />
           <p class="copyright">
-              &copy; HUNDSUN All Right Reserved 2016
+              &copy; adcloun2016
           </p>
         </form>
       </div>

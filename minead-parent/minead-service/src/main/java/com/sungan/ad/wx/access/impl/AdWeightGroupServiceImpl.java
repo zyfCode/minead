@@ -9,8 +9,10 @@ import org.springframework.stereotype.Service;
 import com.sungan.ad.commons.AdCommonsUtil;
 import com.sungan.ad.dao.AdPager;
 import com.sungan.ad.dao.base.AdClientDAO;
+import com.sungan.ad.dao.base.AdHourWeightDAO;
 import com.sungan.ad.dao.base.AdWeightGroupDAO;
 import com.sungan.ad.domain.AdClient;
+import com.sungan.ad.domain.AdHourWeight;
 import com.sungan.ad.domain.AdWeightGroup;
 import com.sungan.ad.exception.AdRuntimeException;
 import com.sungan.ad.expand.common.annotation.parser.AnnotationParser;
@@ -29,7 +31,17 @@ public class AdWeightGroupServiceImpl implements AdWeightGroupService{
 	private AdWeightGroupDAO adWeightGroupDAO;
 	@Autowired
 	private AdClientDAO clientDao;
-	
+	@Autowired
+	private AdHourWeightDAO adHourWeightDAO;
+
+	public AdHourWeightDAO getAdHourWeightDAO() {
+		return adHourWeightDAO;
+	}
+
+	public void setAdHourWeightDAO(AdHourWeightDAO adHourWeightDAO) {
+		this.adHourWeightDAO = adHourWeightDAO;
+	}
+
 	public AdClientDAO getClientDao() {
 		return clientDao;
 	}
@@ -61,6 +73,12 @@ public class AdWeightGroupServiceImpl implements AdWeightGroupService{
 			Collection<AdClient> query = clientDao.query(client );
 			if(query!=null&&query.size()>0){
 				throw new AdRuntimeException(find.getGroupName()+"已使用，不允许添加子节点");
+			}
+			AdHourWeight adWeightCondition = new AdHourWeight();
+			adWeightCondition.setGroupId(find.getId());
+			Collection<AdHourWeight> adHourWeight = adHourWeightDAO.query(adWeightCondition );
+			if(adHourWeight!=null&&adHourWeight.size()>0){
+				throw new AdRuntimeException(find.getGroupName()+"已被权重重表使用，不允许添加子节点");
 			}
 			if(find.getIsLeaf()==null||AdWeightGroup.ISLEAF.equals(find.getIsLeaf())){
 				find.setIsLeaf(AdWeightGroup.ISNOTLEAF);
@@ -95,7 +113,22 @@ public class AdWeightGroupServiceImpl implements AdWeightGroupService{
 			if(recoreList!=null&&recoreList.size()>0){
 				throw new AdRuntimeException(find.getGroupName()+"存在子节点，不允许删除");
 			}
+			AdHourWeight adWeightCondition = new AdHourWeight();
+			adWeightCondition.setGroupId(find.getId());
+			Collection<AdHourWeight> adHourWeight = adHourWeightDAO.query(adWeightCondition );
+			if(adHourWeight!=null&&adHourWeight.size()>0){
+				throw new AdRuntimeException(find.getGroupName()+"已被权重重表使用，不允许添加子节点");
+			}
+			//查询同一层的节点
 			adWeightGroupDAO.delete(find);
+			AdWeightGroup groupCondition = new AdWeightGroup();
+			groupCondition.setParentId(find.getParentId());
+			Collection<AdWeightGroup> query2 = adWeightGroupDAO.query(groupCondition );
+			if(query2==null||query2.size()<1){
+				AdWeightGroup find2 = adWeightGroupDAO.find(find.getParentId());
+				find2.setIsLeaf(AdWeightGroup.ISLEAF);
+				adWeightGroupDAO.update(find2);
+			}
 		}
 	}
 	

@@ -4,7 +4,8 @@
         #@panel({"title":"查询条件"})  
            #textfield({"label":"名称", "name":"name","value":"","defValue":""})  
             #button_group({"buttons":[  
-                {"label":"查询","event":"queryData()","className":"u-btn-primary"}  
+                {"label":"查询","event":"queryData()","className":"u-btn-primary"},
+                {"label":"重置查询","event":"resetSearch()","className":"u-btn-primary"}  
             ]})  
         #end  
     #end  
@@ -229,7 +230,11 @@
 		function treeNodeClick(id){
 			Horn.getComp("dataTable").baseParams={"groupId":id};
        		Horn.getComp("dataTable").load();  
+		}
+		
+		function resetSearch(){
 			Horn.getComp("dataTable").baseParams={};
+			 Horn.getComp("dataTable").load();  
 		}
 		
 		function treeclick(){

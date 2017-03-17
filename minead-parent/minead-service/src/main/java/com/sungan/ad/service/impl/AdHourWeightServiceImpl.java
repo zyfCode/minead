@@ -1,5 +1,6 @@
 package com.sungan.ad.service.impl;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -185,6 +186,15 @@ public class AdHourWeightServiceImpl implements AdHourWeightService,ApplicationC
 
 	@Override
 	public Long insert(AdHourWeight client) {
+		if(client.getGroupId()!=null&&client.getHour()!=null){
+			AdHourWeight condition = new AdHourWeight();
+			condition.setGroupId(client.getGroupId());
+			condition.setHour(client.getHour());
+			Collection<AdHourWeight> query = adHourWeightDAO.query(condition);
+			if(query!=null&&query.size()>0){
+				throw new AdRuntimeException("同一组中不能存在重复的小时数");
+			}
+		}
 		Long insert = (Long) adHourWeightDAO.insert(client);
 		return insert;
 	}
@@ -198,6 +208,33 @@ public class AdHourWeightServiceImpl implements AdHourWeightService,ApplicationC
 		AdHourWeight find = this.adHourWeightDAO.find(client.getId());
 		if(find==null){
 			throw new AdRuntimeException("记录不存在");
+		}
+		if(client.getGroupId()!=null&&!client.getGroupId().equals(find.getGroupId())){
+			AdHourWeight condition = new AdHourWeight();
+			condition.setGroupId(client.getGroupId());
+			condition.setHour(find.getHour());
+			Collection<AdHourWeight> query = adHourWeightDAO.query(condition);
+			if(query!=null&&query.size()>0){
+				throw new AdRuntimeException("同一组中不能存在重复的小时数："+find.getHour());
+			}
+		}
+		if(client.getHour()!=null){
+			AdHourWeight condition = new AdHourWeight();
+			condition.setGroupId(find.getGroupId());
+			condition.setHour(client.getHour());
+			Collection<AdHourWeight> query = adHourWeightDAO.query(condition);
+			if(query!=null&&query.size()>0){
+				throw new AdRuntimeException("同一组中不能存在重复的小时数："+find.getHour());
+			}
+		}
+		if(client.getGroupId()!=null&&client.getHour()!=null){
+			AdHourWeight condition = new AdHourWeight();
+			condition.setGroupId(client.getGroupId());
+			condition.setHour(client.getHour());
+			Collection<AdHourWeight> query = adHourWeightDAO.query(condition);
+			if(query!=null&&query.size()>0){
+				throw new AdRuntimeException("同一组中不能存在重复的小时数:"+find.getHour());
+			}
 		}
 		AdCommonsUtil.beanCopyWithoutNull(client, find);
 		 adHourWeightDAO.update(find);

@@ -1,5 +1,6 @@
 package com.sungan.ad.service.ext;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -194,7 +195,7 @@ public class AdTaskManagerImpl implements AdTaskManager {
 			}
 			return queryRunning;
 		}
-		return null;
+		return new ArrayList<AppTaskVo>();
 	}
 	
 	

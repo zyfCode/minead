@@ -135,6 +135,10 @@
 		<servlet-name>jresServlet</servlet-name>
 		<servlet-class>com.hundsun.jresplus.web.servlet.DispatcherServlet</servlet-class>
 		<load-on-startup>2</load-on-startup>
+		<init-param>
+			<param-name>contextConfigLocation</param-name>
+			<param-value>classpath:conf/springmvc.xml</param-value>
+		</init-param>
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>jresServlet</servlet-name>

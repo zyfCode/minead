@@ -24,6 +24,8 @@ public class AdConstants {
 	public static final String XMLTYPE = "application/xml;charset=UTF-8";
 	public static final String TXTTYPE = "text/plain;charset=UTF-8";
 	
+	public static final String ISLOGIN="AD_ISLOGIN";
+	public static final Object ISLOGIN_VALUE="AD_ISLOGIN";
 	
 	public static String getStrFromRequest(HttpServletRequest request){
 		try {
