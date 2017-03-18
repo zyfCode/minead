@@ -5,7 +5,7 @@
 		   	           #textfield({"label":"任务名", "name":"name ","value":"","defValue":""})  
 		   	           #textfield({"label":"通过率 ", "name":"throwRate ","value":"","defValue":""}) 
 					   #combox({"name":"status","label":"状态","value":"","items":[{"key":"","val":"默认值"}],  "dictName": "000103",  "check": "required"})
-		   	           #textfield({"label":"执行时间 ", "name":"taskRunTime ","value":"","defValue":""})  
+		   	           #textfield({"label":"执行时间 ", "name":"taskRunTimeStr","value":"","defValue":""})  
 		   	            #button_group({"buttons":[  
 							{"label":"查询","event":"queryData()","className":"u-btn-primary"},
 							{"label":"重置查询","event":"resetSearch()","className":"u-btn-primary"}  

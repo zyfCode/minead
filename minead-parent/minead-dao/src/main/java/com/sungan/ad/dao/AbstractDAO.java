@@ -140,7 +140,7 @@ public abstract class AbstractDAO<T> implements DAO<T> {
 					continue;
 				}
 				Object object = beanFile.get(name);
-				if(object!=null&&(object instanceof String||object instanceof java.util.Date)){
+				if(object!=null&&(object instanceof String)){
 					createCriteria = createCriteria.add(Restrictions.like(name, object+"%"));
 				}else if(object!=null){
 					createCriteria = createCriteria.add(Restrictions.eq(name, object));

@@ -218,7 +218,7 @@ public class AdHourWeightServiceImpl implements AdHourWeightService,ApplicationC
 				throw new AdRuntimeException("同一组中不能存在重复的小时数："+find.getHour());
 			}
 		}
-		if(client.getHour()!=null){
+		if(client.getHour()!=null&&!client.getHour().equals(find.getHour())){
 			AdHourWeight condition = new AdHourWeight();
 			condition.setGroupId(find.getGroupId());
 			condition.setHour(client.getHour());

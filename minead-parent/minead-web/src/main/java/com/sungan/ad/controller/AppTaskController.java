@@ -1,7 +1,14 @@
 package com.sungan.ad.controller;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import javax.validation.Valid;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,6 +28,7 @@ import com.sungan.ad.vo.AppTaskVo;
 @Controller
 @RequestMapping("/apptask")
 public class AppTaskController {
+	private static Log log = LogFactory.getLog(AppTaskController.class);
 	@Autowired
 	private AppTaskService service;
 	
@@ -50,9 +58,18 @@ public class AppTaskController {
 	}
 	@RequestMapping("/listapptask.json")
 	@ResponseBody
-	public Object listTaskapptask(AppTask record,Integer pageNo,Integer pageSize){
+	public Object listTaskapptask(AppTask record,String taskRunTimeStr,Integer pageNo,Integer pageSize){
 		if(record!=null){
 			AdCommonsUtil.proStrEmpytToNull(record);
+		}
+		if(StringUtils.isNotBlank(taskRunTimeStr)){
+			try {
+				SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+				Date parse = format.parse(taskRunTimeStr);
+				record.setTaskRunTime(parse);
+			} catch (Exception e) {
+				log.error("", e);
+			}
 		}
 		AdPager<AppTaskVo> queryPager = service.queryPager(record, pageNo, pageSize);
 		return queryPager;

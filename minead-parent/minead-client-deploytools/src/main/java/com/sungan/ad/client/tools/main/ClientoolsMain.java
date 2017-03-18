@@ -21,6 +21,7 @@ public class ClientoolsMain {
 	private static final String EXIT = "exit" ;
 	private static final String UPLOAD = "upload" ;
 	private static final String COMAND = "COMAND" ;
+	private static final String CLEARLOG = "clearlog" ;
 	
 	public static void main(String[] args) {
 		File file = new File(confFile);
@@ -34,6 +35,7 @@ public class ClientoolsMain {
 		System.out.println("客户端命令:"+EXIT+" 退出客户端");
 		System.out.println("客户端命令:"+UPLOAD+" 上传文件");
 		System.out.println("客户端命令:"+COMAND+" 执行命令");
+		System.out.println("客户端命令:"+CLEARLOG+" 执行命令");
 		Scanner scanner = new Scanner(System.in);
 		String nextLine = scanner.nextLine();
 		while(nextLine==null||!nextLine.equals(EXIT)){
@@ -44,9 +46,25 @@ public class ClientoolsMain {
 				//查看系统是否启动
 				if(nextLine.equals(INFO)){
 					for(LinuxHost lh:linux){
-						DRLinux drLinux = new DRLinux(lh);
-						drLinux.info();
-						drLinux.disConnect();
+						try {
+							DRLinux drLinux = new DRLinux(lh);
+							drLinux.info();
+							drLinux.disConnect();
+						} catch (Exception e) {
+							System.out.println(e.getMessage());
+						}
+					}
+				}
+				//查看系统是否启动
+				if(nextLine.equals(CLEARLOG)){
+					for(LinuxHost lh:linux){
+						try {
+							DRLinux drLinux = new DRLinux(lh);
+							drLinux.removeLog();
+							drLinux.disConnect();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
 					}
 				}
 				
@@ -87,6 +105,9 @@ public class ClientoolsMain {
 					if(file2.exists()){
 						System.out.println("命令参数设置成功，即将开始上传文件...");
 						for(LinuxHost lh:linux){
+//							if(!"119.29.60.52".equals(lh.getHost())){
+//								continue;
+//							}
 							DRLinux drLinux = new DRLinux(lh);
 							drLinux.deploy(new File[]{file2});
 				//			drLinux.deploy(new File[]{new File("C:\\Users\\zhangyf18255\\Desktop\\11\\test\\tomcat-client.tar")});

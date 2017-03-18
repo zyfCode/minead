@@ -36,30 +36,24 @@ public class DaillyTaskApp implements TaskApp{
 	
 	
 	private String defaultUserAgent= "Mozilla/5.0 (iPhone; CPU iPhone OS 9_3_2 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Mobile/13F69 MicroMessenger/6.3.21 NetType/WIFI Language/zh_CN";
-	private String userAgent= "Mozilla/5.0 (iPhone; CPU iPhone OS ${version} like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Mobile/13F69 MicroMessenger/6.3.21 NetType/WIFI Language/zh_CN";
+   private String userAgent= "Mozilla/5.0 (iPhone; CPU iPhone OS 10_2_1 like Mac OS X) AppleWebKit/602.4.6 (KHTML, like Gecko) Mobile/14D27 MicroMessenger/6.5.5 NetType/WIFI Language/zh_TW";
+   private String userAgent1= "Mozilla/5.0 (Linux; Android 5.1.1; SM-A8000 Build/LMY47X; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/53.0.2785.49 Mobile MQQBrowser/6.2 TBS/043024 Safari/537.36 MicroMessenger/6.5.4.1000 NetType/4G Language/zh_CN";
+   private String userAgent2= "Mozilla/5.0 (Linux; Android 5.1.1; R7Plusm Build/LMY47V; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/53.0.2785.49 Mobile MQQBrowser/6.2 TBS/043024 Safari/537.36 MicroMessenger/6.5.4.1000 NetType/4G Language/zh_CN";
+   private String userAgent3= "Mozilla/5.0 (iPhone; CPU iPhone OS 9_3_2 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Mobile/13F69 MicroMessenger/6.3.21 NetType/WIFI Language/zh_CN";
 	private   ScheduledThreadPoolExecutor excutor = new ScheduledThreadPoolExecutor(5);
 	private  int count = 0;
 	private  int actuallCount = 0;
 	private  int[] arr = new int[120];
 	private  int[] hit = null;
+	private String [] userAgents = new String[]{userAgent,userAgent1,userAgent2,userAgent3};
 	
 	private int nexInt(int i){
 		return new Random().nextInt(i);
 	}
 	private String getUserAgent(){
-//		int [] arr1 = {4,5,6,7,8,9,10};
-//		int [] arr2 = {0,1,2,3};
-//		int [] arr3 = {1,2,3,4};
-//		String version = arr1[this.nexInt(arr1.length)]+"_"+arr2[this.nexInt(arr2.length)]+"_"+arr3[this.nexInt(arr3.length)]; 
-//		String newAgent  = defaultUserAgent;
-//		if(userAgent.contains("${version}")){
-//			newAgent = userAgent.replace("${version}", version);
-//		}
-//		return newAgent;
-		
-		return defaultUserAgent;
+		String userAgent = userAgents[this.nexInt(userAgents.length)];
+		return userAgent;
 	} 
-	
 	
 	public synchronized  int actuallCount(int num){
 		actuallCount = actuallCount +num;

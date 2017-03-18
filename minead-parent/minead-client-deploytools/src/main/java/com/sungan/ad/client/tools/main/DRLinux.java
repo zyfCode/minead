@@ -39,6 +39,14 @@ public class DRLinux extends LinuxHost {
 	/**
 	 * 清除所有文件
 	 */
+	public void removeLog(){
+		this.execCommand("cd /sungan/tomcat-client/logs \r\n rm -f ./*");
+		this.execCommand("cd /sungan/tomcat-client/bin/logs \r\n rm -f ./*");
+		System.out.println(this.getHost()+":日志清除");
+	}
+	/**
+	 * 清除所有文件
+	 */
 	public void removeClient(){
 		this.stop();
 		SSHUtils.execCommand("cd /sungan \r\n rm -f -r ./*");
